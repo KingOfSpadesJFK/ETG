@@ -1,5 +1,13 @@
 .gradle
 /build/
+/bin/
+/run/
+
+.project
+*.launch
+.class
+.jar
+runClient.bat
 
 # Ignore Gradle GUI config
 gradle-app.setting
