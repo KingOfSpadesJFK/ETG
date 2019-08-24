@@ -1,0 +1,13 @@
+{
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "forest": "2019-08-24 10:38:09 -0700",
+      "birch_forest": "2019-08-24 10:37:53 -0700",
+      "savanna": "2019-08-24 10:38:59 -0700",
+      "plains": "2019-08-24 10:37:45 -0700",
+      "taiga": "2019-08-24 10:38:25 -0700",
+      "extreme_hills": "2019-08-24 10:38:27 -0700"
+    },
+    "done": false
+  }
+}
