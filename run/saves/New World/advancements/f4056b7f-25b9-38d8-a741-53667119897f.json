@@ -1,0 +1,12 @@
+{
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "forest": "2019-08-17 01:34:26 -0700",
+      "birch_forest": "2019-08-17 01:34:10 -0700",
+      "beaches": "2019-08-17 01:33:03 -0700",
+      "plains": "2019-08-17 01:33:32 -0700",
+      "ocean": "2019-08-17 01:33:16 -0700"
+    },
+    "done": false
+  }
+}

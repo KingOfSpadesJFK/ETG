@@ -1,0 +1,107 @@
+---- Minecraft Crash Report ----
+// Daisy, daisy...
+
+Time: 8/20/19 7:21 PM
+Description: Exception preparing structure feature
+
+java.lang.NullPointerException: Exception preparing structure feature
+	at kos.evolutionterraingenerator.world.gen.GenOceanMonumentEvo.canSpawnStructureAtCoords(GenOceanMonumentEvo.java:71)
+	at net.minecraft.world.gen.structure.MapGenStructure.recursiveGenerate(MapGenStructure.java:46)
+	at net.minecraft.world.gen.MapGenBase.generate(MapGenBase.java:31)
+	at kos.evolutionterraingenerator.world.EvoChunkGenerator.generateChunk(EvoChunkGenerator.java:405)
+	at net.minecraft.world.gen.ChunkProviderServer.provideChunk(ChunkProviderServer.java:155)
+	at net.minecraft.world.World.getChunkFromChunkCoords(World.java:362)
+	at net.minecraft.world.World.getChunkFromBlockCoords(World.java:354)
+	at net.minecraft.world.World.getBlockState(World.java:995)
+	at net.minecraft.world.World.isAirBlock(World.java:279)
+	at net.minecraft.world.World.getGroundAboveSeaLevel(World.java:252)
+	at net.minecraft.world.WorldProvider.canCoordinateBeSpawn(WorldProvider.java:102)
+	at net.minecraft.world.WorldServer.createSpawnPosition(WorldServer.java:989)
+	at net.minecraft.world.WorldServer.initialize(WorldServer.java:908)
+	at net.minecraft.server.integrated.IntegratedServer.loadAllWorlds(IntegratedServer.java:124)
+	at net.minecraft.server.integrated.IntegratedServer.init(IntegratedServer.java:160)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:552)
+	at java.lang.Thread.run(Thread.java:748)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Thread: Server thread
+Stacktrace:
+	at kos.evolutionterraingenerator.world.gen.GenOceanMonumentEvo.canSpawnStructureAtCoords(GenOceanMonumentEvo.java:71)
+
+-- Feature being prepared --
+Details:
+	Is feature chunk: ~~ERROR~~ NullPointerException: null
+	Chunk location: -13,19
+	Chunk pos hash: 85899345907
+	Structure type: kos.evolutionterraingenerator.world.gen.GenOceanMonumentEvo
+Stacktrace:
+	at net.minecraft.world.gen.structure.MapGenStructure.recursiveGenerate(MapGenStructure.java:46)
+	at net.minecraft.world.gen.MapGenBase.generate(MapGenBase.java:31)
+	at kos.evolutionterraingenerator.world.EvoChunkGenerator.generateChunk(EvoChunkGenerator.java:405)
+
+-- Chunk to be generated --
+Details:
+	Location: -14,15
+	Position hash: 68719476722
+	Generator: kos.evolutionterraingenerator.world.EvoChunkGenerator@37c1390b
+Stacktrace:
+	at net.minecraft.world.gen.ChunkProviderServer.provideChunk(ChunkProviderServer.java:155)
+	at net.minecraft.world.World.getChunkFromChunkCoords(World.java:362)
+	at net.minecraft.world.World.getChunkFromBlockCoords(World.java:354)
+	at net.minecraft.world.World.getBlockState(World.java:995)
+	at net.minecraft.world.World.isAirBlock(World.java:279)
+	at net.minecraft.world.World.getGroundAboveSeaLevel(World.java:252)
+	at net.minecraft.world.WorldProvider.canCoordinateBeSpawn(WorldProvider.java:102)
+	at net.minecraft.world.WorldServer.createSpawnPosition(WorldServer.java:989)
+
+-- Affected level --
+Details:
+	Level name: New World
+	All players: 0 total; []
+	Chunk stats: ServerChunkCache: 0 Drop: 0
+	Level seed: 7997049813568420376
+	Level generator: ID 06 - EVOLUTION, ver 0. Features enabled: true
+	Level generator options: 
+	Level spawn location: World: (0,0,0), Chunk: (at 0,0,0 in 0,0; contains blocks 0,0,0 to 15,255,15), Region: (0,0; contains chunks 0,0 to 31,31, blocks 0,0,0 to 511,255,511)
+	Level time: 0 game time, 0 day time
+	Level dimension: 0
+	Level storage version: 0x04ABD - Anvil
+	Level weather: Rain time: 0 (now: false), thunder time: 0 (now: false)
+	Level game mode: Game mode: creative (ID 1). Hardcore: false. Cheats: true
+Stacktrace:
+	at net.minecraft.world.WorldServer.initialize(WorldServer.java:908)
+	at net.minecraft.server.integrated.IntegratedServer.loadAllWorlds(IntegratedServer.java:124)
+	at net.minecraft.server.integrated.IntegratedServer.init(IntegratedServer.java:160)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:552)
+	at java.lang.Thread.run(Thread.java:748)
+
+-- System Details --
+Details:
+	Minecraft Version: 1.12.2
+	Operating System: Windows 10 (amd64) version 10.0
+	Java Version: 1.8.0_172, Oracle Corporation
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Oracle Corporation
+	Memory: 577390216 bytes (550 MB) / 873463808 bytes (833 MB) up to 1881145344 bytes (1794 MB)
+	JVM Flags: 0 total; 
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	FML: MCP 9.42 Powered by Forge 14.23.5.2838 5 mods loaded, 5 mods active
+	States: 'U' = Unloaded 'L' = Loaded 'C' = Constructed 'H' = Pre-initialized 'I' = Initialized 'J' = Post-initialized 'A' = Available 'D' = Disabled 'E' = Errored
+
+	| State  | ID                        | Version      | Source                           | Signature |
+	|:------ |:------------------------- |:------------ |:-------------------------------- |:--------- |
+	| LCHIJA | minecraft                 | 1.12.2       | minecraft.jar                    | None      |
+	| LCHIJA | mcp                       | 9.42         | minecraft.jar                    | None      |
+	| LCHIJA | FML                       | 8.0.99.99    | forgeSrc-1.12.2-14.23.5.2838.jar | None      |
+	| LCHIJA | forge                     | 14.23.5.2838 | forgeSrc-1.12.2-14.23.5.2838.jar | None      |
+	| LCHIJA | evolutionterraingenerator | 0.0.0        | modid-1.0.jar                    | None      |
+
+	Loaded coremods (and transformers): 
+	GL info: ~~ERROR~~ RuntimeException: No OpenGL context found in the current thread.
+	Profiler Position: N/A (disabled)
+	Player Count: 0 / 8; []
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Definitely; Client brand changed to 'fml,forge'
