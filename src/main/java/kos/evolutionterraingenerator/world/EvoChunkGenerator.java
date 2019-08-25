@@ -1,5 +1,6 @@
 package kos.evolutionterraingenerator.world;
 
+import java.rmi.registry.Registry;
 import java.util.List;
 import java.util.Random;
 import javax.annotation.Nullable;
@@ -246,7 +247,11 @@ public class EvoChunkGenerator implements IChunkGenerator
             {
             	Biome biome = biomesIn[j + i * 16];
             	double noiseVal = this.depthBuffer[j + i * 16];
-            	if (biome.getBiomeName().contains("Roofed Forest") || biome.getBiomeName().contains("Jungle") || biome.getBiomeName().contains("Beach") || biome.getBiomeName().contains("Mesa"))
+            	int biomeid = Biome.getIdForBiome(biome);
+                boolean isBeach = biomeid == Biome.getIdForBiome(Biomes.BEACH) |
+            			biomeid == Biome.getIdForBiome(Biomes.STONE_BEACH) |
+            			biomeid == Biome.getIdForBiome(Biomes.COLD_BEACH);
+            	if (biomeid == Biome.getIdForBiome(Biomes.ROOFED_FOREST) | biomeid == Biome.getIdForBiome(Biomes.JUNGLE) | isBeach | biomeid == Biome.getIdForBiome(Biomes.MESA))
             		generateBiomeTerrain(biomesIn[j + i * 16], this.rand, primer, x * 16 + i, z * 16 + j, noiseVal);
             	else
             		biome.genTerrainBlocks(this.world, rand, primer, x * 16 + i, z * 16 + j, noiseVal);
@@ -269,6 +274,10 @@ public class EvoChunkGenerator implements IChunkGenerator
         double swamp = swamplandChance[i1 * 16 + l];
         swamp = MathHelper.clamp(swamp, 0.0, 1.0);
         BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
+        int biomeid = Biome.getIdForBiome(biome);
+        boolean isBeach = biomeid == Biome.getIdForBiome(Biomes.BEACH) |
+    			biomeid == Biome.getIdForBiome(Biomes.STONE_BEACH) |
+    			biomeid == Biome.getIdForBiome(Biomes.COLD_BEACH);
 
         for (int j1 = 255; j1 >= 0; --j1)
         {
@@ -299,7 +308,7 @@ public class EvoChunkGenerator implements IChunkGenerator
                             iblockstate = biome.topBlock;
                             iblockstate1 = biome.fillerBlock;
                         }
-                    	if ((biome.getBiomeName().contains("Roofed Forest") || biome.getBiomeName().contains("Jungle"))&& j1 <= i + 3 && swamp < 0.3125)
+                    	if ((biomeid == Biome.getIdForBiome(Biomes.ROOFED_FOREST) | biomeid == Biome.getIdForBiome(Biomes.JUNGLE))&& j1 <= i + 3 && swamp < 0.3125)
                     	{
                     		this.biomesForGeneration[l * 16 + i1] = Biomes.SWAMPLAND;
                     		biome = Biomes.SWAMPLAND;
@@ -310,7 +319,7 @@ public class EvoChunkGenerator implements IChunkGenerator
                                 iblockstate1 = biome.fillerBlock;
                             }
                     	}
-                    	if (biome.getBiomeName().contains("Mesa"))
+                    	if (biomeid == Biome.getIdForBiome(Biomes.MESA))
                     	{
                     		if ( j1 <= i + 50)
                     		{
@@ -325,7 +334,7 @@ public class EvoChunkGenerator implements IChunkGenerator
                     		biome.genTerrainBlocks(this.world, rand, chunkPrimerIn, x, z, noiseVal);
                     		return;
                     	}
-                    	if (grav < 0.275 && biome.getBiomeName().contains("Beach"))
+                    	if (grav < 0.275 && isBeach)
                     	{
                             iblockstate = GRAVEL;
                             iblockstate1 = GRAVEL;
@@ -472,6 +481,7 @@ public class EvoChunkGenerator implements IChunkGenerator
                     for (int l1 = -2; l1 <= 2; ++l1)
                     {
                         Biome biome1 = this.biomesForGeneration[k + k1 + 2 + (l + l1 + 2) * 10];
+                        int biomeid = Biome.getIdForBiome(biome1);
                         float tempVal = (float) temps[k + k1 + 2 + (l + l1 + 2) * 10];
                         float humidVal = (float) humidities[k + k1 + 2 + (l + l1 + 2) * 10];
                         //float f5 = this.settings.biomeDepthOffSet + biome1.getBaseHeight() * this.settings.biomeDepthWeight;
@@ -480,10 +490,15 @@ public class EvoChunkGenerator implements IChunkGenerator
                     	float f6 = 1.125F * this.settings.biomeScaleWeight;
 
                         float f7 = (this.biomeWeights[k1 + 2 + (l1 + 2) * 5] - (humidVal * tempVal) )/ (f5 + 2.0F);
+                        boolean isBeach = biomeid == Biome.getIdForBiome(Biomes.BEACH) |
+                    			biomeid == Biome.getIdForBiome(Biomes.STONE_BEACH) |
+                    			biomeid == Biome.getIdForBiome(Biomes.COLD_BEACH);
+                        boolean isOcean = biomeid == Biome.getIdForBiome(Biomes.OCEAN) |
+                    			biomeid == Biome.getIdForBiome(Biomes.DEEP_OCEAN);
                         
-                    	if (biome1.getBiomeName().contains("Ocean") | biome1.getBiomeName().contains("Beach"))
+                    	if (isBeach | isOcean)
                     	{
-                    		if (biome1.getBiomeName().contains("Beach"))
+                    		if (isBeach)
                     		{
                                 f5 = this.settings.biomeDepthOffSet + Biomes.BEACH.getBaseHeight() * this.settings.biomeDepthWeight;
                                 f6 = this.settings.biomeScaleOffset + Biomes.BEACH.getHeightVariation() * this.settings.biomeScaleWeight;
@@ -504,7 +519,7 @@ public class EvoChunkGenerator implements IChunkGenerator
                     	//System.out.println("Clamped from: " + this.riverChance[k + k1 + 2 + (l + l1 + 2) * 10]);
                     	//System.out.println("this.depthRegion: " + this.depthRegion[k1 + 2 + (l1 + 2) * 5]);
                     	int riverIndex = (k + k1 + 2) + (l + l1 + 2) * 10;
-                    	if (rivers[riverIndex] && !biome1.getBiomeName().contains("Ocean"))
+                    	if (rivers[riverIndex] && !isOcean)
                     	{
                         	//f5 = -0.75F;
                         	//f6 = 0.0F;

@@ -90,7 +90,7 @@ public abstract class EvoBiomes
 		for (EvoBiome b : list)
 		{
 			arr[i] = b;
-			System.out.print(b.getDefaultBiome().getBiomeName() + " (" + b.getDefaultBiome().getRainfall() + "), ");
+			//System.out.print(b.getDefaultBiome().getBiomeName() + " (" + b.getDefaultBiome().getRainfall() + "), ");
 			i++;
 		}
 		System.out.print("]");

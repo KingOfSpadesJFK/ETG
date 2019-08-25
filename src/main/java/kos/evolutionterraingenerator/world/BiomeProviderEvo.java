@@ -36,7 +36,7 @@ public class BiomeProviderEvo extends BiomeProvider
     private final BiomeCache biomeCache;
     /** A list of biomes that the player can spawn in. */
     private final List<Biome> biomesToSpawnIn;
-    public static List<Biome> allowedBiomes = Lists.newArrayList(Biomes.FOREST, Biomes.PLAINS, Biomes.TAIGA);
+    public static List<Biome> allowedBiomes = Lists.newArrayList(Biomes.FOREST, Biomes.PLAINS, Biomes.TAIGA, Biomes.BEACH);
     
     private NoiseGeneratorOpenSimplex tempOctave;
     private NoiseGeneratorOpenSimplex humidOctave;
@@ -297,7 +297,7 @@ public class BiomeProviderEvo extends BiomeProvider
     {
     	if (temp < SNOW_TEMP)
     		return Biomes.COLD_BEACH;
-    	if (getLandBiome(temp, humid, 0.0).getBiomeName().contains("Extreme Hills"))
+    	if (Biome.getIdForBiome(getLandBiome(temp, humid, 0.0)) == Biome.getIdForBiome(Biomes.EXTREME_HILLS))
     		return Biomes.STONE_BEACH;
     	return Biomes.BEACH;
     }
@@ -377,12 +377,9 @@ public class BiomeProviderEvo extends BiomeProvider
 
                 if (!allowed.contains(biome))
                 {
-                    System.out.println("areBiomesViable(): \"Screw you guys, I'm going home\"");
                     return false;
                 }
             }
-
-            System.out.println("Ah yeah, suck my areBiomesViable()");
             return true;
         }
         catch (Throwable throwable)

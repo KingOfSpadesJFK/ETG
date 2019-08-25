@@ -43,7 +43,7 @@ public class EvoType extends WorldType
 	@SideOnly(Side.CLIENT)
 	public boolean hasInfoNotice()
 	{
-		return true;
+		return false;
 	}
 
 	@Override
