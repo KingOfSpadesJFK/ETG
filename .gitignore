@@ -6,7 +6,6 @@
 .project
 *.launch
 .class
-.jar
 runClient.bat
 
 # Ignore Gradle GUI config
