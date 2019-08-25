@@ -325,7 +325,7 @@ public class EvoChunkGenerator implements IChunkGenerator
                     		biome.genTerrainBlocks(this.world, rand, chunkPrimerIn, x, z, noiseVal);
                     		return;
                     	}
-                    	if (grav < 0.35 && biome.getBiomeName().contains("Beach"))
+                    	if (grav < 0.275 && biome.getBiomeName().contains("Beach"))
                     	{
                             iblockstate = GRAVEL;
                             iblockstate1 = GRAVEL;
