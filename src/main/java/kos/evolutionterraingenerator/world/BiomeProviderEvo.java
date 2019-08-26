@@ -53,10 +53,10 @@ public class BiomeProviderEvo extends BiomeProvider
 	public boolean[] isRiver;
 	public double[] noise;
 	
-	private static final double SNOW_TEMP = 0.425;
-	private static final double COLD_TEMP = 0.55625;
-	private static final double WARM_TEMP = 0.75;
-	private static final double HOT_TEMP = 0.925;
+	private static final double SNOW_TEMP = 0.25;
+	private static final double COLD_TEMP = 0.625;
+	private static final double WARM_TEMP = 0.875;
+	private static final double HOT_TEMP = 0.975;
 
     protected BiomeProviderEvo()
     {
@@ -126,6 +126,7 @@ public class BiomeProviderEvo extends BiomeProvider
     
     public static final double biomeScale = 3.0;
     public static final double oceanScale = 1.0;
+    public static final double oceanThreshold = 0.4;
     public static final double riverScale = 0.5;
     public static final int riverSamples = 2;		//An unintended method to make rivers bigger
     
@@ -190,8 +191,8 @@ public class BiomeProviderEvo extends BiomeProvider
 
         try
         {
-    		temperatures = tempOctave.generateNoiseOctaves(temperatures, x, z, width, height, (0.00625 / biomeScale) * xScale, (0.00625 / biomeScale) * zScale);
-    		humidities = humidOctave.generateNoiseOctaves(humidities, x, z, width, height, (0.05 / biomeScale) * xScale, (0.05 / biomeScale) * zScale);
+    		temperatures = tempOctave.generateNoiseOctaves(temperatures, x, z, width, height, (0.006125 / biomeScale) * xScale, (0.006125 / biomeScale) * zScale);
+    		humidities = humidOctave.generateNoiseOctaves(humidities, x, z, width, height, (0.035 / biomeScale) * xScale, (0.035 / biomeScale) * zScale);
     		landmasses = landOctave.generateNoiseOctaves(landmasses, x, z, width, height, (0.0025 / oceanScale) * xScale,( 0.0025 / oceanScale) * zScale);
     		biomeChance = biomeChanceOctave.generateNoiseOctaves(biomeChance, x, z, width, height, 0.00075 * xScale, 0.00075 * zScale);
     		mushroomChance = mushroomOctave.generateNoiseOctaves(mushroomChance, x, z, width, height, (0.00375 / biomeScale) * xScale, (0.00375 / biomeScale) * zScale);
@@ -207,8 +208,8 @@ public class BiomeProviderEvo extends BiomeProvider
     	    		int m = i * width + j;
     	    		int k = j * height + i;
     				double var9 = noise[m] * 1.1 + 0.5;
-    				double temperatureVal = (temperatures[m] * 0.15 + 0.7) * 0.999 + var9 * 0.001;
-    				double humidityVal = (humidities[m] * 0.15 + 0.5) * 0.998 + var9 * 0.002;
+    				double temperatureVal = (temperatures[m] * 0.15 + 0.7) * 0.99 + var9 * 0.01;
+    				double humidityVal = (humidities[m] * 0.15 + 0.5) * 0.95 + var9 * 0.05;
     				double landVal = (landmasses[m]  * 0.15 + 0.75) * 0.997 + var9 * 0.003;
     				double chanceVal = (biomeChance[m]  * 0.15 + 0.5) * 0.9999 + var9 * 0.0001;
     				double mushroomVal = (mushroomChance[m]  * 0.15 + 0.75) * 0.999 + var9 * 0.001;
@@ -224,7 +225,7 @@ public class BiomeProviderEvo extends BiomeProvider
     				landmasses[m] = landVal;
     				mushroomChance[m] = mushroomVal;
 					biomes[k] = getLandBiome(temperatures[m], humidities[m], chanceVal);
-    				if (findOceans && landmasses[m] < 0.4)
+    				if (findOceans && landmasses[m] < oceanThreshold)
     				{
     					if (mushroomChance[m] > 0.99625)
     					{
@@ -235,13 +236,13 @@ public class BiomeProviderEvo extends BiomeProvider
     					}
     					else
     					{
-        					if (landmasses[m] > 0.365)
+        					if (landmasses[m] > oceanThreshold - 0.05)
         					{
         						if (!(biomes[k].equals(Biomes.MESA) | biomes[k].equals(Biomes.DESERT)))
         							biomes[k] = getBeach(temperatures[m], humidities[m]);
         					}
         					else
-        						biomes[k] = getOcean(temperatures[m], humidities[m], landmasses[m] < 0.15);
+        						biomes[k] = getOcean(temperatures[m], humidities[m], landmasses[m] < oceanThreshold * 0.25);
     					}
     				}
     				//isRiver[k] = valueOfRivia >= 0.25F && valueOfRivia <= 0.3F && !biomes[k].getBiomeName().contains("Ocean");
@@ -264,7 +265,6 @@ public class BiomeProviderEvo extends BiomeProvider
 
     private Biome getLandBiome(double temp, double humid, double chance)
     {
-    	humid *= temp;
     	EvoBiome[] arr = EvoBiomes.WARM_BIOMES;
     	
 		if (temp < SNOW_TEMP)

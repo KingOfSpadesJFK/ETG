@@ -6,10 +6,6 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
-import kos.evolutionterraingenerator.world.gen.GenerateMansion;
-import kos.evolutionterraingenerator.world.gen.GenerateMonument;
-import kos.evolutionterraingenerator.world.gen.GenerateVillage;
-import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockSand;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -17,32 +13,17 @@ import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldEntitySpawner;
-import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
+import net.minecraft.world.gen.ChunkGeneratorOverworld;
 import net.minecraft.world.gen.ChunkGeneratorSettings;
-import net.minecraft.world.gen.IChunkGenerator;
-import net.minecraft.world.gen.MapGenBase;
-import net.minecraft.world.gen.MapGenCaves;
-import net.minecraft.world.gen.MapGenRavine;
 import net.minecraft.world.gen.NoiseGeneratorOctaves;
 import net.minecraft.world.gen.NoiseGeneratorPerlin;
-import net.minecraft.world.gen.feature.WorldGenDungeons;
-import net.minecraft.world.gen.feature.WorldGenLakes;
-import net.minecraft.world.gen.structure.MapGenMineshaft;
-import net.minecraft.world.gen.structure.MapGenScatteredFeature;
-import net.minecraft.world.gen.structure.MapGenStronghold;
-import net.minecraft.world.gen.structure.MapGenVillage;
-import net.minecraft.world.gen.structure.StructureOceanMonument;
-import net.minecraft.world.gen.structure.WoodlandMansion;
 
-public class EvoChunkGenerator implements IChunkGenerator
+public class EvoChunkGenerator extends ChunkGeneratorOverworld
 {
 	private final BiomeProviderEvo biomeProvider;
     protected static final IBlockState STONE = Blocks.STONE.getDefaultState();
@@ -66,7 +47,6 @@ public class EvoChunkGenerator implements IChunkGenerator
     //public NoiseGeneratorOctaves forestNoise;
     private final World world;
     private final boolean mapFeaturesEnabled;
-    private final WorldType terrainType;
     private final double[] heightMap;
     private final float[] biomeWeights;
     private double[] gravelBeach;
@@ -74,14 +54,6 @@ public class EvoChunkGenerator implements IChunkGenerator
     private ChunkGeneratorSettings settings;
     private IBlockState oceanBlock = Blocks.WATER.getDefaultState();
     private double[] depthBuffer = new double[256];
-    private MapGenBase caveGenerator = new MapGenCaves();
-    private MapGenStronghold strongholdGenerator = new MapGenStronghold();
-    private MapGenVillage villageGenerator = new MapGenVillage();
-    private MapGenMineshaft mineshaftGenerator = new MapGenMineshaft();
-    private MapGenScatteredFeature scatteredFeatureGenerator = new MapGenScatteredFeature();
-    private MapGenBase ravineGenerator = new MapGenRavine();
-    private StructureOceanMonument oceanMonumentGenerator = new StructureOceanMonument();
-    private GenerateMansion woodlandMansionGenerator;
     private Biome[] biomesForGeneration;
     double[] mainNoiseRegion;
     double[] minLimitRegion;
@@ -90,10 +62,10 @@ public class EvoChunkGenerator implements IChunkGenerator
 
     public EvoChunkGenerator(World worldIn, long seed, boolean mapFeaturesEnabledIn, String generatorOptions)
     {
+    	super(worldIn, seed, mapFeaturesEnabledIn, generatorOptions);
     	System.out.println("The smegma under your foreskin has been generated");
         this.world = worldIn;
         this.mapFeaturesEnabled = mapFeaturesEnabledIn;
-        this.terrainType = worldIn.getWorldInfo().getTerrainType();
         this.rand = new Random(seed);
         this.minLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
         this.maxLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
@@ -101,23 +73,11 @@ public class EvoChunkGenerator implements IChunkGenerator
         this.surfaceNoise = new NoiseGeneratorPerlin(this.rand, 4);
         this.scaleNoise = new NoiseGeneratorOpenSimplex(this.rand, 10);
         this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
-        //this.forestNoise = new NoiseGeneratorOctaves(this.rand, 8);
         this.gravelNoise = new NoiseGeneratorOctaves(this.rand, 4);
         this.swampNoise = new NoiseGeneratorOctaves(this.rand, 4);
         this.heightMap = new double[825];
         this.biomeWeights = new float[25];
         this.biomeProvider = new BiomeProviderEvo(this.world);
-
-        {
-            caveGenerator = net.minecraftforge.event.terraingen.TerrainGen.getModdedMapGen(caveGenerator, net.minecraftforge.event.terraingen.InitMapGenEvent.EventType.CAVE);
-            strongholdGenerator = (MapGenStronghold)net.minecraftforge.event.terraingen.TerrainGen.getModdedMapGen(strongholdGenerator, net.minecraftforge.event.terraingen.InitMapGenEvent.EventType.STRONGHOLD);
-            villageGenerator = (MapGenVillage)net.minecraftforge.event.terraingen.TerrainGen.getModdedMapGen(villageGenerator, net.minecraftforge.event.terraingen.InitMapGenEvent.EventType.VILLAGE);
-            mineshaftGenerator = (MapGenMineshaft)net.minecraftforge.event.terraingen.TerrainGen.getModdedMapGen(mineshaftGenerator, net.minecraftforge.event.terraingen.InitMapGenEvent.EventType.MINESHAFT);
-            scatteredFeatureGenerator = (MapGenScatteredFeature)net.minecraftforge.event.terraingen.TerrainGen.getModdedMapGen(scatteredFeatureGenerator, net.minecraftforge.event.terraingen.InitMapGenEvent.EventType.SCATTERED_FEATURE);
-            ravineGenerator = net.minecraftforge.event.terraingen.TerrainGen.getModdedMapGen(ravineGenerator, net.minecraftforge.event.terraingen.InitMapGenEvent.EventType.RAVINE);
-            oceanMonumentGenerator = (StructureOceanMonument)net.minecraftforge.event.terraingen.TerrainGen.getModdedMapGen(oceanMonumentGenerator, net.minecraftforge.event.terraingen.InitMapGenEvent.EventType.OCEAN_MONUMENT);
-            //woodlandMansionGenerator = (WoodlandMansion)net.minecraftforge.event.terraingen.TerrainGen.getModdedMapGen(woodlandMansionGenerator, net.minecraftforge.event.terraingen.InitMapGenEvent.EventType.WOODLAND_MANSION);
-        }
 
         for (int i = -2; i <= 2; ++i)
         {
@@ -134,23 +94,12 @@ public class EvoChunkGenerator implements IChunkGenerator
             this.oceanBlock = this.settings.useLavaOceans ? Blocks.LAVA.getDefaultState() : Blocks.WATER.getDefaultState();
             worldIn.setSeaLevel(this.settings.seaLevel);
         }
-        /*
-        net.minecraftforge.event.terraingen.InitNoiseGensEvent.ContextOverworld ctx =
-                new net.minecraftforge.event.terraingen.InitNoiseGensEvent.ContextOverworld(minLimitPerlinNoise, maxLimitPerlinNoise, mainPerlinNoise, surfaceNoise, scaleNoise, depthNoise, forestNoise);
-        ctx = net.minecraftforge.event.terraingen.TerrainGen.getModdedNoiseGenerators(worldIn, this.rand, ctx);
-        this.minLimitPerlinNoise = ctx.getLPerlin1();
-        this.maxLimitPerlinNoise = ctx.getLPerlin2();
-        this.mainPerlinNoise = ctx.getPerlin();
-        this.surfaceNoise = ctx.getHeight();
-        this.scaleNoise = ctx.getScale();
-        this.depthNoise = ctx.getDepth();
-        this.forestNoise = ctx.getForest();
-        */
     }
 
     public void setBlocksInChunk(int x, int z, ChunkPrimer primer)
     {
         this.biomesForGeneration = this.biomeProvider.getBiomesForGeneration(this.biomesForGeneration, x * 4 - 2, z * 4 - 2, 10, 10, 4, 4, true);
+        //this.biomeProvider.getBiomesForGeneration(null, x * 4 - 2, z * 4 - 2, 10, 10);
         this.biomeProvider.getRiver(x * 4 - 2, z * 4 - 2, 10, 10);
         //this.riverChance = this.riverNoise.generateNoiseOctaves(this.riverChance, x * 4 - 2, z * 4 - 2, 10, 10, 300.0, 300.0, 0.5);
         this.generateHeightmap(x * 4, 0, z * 4);
@@ -221,6 +170,7 @@ public class EvoChunkGenerator implements IChunkGenerator
 
     public void replaceBiomeBlocks(int x, int z, ChunkPrimer primer, Biome[] biomesIn)
     {
+        this.biomesForGeneration = this.biomeProvider.getBiomes(this.biomesForGeneration, x * 16, z * 16, 16, 16);
         this.gravelBeach = gravelNoise.generateNoiseOctaves(null, x * 16, z * 16, 16, 16, 0.0125, 0.0125, 0.5);
         this.swamplandChance = swampNoise.generateNoiseOctaves(null, x * 16, 16, z * 16, 16, 1, 16, 0.00625, 1.0, 0.00625);
         //System.out.println("This: " + this);
@@ -390,64 +340,13 @@ public class EvoChunkGenerator implements IChunkGenerator
      */
     public Chunk generateChunk(int x, int z)
     {
-        this.rand.setSeed((long)x * 341873128712L + (long)z * 132897987541L);
-        ChunkPrimer chunkprimer = new ChunkPrimer();
-        this.setBlocksInChunk(x, z, chunkprimer);
-        this.biomesForGeneration = this.biomeProvider.getBiomes(this.biomesForGeneration, x * 16, z * 16, 16, 16);
-        this.replaceBiomeBlocks(x, z, chunkprimer, this.biomesForGeneration);
-
-        if (this.settings.useCaves)
-        {
-            this.caveGenerator.generate(this.world, x, z, chunkprimer);
-        }
-
-        if (this.settings.useRavines)
-        {
-            this.ravineGenerator.generate(this.world, x, z, chunkprimer);
-        }
-
-        if (this.mapFeaturesEnabled)
-        {
-            if (this.settings.useMineShafts)
-            {
-                this.mineshaftGenerator.generate(this.world, x, z, chunkprimer);
-            }
-
-            if (this.settings.useVillages)
-            {
-                this.villageGenerator.generate(this.world, x, z, chunkprimer);
-            }
-
-            if (this.settings.useStrongholds)
-            {
-                this.strongholdGenerator.generate(this.world, x, z, chunkprimer);
-            }
-
-            if (this.settings.useTemples)
-            {
-                this.scatteredFeatureGenerator.generate(this.world, x, z, chunkprimer);
-            }
-
-            if (this.settings.useMonuments)
-            {
-                this.oceanMonumentGenerator.generate(this.world, x, z, chunkprimer);
-            }
-
-            if (this.settings.useMansions)
-            {
-                //this.woodlandMansionGenerator.generate(this.world, x, z, chunkprimer);
-            }
-        }
-
-        Chunk chunk = new Chunk(this.world, chunkprimer, x, z);
+        Chunk chunk = super.generateChunk(x, z);
         byte[] abyte = chunk.getBiomeArray();
 
         for (int i = 0; i < abyte.length; ++i)
         {
             abyte[i] = (byte)Biome.getIdForBiome(this.biomesForGeneration[i]);
         }
-
-        chunk.generateSkylightMap();
         return chunk;
     }
 
@@ -470,10 +369,13 @@ public class EvoChunkGenerator implements IChunkGenerator
         {
             for (int l = 0; l < 5; ++l)
             {
-                float f2 = 0.0F;
-                float f3 = 0.0F;
-                float f4 = 0.0F;
-                int i1 = 2;
+                float tempVal = (float) temps[k + 2 + (l + 2) * 10];
+                float humidVal = (float) humidities[k + 2 + (l + 2) * 10];
+                
+                float f2 = tempVal * 0.25F;
+                float f3 = -humidVal;
+                float f4 = tempVal * humidVal;
+                
                 //Biome biome = this.biomesForGeneration[k + 2 + (l + 2) * 10];
 
                 for (int k1 = -2; k1 <= 2; ++k1)
@@ -482,14 +384,15 @@ public class EvoChunkGenerator implements IChunkGenerator
                     {
                         Biome biome1 = this.biomesForGeneration[k + k1 + 2 + (l + l1 + 2) * 10];
                         int biomeid = Biome.getIdForBiome(biome1);
-                        float tempVal = (float) temps[k + k1 + 2 + (l + l1 + 2) * 10];
-                        float humidVal = (float) humidities[k + k1 + 2 + (l + l1 + 2) * 10];
+                        float tempVal1 = (float) temps[k + k1 + 2 + (l + l1 + 2) * 10];
+                        float humidVal1 = (float) humidities[k + k1 + 2 + (l + l1 + 2) * 10];
                         //float f5 = this.settings.biomeDepthOffSet + biome1.getBaseHeight() * this.settings.biomeDepthWeight;
                         //float f6 = this.settings.biomeScaleOffset + biome1.getHeightVariation() * this.settings.biomeScaleWeight;
                     	float f5 = 0.75F * this.settings.biomeDepthWeight;
                     	float f6 = 1.125F * this.settings.biomeScaleWeight;
 
-                        float f7 = (this.biomeWeights[k1 + 2 + (l1 + 2) * 5] - (humidVal * tempVal) )/ (f5 + 2.0F);
+                        float f7 = this.biomeWeights[k1 + 2 + (l1 + 2) * 5] / (f5 + 2.0F);
+                        
                         boolean isBeach = biomeid == Biome.getIdForBiome(Biomes.BEACH) |
                     			biomeid == Biome.getIdForBiome(Biomes.STONE_BEACH) |
                     			biomeid == Biome.getIdForBiome(Biomes.COLD_BEACH);
@@ -515,9 +418,7 @@ public class EvoChunkGenerator implements IChunkGenerator
                                 f7 /= 2.0F;
                             }
                     	}
-                    	//System.out.println("River chance: " + valueOfRivia);
-                    	//System.out.println("Clamped from: " + this.riverChance[k + k1 + 2 + (l + l1 + 2) * 10]);
-                    	//System.out.println("this.depthRegion: " + this.depthRegion[k1 + 2 + (l1 + 2) * 5]);
+                    	
                     	int riverIndex = (k + k1 + 2) + (l + l1 + 2) * 10;
                     	if (rivers[riverIndex] && !isOcean)
                     	{
@@ -606,117 +507,7 @@ public class EvoChunkGenerator implements IChunkGenerator
      */
     public void populate(int x, int z)
     {
-        BlockFalling.fallInstantly = true;
-        int i = x * 16;
-        int j = z * 16;
-        BlockPos blockpos = new BlockPos(i, 0, j);
-        Biome biome = this.world.getBiome(blockpos.add(16, 0, 16));
-        this.rand.setSeed(this.world.getSeed());
-        long k = this.rand.nextLong() / 2L * 2L + 1L;
-        long l = this.rand.nextLong() / 2L * 2L + 1L;
-        this.rand.setSeed((long)x * k + (long)z * l ^ this.world.getSeed());
-        boolean flag = false;
-        ChunkPos chunkpos = new ChunkPos(x, z);
-
-        net.minecraftforge.event.ForgeEventFactory.onChunkPopulate(true, this, this.world, this.rand, x, z, flag);
-
-        if (this.mapFeaturesEnabled)
-        {
-            if (this.settings.useMineShafts)
-            {
-                this.mineshaftGenerator.generateStructure(this.world, this.rand, chunkpos);
-            }
-
-            if (this.settings.useVillages)
-            {
-                flag = this.villageGenerator.generateStructure(this.world, this.rand, chunkpos);
-            }
-
-            if (this.settings.useStrongholds)
-            {
-                this.strongholdGenerator.generateStructure(this.world, this.rand, chunkpos);
-            }
-
-            if (this.settings.useTemples)
-            {
-                this.scatteredFeatureGenerator.generateStructure(this.world, this.rand, chunkpos);
-            }
-
-            if (this.settings.useMonuments)
-            {
-                this.oceanMonumentGenerator.generateStructure(this.world, this.rand, chunkpos);
-            }
-
-            if (this.settings.useMansions)
-            {
-                //this.woodlandMansionGenerator.generateStructure(this.world, this.rand, chunkpos);
-            }
-        }
-
-        if (biome != Biomes.DESERT && biome != Biomes.DESERT_HILLS && this.settings.useWaterLakes && !flag && this.rand.nextInt(this.settings.waterLakeChance) == 0)
-        if (net.minecraftforge.event.terraingen.TerrainGen.populate(this, this.world, this.rand, x, z, flag, net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType.LAKE))
-        {
-            int i1 = this.rand.nextInt(16) + 8;
-            int j1 = this.rand.nextInt(256);
-            int k1 = this.rand.nextInt(16) + 8;
-            (new WorldGenLakes(Blocks.WATER)).generate(this.world, this.rand, blockpos.add(i1, j1, k1));
-        }
-
-        if (!flag && this.rand.nextInt(this.settings.lavaLakeChance / 10) == 0 && this.settings.useLavaLakes)
-        if (net.minecraftforge.event.terraingen.TerrainGen.populate(this, this.world, this.rand, x, z, flag, net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType.LAVA))
-        {
-            int i2 = this.rand.nextInt(16) + 8;
-            int l2 = this.rand.nextInt(this.rand.nextInt(248) + 8);
-            int k3 = this.rand.nextInt(16) + 8;
-
-            if (l2 < this.world.getSeaLevel() || this.rand.nextInt(this.settings.lavaLakeChance / 8) == 0)
-            {
-                (new WorldGenLakes(Blocks.LAVA)).generate(this.world, this.rand, blockpos.add(i2, l2, k3));
-            }
-        }
-
-        if (this.settings.useDungeons)
-        if (net.minecraftforge.event.terraingen.TerrainGen.populate(this, this.world, this.rand, x, z, flag, net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType.DUNGEON))
-        {
-            for (int j2 = 0; j2 < this.settings.dungeonChance; ++j2)
-            {
-                int i3 = this.rand.nextInt(16) + 8;
-                int l3 = this.rand.nextInt(256);
-                int l1 = this.rand.nextInt(16) + 8;
-                (new WorldGenDungeons()).generate(this.world, this.rand, blockpos.add(i3, l3, l1));
-            }
-        }
-
-        biome.decorate(this.world, this.rand, new BlockPos(i, 0, j));
-        if (net.minecraftforge.event.terraingen.TerrainGen.populate(this, this.world, this.rand, x, z, flag, net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType.ANIMALS))
-        WorldEntitySpawner.performWorldGenSpawning(this.world, biome, i + 8, j + 8, 16, 16, this.rand);
-        blockpos = blockpos.add(8, 0, 8);
-
-        if (net.minecraftforge.event.terraingen.TerrainGen.populate(this, this.world, this.rand, x, z, flag, net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType.ICE))
-        {
-        for (int k2 = 0; k2 < 16; ++k2)
-        {
-            for (int j3 = 0; j3 < 16; ++j3)
-            {
-                BlockPos blockpos1 = this.world.getPrecipitationHeight(blockpos.add(k2, 0, j3));
-                BlockPos blockpos2 = blockpos1.down();
-
-                if (this.world.canBlockFreezeWater(blockpos2))
-                {
-                    this.world.setBlockState(blockpos2, Blocks.ICE.getDefaultState(), 2);
-                }
-
-                if (this.world.canSnowAt(blockpos1, true))
-                {
-                    this.world.setBlockState(blockpos1, Blocks.SNOW_LAYER.getDefaultState(), 2);
-                }
-            }
-        }
-        }//Forge: End ICE
-
-        net.minecraftforge.event.ForgeEventFactory.onChunkPopulate(false, this, this.world, this.rand, x, z, flag);
-
-        BlockFalling.fallInstantly = false;
+    	super.populate(x, z);
     }
 
     /**
@@ -724,99 +515,23 @@ public class EvoChunkGenerator implements IChunkGenerator
      */
     public boolean generateStructures(Chunk chunkIn, int x, int z)
     {
-        boolean flag = false;
-
-        if (this.settings.useMonuments && this.mapFeaturesEnabled && chunkIn.getInhabitedTime() < 3600L)
-        {
-            flag |= this.oceanMonumentGenerator.generateStructure(this.world, this.rand, new ChunkPos(x, z));
-        }
-
-        return flag;
+    	return super.generateStructures(chunkIn, x, z);
     }
 
     public List<Biome.SpawnListEntry> getPossibleCreatures(EnumCreatureType creatureType, BlockPos pos)
     {
-        Biome biome = this.world.getBiome(pos);
-
-        if (this.mapFeaturesEnabled)
-        {
-            if (creatureType == EnumCreatureType.MONSTER && this.scatteredFeatureGenerator.isSwampHut(pos))
-            {
-                return this.scatteredFeatureGenerator.getMonsters();
-            }
-
-            if (creatureType == EnumCreatureType.MONSTER && this.settings.useMonuments && this.oceanMonumentGenerator.isPositionInStructure(this.world, pos))
-            {
-                return this.oceanMonumentGenerator.getMonsters();
-            }
-        }
-
-        return biome.getSpawnableList(creatureType);
+    	return super.getPossibleCreatures(creatureType, pos);
     }
 
     public boolean isInsideStructure(World worldIn, String structureName, BlockPos pos)
     {
-        if (!this.mapFeaturesEnabled)
-        {
-            return false;
-        }
-        else if ("Stronghold".equals(structureName) && this.strongholdGenerator != null)
-        {
-            return this.strongholdGenerator.isInsideStructure(pos);
-        }
-        //else if ("Mansion".equals(structureName) && this.woodlandMansionGenerator != null)
-        //{
-            //return this.woodlandMansionGenerator.isInsideStructure(pos);
-        //}
-        else if ("Monument".equals(structureName) && this.oceanMonumentGenerator != null)
-        {
-            return this.oceanMonumentGenerator.isInsideStructure(pos);
-        }
-        else if ("Village".equals(structureName) && this.villageGenerator != null)
-        {
-            return this.villageGenerator.isInsideStructure(pos);
-        }
-        else if ("Mineshaft".equals(structureName) && this.mineshaftGenerator != null)
-        {
-            return this.mineshaftGenerator.isInsideStructure(pos);
-        }
-        else
-        {
-            return "Temple".equals(structureName) && this.scatteredFeatureGenerator != null ? this.scatteredFeatureGenerator.isInsideStructure(pos) : false;
-        }
+    	return super.isInsideStructure(worldIn, structureName, pos);
     }
 
     @Nullable
     public BlockPos getNearestStructurePos(World worldIn, String structureName, BlockPos position, boolean findUnexplored)
     {
-        if (!this.mapFeaturesEnabled)
-        {
-            return null;
-        }
-        else if ("Stronghold".equals(structureName) && this.strongholdGenerator != null)
-        {
-            return this.strongholdGenerator.getNearestStructurePos(worldIn, position, findUnexplored);
-        }
-        //else if ("Mansion".equals(structureName) && this.woodlandMansionGenerator != null)
-        //{
-            //return this.woodlandMansionGenerator.getNearestStructurePos(worldIn, position, findUnexplored);
-        //}
-        else if ("Monument".equals(structureName) && this.oceanMonumentGenerator != null)
-        {
-            return this.oceanMonumentGenerator.getNearestStructurePos(worldIn, position, findUnexplored);
-        }
-        else if ("Village".equals(structureName) && this.villageGenerator != null)
-        {
-            return this.villageGenerator.getNearestStructurePos(worldIn, position, findUnexplored);
-        }
-        else if ("Mineshaft".equals(structureName) && this.mineshaftGenerator != null)
-        {
-            return this.mineshaftGenerator.getNearestStructurePos(worldIn, position, findUnexplored);
-        }
-        else
-        {
-            return "Temple".equals(structureName) && this.scatteredFeatureGenerator != null ? this.scatteredFeatureGenerator.getNearestStructurePos(worldIn, position, findUnexplored) : null;
-        }
+    	return super.getNearestStructurePos(worldIn, structureName, position, findUnexplored);
     }
 
     /**
@@ -826,38 +541,7 @@ public class EvoChunkGenerator implements IChunkGenerator
      */
     public void recreateStructures(Chunk chunkIn, int x, int z)
     {
-        if (this.mapFeaturesEnabled)
-        {
-            if (this.settings.useMineShafts)
-            {
-                this.mineshaftGenerator.generate(this.world, x, z, (ChunkPrimer)null);
-            }
-
-            if (this.settings.useVillages)
-            {
-                this.villageGenerator.generate(this.world, x, z, (ChunkPrimer)null);
-            }
-
-            if (this.settings.useStrongholds)
-            {
-                this.strongholdGenerator.generate(this.world, x, z, (ChunkPrimer)null);
-            }
-
-            if (this.settings.useTemples)
-            {
-                this.scatteredFeatureGenerator.generate(this.world, x, z, (ChunkPrimer)null);
-            }
-
-            if (this.settings.useMonuments)
-            {
-                this.oceanMonumentGenerator.generate(this.world, x, z, (ChunkPrimer)null);
-            }
-
-            if (this.settings.useMansions)
-            {
-                //this.woodlandMansionGenerator.generate(this.world, x, z, (ChunkPrimer)null);
-            }
-        }
+    	super.recreateStructures(chunkIn, x, z);
     }
 
 }

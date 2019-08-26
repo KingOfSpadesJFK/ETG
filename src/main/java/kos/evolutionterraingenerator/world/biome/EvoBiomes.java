@@ -44,7 +44,8 @@ public abstract class EvoBiomes
 		ArrayList<EvoBiome> temp = new ArrayList<EvoBiome>();
 		temp.add(EvoBiomes.ICE_PLAINS);
 		temp.add(EvoBiomes.COLD_TAIGA);
-		temp.sort(null);
+		//To fix Plains and Taiga's sorting
+		//temp.sort(null);
 		SNOWY_BIOMES = toArray(temp);
 		temp.clear();
 		

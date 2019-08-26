@@ -10,23 +10,22 @@ public class NoiseGeneratorOpenSimplex extends NoiseGenerator
 {
     /** Collection of noise generation functions.  Output is combined to produce different octaves of noise. */
     private final OpenSimplexNoise[] generatorCollection;
+    private final Point3D[] vertexCollection;
     private final int octaves;
-    public double xCoord;
-    public double yCoord;
-    public double zCoord;
 
     public NoiseGeneratorOpenSimplex(Random seed, int octavesIn)
     {
         this.octaves = octavesIn;
         this.generatorCollection = new OpenSimplexNoise[octavesIn];
-        this.xCoord = seed.nextDouble() * 256.0D;
-        this.yCoord = seed.nextDouble() * 256.0D;
-        this.zCoord = seed.nextDouble() * 256.0D;
-
+        this.vertexCollection = new Point3D[octavesIn];
 
         for (int i = 0; i < octavesIn; ++i)
         {
             this.generatorCollection[i] = new OpenSimplexNoise(seed.nextLong());
+            this.vertexCollection[i] = new Point3D();
+            this.vertexCollection[i].x = seed.nextDouble() * 256.0D;
+            this.vertexCollection[i].y = seed.nextDouble() * 256.0D;
+            this.vertexCollection[i].z = seed.nextDouble() * 256.0D;
         }
     }
 
@@ -63,7 +62,7 @@ public class NoiseGeneratorOpenSimplex extends NoiseGenerator
             l = l % 16777216L;
             d0 = d0 + (double)k;
             d2 = d2 + (double)l;
-            populateNoiseArray(noiseArray, d0, d1, d2, xSize, ySize, zSize, xScale * d3, yScale * d3, zScale * d3, d3, generatorCollection[j]);
+            populateNoiseArray(noiseArray, d0, d1, d2, xSize, ySize, zSize, xScale * d3, yScale * d3, zScale * d3, d3, generatorCollection[j], vertexCollection[j]);
             d3 /= 2.0D;
         }
 
@@ -71,17 +70,17 @@ public class NoiseGeneratorOpenSimplex extends NoiseGenerator
     }
 
     private void populateNoiseArray(double[] noiseArray, double xOffset, double yOffset, double zOffset, int xSize, int ySize,
-			int zSize, double xScale, double yScale, double zScale, double noiseScale, OpenSimplexNoise noise)
+			int zSize, double xScale, double yScale, double zScale, double noiseScale, OpenSimplexNoise noise, Point3D vertex)
     {
     	if (ySize == 1)
     	{
         	int c = 0;
         	for (int i = 0; i < xSize; i++)
         	{
-            	double x = xOffset + (double)i * xScale + this.xCoord;
+            	double x = xOffset + (double)i * xScale + vertex.x;
         		for (int j = 0; j < zSize; j++)
         		{
-        			double z = zOffset + (double)j * zScale + this.zCoord;
+        			double z = zOffset + (double)j * zScale + vertex.z;
 
         			noiseArray[c] += noise.eval(x, z) * (1.0 / noiseScale);
         			c++;
@@ -93,13 +92,13 @@ public class NoiseGeneratorOpenSimplex extends NoiseGenerator
         	int c = 0;
         	for (int i = 0; i < xSize; i++)
         	{
-            	double x = xOffset + (double)i * xScale + this.xCoord;
+            	double x = xOffset + (double)i * xScale + vertex.x;
         		for (int j = 0; j < zSize; j++)
         		{
-            		double z = zOffset + (double)j * zScale + this.zCoord;
+            		double z = zOffset + (double)j * zScale + vertex.z;
         			for (int k = 0; k < ySize; k++)
         			{
-            			double y = yOffset + (double)k * yScale + this.yCoord;
+            			double y = yOffset + (double)k * yScale + vertex.y;
             			noiseArray[c] += noise.eval(x, y, z) * (1.0 / noiseScale);
             			c++;
         			}
@@ -114,5 +113,10 @@ public class NoiseGeneratorOpenSimplex extends NoiseGenerator
     public double[] generateNoiseOctaves(double[] noiseArray, int xOffset, int zOffset, int xSize, int zSize, double xScale, double zScale)
     {
         return this.generateNoiseOctaves(noiseArray, xOffset, 10, zOffset, xSize, 1, zSize, xScale, 1.0D, zScale);
+    }
+    
+    private class Point3D
+    {
+    	public double x, y, z;
     }
 }
