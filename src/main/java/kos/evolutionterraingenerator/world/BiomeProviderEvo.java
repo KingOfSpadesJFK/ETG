@@ -191,7 +191,7 @@ public class BiomeProviderEvo extends BiomeProvider
 
         try
         {
-    		temperatures = tempOctave.generateNoiseOctaves(temperatures, x, z, width, height, (0.006125 / biomeScale) * xScale, (0.006125 / biomeScale) * zScale);
+    		temperatures = tempOctave.generateNoiseOctaves(temperatures, x, z, width, height, (0.0045 / biomeScale) * xScale, (0.0045 / biomeScale) * zScale);
     		humidities = humidOctave.generateNoiseOctaves(humidities, x, z, width, height, (0.035 / biomeScale) * xScale, (0.035 / biomeScale) * zScale);
     		landmasses = landOctave.generateNoiseOctaves(landmasses, x, z, width, height, (0.0025 / oceanScale) * xScale,( 0.0025 / oceanScale) * zScale);
     		biomeChance = biomeChanceOctave.generateNoiseOctaves(biomeChance, x, z, width, height, 0.00075 * xScale, 0.00075 * zScale);
@@ -207,12 +207,12 @@ public class BiomeProviderEvo extends BiomeProvider
     	    		int l = width * height - 1;
     	    		int m = i * width + j;
     	    		int k = j * height + i;
-    				double var9 = noise[m] * 1.1 + 0.5;
-    				double temperatureVal = (temperatures[m] * 0.15 + 0.7) * 0.99 + var9 * 0.01;
-    				double humidityVal = (humidities[m] * 0.15 + 0.5) * 0.95 + var9 * 0.05;
-    				double landVal = (landmasses[m]  * 0.15 + 0.75) * 0.997 + var9 * 0.003;
-    				double chanceVal = (biomeChance[m]  * 0.15 + 0.5) * 0.9999 + var9 * 0.0001;
-    				double mushroomVal = (mushroomChance[m]  * 0.15 + 0.75) * 0.999 + var9 * 0.001;
+    				double noiseVal = noise[m] * 1.1 + 0.5;
+    				double temperatureVal = (temperatures[m] * 0.15 + 0.7) * 0.99 + noiseVal * 0.01;
+    				double humidityVal = (humidities[m] * 0.15 + 0.5) * 0.95 + noiseVal * 0.05;
+    				double landVal = (landmasses[m]  * 0.15 + 0.75) * 0.997 + noiseVal * 0.003;
+    				double chanceVal = (biomeChance[m]  * 0.15 + 0.5) * 0.9999 + noiseVal * 0.0001;
+    				double mushroomVal = (mushroomChance[m]  * 0.15 + 0.75) * 0.999 + noiseVal * 0.001;
     				//double valueOfRivia = (riverChance[m]  * 0.15 + 0.85) * 0.9999 + var9 * 0.0001;
     				temperatureVal = 1.0 - (1.0 - temperatureVal) * (1.0 - temperatureVal);
     				temperatureVal = MathHelper.clamp(temperatureVal, 0.0, 1.0);
@@ -236,7 +236,7 @@ public class BiomeProviderEvo extends BiomeProvider
     					}
     					else
     					{
-        					if (landmasses[m] > oceanThreshold - 0.05)
+        					if (landmasses[m] > oceanThreshold - 0.025)
         					{
         						if (!(biomes[k].equals(Biomes.MESA) | biomes[k].equals(Biomes.DESERT)))
         							biomes[k] = getBeach(temperatures[m], humidities[m]);
