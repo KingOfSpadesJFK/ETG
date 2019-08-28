@@ -10,11 +10,11 @@
   -Humidity and temperature based biome generation, allowing for smoother biome transitions
   -Bigger mountains that take advantage of the 256 height limit
   -Bigger beaches, now with a chance that it comes in gravel",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "mcversion": "1.12.2",
   "url": "",
   "updateUrl": "",
-  "authorList": ["Me"],
+  "authorList": ["12ofspades"],
   "credits": "Mojang for base terrain generators
   Kurt \"KdotJPG\" Spencer for Open Simplex Noise generator",
   "logoFile": "",
