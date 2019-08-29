@@ -38,11 +38,11 @@ public class EvoChunkGenerator extends ChunkGeneratorOverworld
     private NoiseGeneratorOpenSimplex minLimitPerlinNoise;
     private NoiseGeneratorOpenSimplex maxLimitPerlinNoise;
     private NoiseGeneratorOpenSimplex mainPerlinNoise;
-    private NoiseGeneratorPerlin surfaceNoise;
+    private NoiseGeneratorOpenSimplex surfaceNoise;
     public NoiseGeneratorOpenSimplex scaleNoise;
     public NoiseGeneratorOpenSimplex depthNoise;
-    public NoiseGeneratorOctaves gravelNoise;
-    public NoiseGeneratorOctaves swampNoise;
+    public NoiseGeneratorOpenSimplex gravelNoise;
+    public NoiseGeneratorOpenSimplex swampNoise;
     //public NoiseGeneratorOctaves riverNoise;
     //public NoiseGeneratorOctaves forestNoise;
     private final World world;
@@ -70,11 +70,11 @@ public class EvoChunkGenerator extends ChunkGeneratorOverworld
         this.minLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
         this.maxLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
         this.mainPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 8);
-        this.surfaceNoise = new NoiseGeneratorPerlin(this.rand, 4);
+        this.surfaceNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
         this.scaleNoise = new NoiseGeneratorOpenSimplex(this.rand, 10);
         this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
-        this.gravelNoise = new NoiseGeneratorOctaves(this.rand, 4);
-        this.swampNoise = new NoiseGeneratorOctaves(this.rand, 4);
+        this.gravelNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
+        this.swampNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
         this.heightMap = new double[825];
         this.biomeWeights = new float[25];
         this.biomeProvider = new BiomeProviderEvo(this.world);
@@ -171,8 +171,8 @@ public class EvoChunkGenerator extends ChunkGeneratorOverworld
     public void replaceBiomeBlocks(int x, int z, ChunkPrimer primer, Biome[] biomesIn)
     {
         this.biomesForGeneration = this.biomeProvider.getBiomes(this.biomesForGeneration, x * 16, z * 16, 16, 16);
-        this.gravelBeach = gravelNoise.generateNoiseOctaves(null, x * 16, z * 16, 16, 16, 0.0125, 0.0125, 0.5);
-        this.swamplandChance = swampNoise.generateNoiseOctaves(null, x * 16, 16, z * 16, 16, 1, 16, 0.00625, 1.0, 0.00625);
+        this.gravelBeach = gravelNoise.generateNoiseOctaves(null, x * 16, z * 16, 16, 16, 0.0125, 0.0125);
+        this.swamplandChance = swampNoise.generateNoiseOctaves(null, x * 16, z * 16, 16, 16, 0.00625, 0.00625);
         //System.out.println("This: " + this);
         //System.out.println("Primer: " + primer);
         //System.out.println("World: " + this.world);
@@ -188,8 +188,7 @@ public class EvoChunkGenerator extends ChunkGeneratorOverworld
             System.out.println("World: " + this.world);
             throw throwable;
         }
-        double d0 = 0.03125D;
-        this.depthBuffer = this.surfaceNoise.getRegion(this.depthBuffer, (double)(x * 16), (double)(z * 16), 16, 16, 0.0625D, 0.0625D, 1.0D);
+        this.depthBuffer = this.surfaceNoise.generateNoiseOctaves(this.depthBuffer,x * 16, z * 16, 16, 16, 0.0625D, 0.0625D);
 
         for (int i = 0; i < 16; ++i)
         {
