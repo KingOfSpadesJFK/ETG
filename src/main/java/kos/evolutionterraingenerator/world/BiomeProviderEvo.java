@@ -53,10 +53,10 @@ public class BiomeProviderEvo extends BiomeProvider
 	public boolean[] isRiver;
 	public double[] noise;
 	
-	private static final double SNOW_TEMP = 0.25;
-	private static final double COLD_TEMP = 0.625;
-	private static final double WARM_TEMP = 0.875;
-	private static final double HOT_TEMP = 0.975;
+	public static final double SNOW_TEMP = 0.125;
+	public static final double COLD_TEMP = 0.375;
+	public static final double WARM_TEMP = 0.625;
+	public static final double HOT_TEMP = 0.875;
 
     protected BiomeProviderEvo()
     {
@@ -208,13 +208,11 @@ public class BiomeProviderEvo extends BiomeProvider
     	    		int m = i * width + j;
     	    		int k = j * height + i;
     				double noiseVal = noise[m] * 1.1 + 0.5;
-    				double temperatureVal = (temperatures[m] * 0.15 + 0.7) * 0.99 + noiseVal * 0.01;
-    				double humidityVal = (humidities[m] * 0.15 + 0.5) * 0.95 + noiseVal * 0.05;
-    				double landVal = (landmasses[m]  * 0.15 + 0.75) * 0.997 + noiseVal * 0.003;
-    				double chanceVal = (biomeChance[m]  * 0.15 + 0.5) * 0.9999 + noiseVal * 0.0001;
-    				double mushroomVal = (mushroomChance[m]  * 0.15 + 0.75) * 0.999 + noiseVal * 0.001;
-    				//double valueOfRivia = (riverChance[m]  * 0.15 + 0.85) * 0.9999 + var9 * 0.0001;
-    				temperatureVal = 1.0 - (1.0 - temperatureVal) * (1.0 - temperatureVal);
+    				double temperatureVal = (temperatures[m] * 0.125 + WARM_TEMP) * 0.99 + noiseVal * 0.01;
+    				double humidityVal = (humidities[m] * 0.125 + 0.5) * 0.95 + noiseVal * 0.05;
+    				double landVal = (landmasses[m]  * 0.125 + 0.6) * 0.997 + noiseVal * 0.003;
+    				double chanceVal = (biomeChance[m]  * 0.25 + 0.5) * 0.9999 + noiseVal * 0.0001;
+    				double mushroomVal = (mushroomChance[m]  * 0.25 + 0.75) * 0.999 + noiseVal * 0.001;
     				temperatureVal = MathHelper.clamp(temperatureVal, 0.0, 1.0);
     				humidityVal = MathHelper.clamp(humidityVal, 0.0, 1.0);
     				landVal = MathHelper.clamp(landVal, 0.0, 1.0);
