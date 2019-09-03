@@ -11,6 +11,7 @@
 .project
 *.bat
 !gradlew.bat
+*.exe
 
 # Ignore Gradle GUI config
 gradle-app.setting
