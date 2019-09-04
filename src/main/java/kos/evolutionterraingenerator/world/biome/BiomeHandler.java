@@ -25,6 +25,10 @@ public class BiomeHandler
     public static final Biome TUNDRA = new BiomeHills(BiomeHills.Type.NORMAL, (new Biome.BiomeProperties("Tundra")).setTemperature(0.25F).setRainfall(0.3F)).setRegistryName(MODID, "tundra");
     @ObjectHolder("gravelly_tundra")
     public static final Biome GRAVELLY_TUNDRA = new BiomeHills(BiomeHills.Type.MUTATED, (new Biome.BiomeProperties("Gravelly Tundra")).setTemperature(0.25F).setRainfall(0.3F)).setRegistryName(MODID, "gravelly_tundra");
+    @ObjectHolder("gravel_beach")
+    public static final Biome GRAVEL_BEACH = new BiomeGravelBeach((new Biome.BiomeProperties("Gravel Beach")).setBaseHeight(0.0F).setHeightVariation(0.025F).setTemperature(0.8F).setRainfall(0.4F)).setRegistryName(MODID, "gravel_beach");
+    @ObjectHolder("snowy_gravel_beach")
+    public static final Biome SNOWY_GRAVEL_BEACH = new BiomeGravelBeach((new Biome.BiomeProperties("Snowy Gravel Beach")).setBaseHeight(0.0F).setHeightVariation(0.025F).setTemperature(0.05F).setRainfall(0.3F).setSnowEnabled()).setRegistryName(MODID, "snowy_gravel_beach");
 	
 	public BiomeHandler()
 	{
@@ -32,6 +36,8 @@ public class BiomeHandler
 		registerOverworldBiomes(MUTATED_SNOWY_REDWOOD_TAIGA, BiomeType.COOL, false, 5);
 		registerOverworldBiomes(TUNDRA, BiomeType.COOL, false, 5);
 		registerOverworldBiomes(GRAVELLY_TUNDRA, BiomeType.COOL, false, 5);
+		registerOverworldBiomes(GRAVEL_BEACH, BiomeType.WARM, false, 5);
+		registerOverworldBiomes(SNOWY_GRAVEL_BEACH, BiomeType.ICY, false, 5);
 	}
 
 	//For testing: /tp -733 71 -432 on Weird Fishes
@@ -61,5 +67,9 @@ public class BiomeHandler
 		System.out.println("TUNDRA: " + Biome.getIdForBiome(TUNDRA));
 		event.getRegistry().register(GRAVELLY_TUNDRA);
 		System.out.println("GRAVELLY_TUNDRA: " + Biome.getIdForBiome(GRAVELLY_TUNDRA));
+		event.getRegistry().register(GRAVEL_BEACH);
+		System.out.println("GRAVEL_BEACH: " + Biome.getIdForBiome(GRAVEL_BEACH));
+		event.getRegistry().register(SNOWY_GRAVEL_BEACH);
+		System.out.println("SNOWY_GRAVEL_BEACH: " + Biome.getIdForBiome(SNOWY_GRAVEL_BEACH));
 	}
 }

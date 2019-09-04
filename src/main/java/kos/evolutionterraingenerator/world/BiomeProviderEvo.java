@@ -6,6 +6,7 @@ import net.minecraft.world.biome.BiomeProvider;
 import com.google.common.collect.Lists;
 
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
+import kos.evolutionterraingenerator.world.biome.BiomeHandler;
 import kos.evolutionterraingenerator.world.biome.EvoBiome;
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 
@@ -41,6 +42,7 @@ public class BiomeProviderEvo extends BiomeProvider
     private NoiseGeneratorOpenSimplex tempOctave;
     private NoiseGeneratorOpenSimplex humidOctave;
     private NoiseGeneratorOpenSimplex landOctave;
+	private NoiseGeneratorOpenSimplex landOctave2;
     private NoiseGeneratorOpenSimplex biomeChanceOctave;
     private NoiseGeneratorOpenSimplex noiseOctave;
     private NoiseGeneratorOpenSimplex mushroomOctave;
@@ -48,6 +50,7 @@ public class BiomeProviderEvo extends BiomeProvider
 	public double[] temperatures;
 	public double[] humidities;
 	public double[] landmasses;
+	public double[] landmasses2;
 	public double[] biomeChance;
 	public double[] mushroomChance;
 	public boolean[] isRiver;
@@ -70,7 +73,8 @@ public class BiomeProviderEvo extends BiomeProvider
         Random rand = new Random(seed);
         tempOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
 		humidOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
-		landOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
+		landOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
+		landOctave2 = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
 		biomeChanceOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
 		noiseOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
 		mushroomOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
@@ -126,7 +130,7 @@ public class BiomeProviderEvo extends BiomeProvider
     
     public static final double biomeScale = 3.0;
     public static final double oceanScale = 1.0;
-    public static final double oceanThreshold = 0.4;
+    public static final double oceanThreshold = 0.75;
     public static final double riverScale = 0.5;
     public static final int riverSamples = 2;		//An unintended method to make rivers bigger
     
@@ -181,6 +185,8 @@ public class BiomeProviderEvo extends BiomeProvider
         	humidities = new double[width * height];
         if (landmasses == null || landmasses.length < width * height)
         	landmasses = new double[width * height];
+        if (landmasses2 == null || landmasses2.length < width * height)
+        	landmasses2 = new double[width * height];
         if (biomeChance == null || biomeChance.length < width * height)
         	biomeChance = new double[width * height];
         if (mushroomChance == null || mushroomChance.length < width * height)
@@ -193,8 +199,9 @@ public class BiomeProviderEvo extends BiomeProvider
         {
     		temperatures = tempOctave.generateNoiseOctaves(temperatures, x, z, width, height, (0.0045 / biomeScale) * xScale, (0.0045 / biomeScale) * zScale);
     		humidities = humidOctave.generateNoiseOctaves(humidities, x, z, width, height, (0.035 / biomeScale) * xScale, (0.035 / biomeScale) * zScale);
-    		landmasses = landOctave.generateNoiseOctaves(landmasses, x, z, width, height, (0.0025 / oceanScale) * xScale,( 0.0025 / oceanScale) * zScale);
-    		biomeChance = biomeChanceOctave.generateNoiseOctaves(biomeChance, x, z, width, height, 0.00075 * xScale, 0.00075 * zScale);
+    		landmasses = landOctave.generateNoiseOctaves(landmasses, x, z, width, height, (0.00125 / oceanScale) * xScale,( 0.00125 / oceanScale) * zScale);
+    		landmasses2 = landOctave2.generateNoiseOctaves(landmasses2, x, z, width, height, (0.00125 / oceanScale) * xScale,( 0.00125 / oceanScale) * zScale);
+    		biomeChance = biomeChanceOctave.generateNoiseOctaves(biomeChance, x, z, width, height, 0.0025 * xScale, 0.0025 * zScale);
     		mushroomChance = mushroomOctave.generateNoiseOctaves(mushroomChance, x, z, width, height, (0.00375 / biomeScale) * xScale, (0.00375 / biomeScale) * zScale);
     		//double[] riverChance = riverOctave.generateNoiseOctaves(null, x, z, width, height, 0.0125 * xScale, 0.0125 * zScale, 0.25);
     		noise = noiseOctave.generateNoiseOctaves(noise, x, z, width, height, 0.25 * xScale, 0.25 * zScale);
@@ -210,37 +217,40 @@ public class BiomeProviderEvo extends BiomeProvider
     				double noiseVal = noise[m] * 1.1 + 0.5;
     				double temperatureVal = (temperatures[m] * 0.125 + WARM_TEMP) * 0.99 + noiseVal * 0.01;
     				double humidityVal = (humidities[m] * 0.125 + 0.5) * 0.95 + noiseVal * 0.05;
-    				double landVal = (landmasses[m]  * 0.125 + 0.75) * 0.997 + noiseVal * 0.003;
+    				double landVal = (landmasses[m]  * 0.25 + 0.65) * 0.997 + noiseVal * 0.003;
+    				double landVal2 = (landmasses2[m]  * 0.25 + 0.75) * 0.997 + noiseVal * 0.003;
     				double chanceVal = (biomeChance[m]  * 0.25 + 0.5) * 0.9999 + noiseVal * 0.0001;
     				double mushroomVal = (mushroomChance[m]  * 0.25 + 0.5) * 0.999 + noiseVal * 0.001;
     				temperatureVal = MathHelper.clamp(temperatureVal, 0.0, 1.0);
     				humidityVal = MathHelper.clamp(humidityVal, 0.0, 1.0);
     				landVal = MathHelper.clamp(landVal, 0.0, 1.0);
+    				landVal2 = MathHelper.clamp(landVal2, 0.0, 1.0);
     				chanceVal = MathHelper.clamp(chanceVal, 0.0, 1.0);
     				mushroomVal = MathHelper.clamp(mushroomVal, 0.0, 1.0);
     				temperatures[m] = temperatureVal;
     				humidities[m] = humidityVal;
     				landmasses[m] = landVal;
+    				landmasses2[m] = landVal2;
     				mushroomChance[m] = mushroomVal;
 					biomes[k] = getLandBiome(temperatures[m], humidities[m], chanceVal);
-    				if (findOceans && landmasses[m] < oceanThreshold)
+    				if (findOceans && landmasses[m] < oceanThreshold && landmasses2[m] < oceanThreshold)
     				{
-    					if (mushroomChance[m] > 0.999125)
+    					if (mushroomChance[m] > 0.99975)
     					{
-    						if (mushroomChance[m] > 0.99975)
+    						if (mushroomChance[m] >= 1.0)
     							biomes[k] = Biomes.MUSHROOM_ISLAND;
     						else
         						biomes[k] = getOcean(temperatures[m], humidities[m], false);
     					}
     					else
     					{
-        					if (landmasses[m] > oceanThreshold - 0.025)
+        					if (landmasses[m] > oceanThreshold - 0.025 || landmasses2[m] > oceanThreshold - 0.025)
         					{
         						if (!(biomes[k].equals(Biomes.MESA) | biomes[k].equals(Biomes.DESERT)))
-        							biomes[k] = getBeach(temperatures[m], humidities[m]);
+        							biomes[k] = getBeach(temperatures[m], humidities[m], landmasses[m] <= oceanThreshold - 0.025);
         					}
         					else
-        						biomes[k] = getOcean(temperatures[m], humidities[m], landmasses[m] < oceanThreshold * 0.25);
+        						biomes[k] = getOcean(temperatures[m], humidities[m], landmasses[m] < oceanThreshold * 0.75 && landmasses2[m] < oceanThreshold * 0.75);
     					}
     				}
     				//isRiver[k] = valueOfRivia >= 0.25F && valueOfRivia <= 0.3F && !biomes[k].getBiomeName().contains("Ocean");
@@ -291,12 +301,16 @@ public class BiomeProviderEvo extends BiomeProvider
     }
 
 
-    private Biome getBeach(double temp, double humid)
+    private Biome getBeach(double temp, double humid, boolean isGravel)
     {
     	if (temp < SNOW_TEMP)
+    	{
+    		if (isGravel)
+    			return BiomeHandler.SNOWY_GRAVEL_BEACH;
     		return Biomes.COLD_BEACH;
-    	if (Biome.getIdForBiome(getLandBiome(temp, humid, 0.0)) == Biome.getIdForBiome(Biomes.EXTREME_HILLS))
-    		return Biomes.STONE_BEACH;
+    	}
+    	if (isGravel)
+    		return BiomeHandler.GRAVEL_BEACH;
     	return Biomes.BEACH;
     }
 

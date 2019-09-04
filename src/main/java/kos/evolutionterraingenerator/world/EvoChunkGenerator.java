@@ -42,20 +42,14 @@ public class EvoChunkGenerator extends ChunkGeneratorOverworld
     private NoiseGeneratorOpenSimplex surfaceNoise;
     public NoiseGeneratorOpenSimplex scaleNoise;
     public NoiseGeneratorOpenSimplex depthNoise;
-    public NoiseGeneratorOpenSimplex gravelNoise;
     public NoiseGeneratorOpenSimplex swampNoise;
-    public NoiseGeneratorOpenSimplex lakeBeachNoise;
-    public NoiseGeneratorOpenSimplex gravelLakeNoise;
     //public NoiseGeneratorOctaves riverNoise;
     //public NoiseGeneratorOctaves forestNoise;
     private final World world;
     private final boolean mapFeaturesEnabled;
     private final double[] heightMap;
     private final float[] biomeWeights;
-    private double[] gravelBeach;
     private double[] swamplandChance;
-    private double[] lakeBeachChance;
-    private double[] gravelLakeChance;
     private ChunkGeneratorSettings settings;
     private IBlockState oceanBlock = Blocks.WATER.getDefaultState();
     private double[] depthBuffer = new double[256];
@@ -78,10 +72,7 @@ public class EvoChunkGenerator extends ChunkGeneratorOverworld
         this.surfaceNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
         this.scaleNoise = new NoiseGeneratorOpenSimplex(this.rand, 10);
         this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
-        this.gravelNoise = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
         this.swampNoise = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
-        this.lakeBeachNoise = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
-        this.gravelLakeNoise = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
         this.heightMap = new double[825];
         this.biomeWeights = new float[25];
         this.biomeProvider = new BiomeProviderEvo(this.world);
@@ -178,10 +169,7 @@ public class EvoChunkGenerator extends ChunkGeneratorOverworld
     public void replaceBiomeBlocks(int x, int z, ChunkPrimer primer, Biome[] biomesIn)
     {
         this.biomesForGeneration = this.biomeProvider.getBiomes(this.biomesForGeneration, x * 16, z * 16, 16, 16);
-        this.gravelBeach = gravelNoise.generateNoiseOctaves(null, x * 16, z * 16, 16, 16, 0.025, 0.025);
         this.swamplandChance = swampNoise.generateNoiseOctaves(null, x * 16, z * 16, 16, 16, 0.0125, 0.0125);
-        this.lakeBeachChance = lakeBeachNoise.generateNoiseOctaves(null, x * 16, z * 16, 16, 16, 0.075, 0.075);
-        this.gravelLakeChance = gravelLakeNoise.generateNoiseOctaves(null, x * 16, z * 16, 16, 16, 0.0875, 0.0875);
         //System.out.println("This: " + this);
         //System.out.println("Primer: " + primer);
         //System.out.println("World: " + this.world);
@@ -207,175 +195,60 @@ public class EvoChunkGenerator extends ChunkGeneratorOverworld
             	double noiseVal = this.depthBuffer[i + j * 16];
             	int biomeid = Biome.getIdForBiome(biome);
                 boolean isBeach = biomeid == Biome.getIdForBiome(Biomes.BEACH) |
+            			biomeid == Biome.getIdForBiome(BiomeHandler.GRAVEL_BEACH) |
             			biomeid == Biome.getIdForBiome(Biomes.STONE_BEACH) |
-            			biomeid == Biome.getIdForBiome(Biomes.COLD_BEACH);
+            			biomeid == Biome.getIdForBiome(Biomes.COLD_BEACH) |
+            			biomeid == Biome.getIdForBiome(BiomeHandler.SNOWY_GRAVEL_BEACH);
                 boolean isOcean = biomeid == Biome.getIdForBiome(Biomes.OCEAN) |
             			biomeid == Biome.getIdForBiome(Biomes.DEEP_OCEAN);
-                if (!isOcean)
-                	generateBiomeTerrain(biomesIn[j + i * 16], this.rand, primer, x * 16 + i, z * 16 + j, noiseVal);
-                else
-            		biome.genTerrainBlocks(this.world, rand, primer, x * 16 + i, z * 16 + j, noiseVal);
+                if (!isOcean && !isBeach)
+                	setBiome(biome, this.rand, primer, x * 16 + i, z * 16 + j, noiseVal);
+            	biome.genTerrainBlocks(this.world, rand, primer, x * 16 + i, z * 16 + j, noiseVal * 0.5);
             }
         }
     }
     
-    /* Taken from net.minecraft.world.biome.Biome */
-    public final void generateBiomeTerrain(Biome biome, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal)
+    //Sets biomes according to the conditions of the land
+    private void setBiome(Biome biome, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal)
     {
-        int i = this.settings.seaLevel;
-        IBlockState iblockstate = biome.topBlock;
-        IBlockState iblockstate1 = biome.fillerBlock;
-        int j = -1;
-        int k = (int)((noiseVal * 0.5D) / 2.5D + 3.0D + rand.nextDouble() * 0.25D);
-        int l = x & 15;
-        int i1 = z & 15;
-        double grav = gravelBeach[i1 * 16 + l] + rand.nextDouble() * 0.5D;
-        grav = MathHelper.clamp(grav, 0.0, 1.0);
-        double swamp = swamplandChance[i1 * 16 + l] * 0.5 + 0.5;
+        int seaLevel = this.settings.seaLevel;
+        int xInChunk = x & 15;
+        int zInChunk = z & 15;
+        double swamp = swamplandChance[zInChunk * 16 + xInChunk] * 0.5 + 0.5;
         swamp = MathHelper.clamp(swamp, 0.0, 1.0);
-        double lakeBeach = lakeBeachChance[i1 * 16 + l] / 3.0 + rand.nextDouble() * 0.5D;
-        double gravelLake = gravelLakeChance[i1 * 16 + l] / 2.5 + 1.0 + rand.nextDouble() * 0.25D;
-        BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
+        double temperature = this.biomeProvider.temperatures[zInChunk * 16 + xInChunk];
+        double humidity = this.biomeProvider.humidities[zInChunk * 16 + xInChunk];
+
         int biomeid = Biome.getIdForBiome(biome);
-        boolean isBeach = biomeid == Biome.getIdForBiome(Biomes.BEACH) |
-    			biomeid == Biome.getIdForBiome(Biomes.STONE_BEACH) |
-    			biomeid == Biome.getIdForBiome(Biomes.COLD_BEACH);
-        double temperature = this.biomeProvider.temperatures[i1 * 16 + l];
-        double humidity = this.biomeProvider.humidities[i1 * 16 + l];
-
-        for (int j1 = 255; j1 >= 0; --j1)
+        
+        for (int i = 255; i >= 0; i--)
         {
-            if (j1 <= rand.nextInt(5))
+            IBlockState block = chunkPrimerIn.getBlockState(zInChunk, i, xInChunk);
+        	if (block.getBlock() == Blocks.STONE)
             {
-                chunkPrimerIn.setBlockState(i1, j1, l, BEDROCK);
-            }
-            else
-            {
-                IBlockState iblockstate2 = chunkPrimerIn.getBlockState(i1, j1, l);
-
-                if (iblockstate2.getMaterial() == Material.AIR)
-                {
-                    j = -1;
-                }
-                else if (iblockstate2.getBlock() == Blocks.STONE)
-                {
-                    if (j == -1)
-                    {
-                        if (k <= 0)
-                        {
-                            iblockstate = AIR;
-                            iblockstate1 = STONE;
-                        }
-                    	if (!isBeach && temperature > 0.5 && humidity > 0.675 && swamp < 0.375 && j1 <= i + 3)
-                    	{
-                    		this.biomesForGeneration[l * 16 + i1] = Biomes.SWAMPLAND;
-                    		biome = Biomes.SWAMPLAND;
-                    		biomeid = Biome.getIdForBiome(Biomes.SWAMPLAND);
-                            double randVal = rand.nextDouble() * 0.25D;
-                            if (swamp + randVal > 0.175 && swamp + randVal < 0.275 && j1 == i - 1)
-                            {
-                                iblockstate = AIR;
-                                iblockstate1 = biome.fillerBlock;
-                            }
-                    	}
-                    	else if (biomeid == Biome.getIdForBiome(Biomes.MESA))
-                    	{
-                    		if ( j1 <= i + 50)
-                    		{
-                    			this.biomesForGeneration[i1 * 16 + l] = Biomes.MESA_ROCK;
-                        		biome = Biomes.MESA_ROCK;
-                    		}
-                    		else
-                    		{
-                    			this.biomesForGeneration[i1 * 16 + l] = Biomes.MESA;
-                        		biome = Biomes.MESA;
-                    		}
-                    		biome.genTerrainBlocks(this.world, rand, chunkPrimerIn, x, z, noiseVal);
-                    		return;
-                    	}
-                    	/*
-                        if (j1 >= i - 4 && j1 <= i + 1)
-                        {
-                        	if (biomeid != Biome.getIdForBiome(Biomes.SWAMPLAND) & !isBeach & biomeid != Biome.getIdForBiome(Biomes.DESERT))
-                        	{
-                        		if (gravelLake < -0.0)
-                        		{
-                                    iblockstate = GRAVEL;
-                                    iblockstate1 = GRAVEL;
-                                    if (lakeBeach < 0.0)
-                            		{
-                                        iblockstate = Blocks.SAND.getDefaultState();
-                                        iblockstate1 = Blocks.SAND.getDefaultState();
-                            		}
-                        		}
-                        		else if (lakeBeach < 0.0)
-                        		{
-                                    iblockstate = Blocks.SAND.getDefaultState();
-                                    iblockstate1 = Blocks.SAND.getDefaultState();
-                        		}
-                        		else if (biomeid == Biome.getIdForBiome(Biomes.REDWOOD_TAIGA) || biomeid == Biome.getIdForBiome(Biomes.MUTATED_REDWOOD_TAIGA) || biomeid == Biome.getIdForBiome(Biomes.EXTREME_HILLS) || biomeid == Biome.getIdForBiome(Biomes.MUTATED_EXTREME_HILLS) || biomeid == Biome.getIdForBiome(Biomes.MUTATED_SAVANNA))
-                        		{
-                            		biome.genTerrainBlocks(this.world, rand, chunkPrimerIn, x, z, noiseVal);
-                            		return;
-                        		}
-                        	}
-                        }
-                        */
-                        if (biomeid == Biome.getIdForBiome(Biomes.REDWOOD_TAIGA) || biomeid == Biome.getIdForBiome(Biomes.MUTATED_REDWOOD_TAIGA) || biomeid == Biome.getIdForBiome(BiomeHandler.SNOWY_REDWOOD_TAIGA) || biomeid == Biome.getIdForBiome(BiomeHandler.MUTATED_SNOWY_REDWOOD_TAIGA)|| biomeid == Biome.getIdForBiome(BiomeHandler.TUNDRA) || biomeid == Biome.getIdForBiome(BiomeHandler.GRAVELLY_TUNDRA) || biomeid == Biome.getIdForBiome(Biomes.MUTATED_SAVANNA))
-                		{
-                    		biome.genTerrainBlocks(this.world, rand, chunkPrimerIn, x, z, noiseVal);
-                    		return;
-                		}
-                        if (isBeach)
-                        {
-                        	if (grav < 0.275)
-                        	{
-                                iblockstate = GRAVEL;
-                                iblockstate1 = GRAVEL;
-                        	}
-                        }
-
-                        if (j1 < i && (iblockstate == null || iblockstate.getMaterial() == Material.AIR))
-                        {
-                            if (biome.getTemperature(blockpos$mutableblockpos.setPos(x, j1, z)) < 0.15F)
-                            {
-                                iblockstate = ICE;
-                            }
-                            else
-                            {
-                                iblockstate = WATER;
-                            }
-                        }
-
-                        j = k;
-
-                        if (j1 >= i - 1)
-                        {
-                            chunkPrimerIn.setBlockState(i1, j1, l, iblockstate);
-                        }
-                        else if (j1 < i - 7 - k)
-                        {
-                            iblockstate = AIR;
-                            iblockstate1 = STONE;
-                            chunkPrimerIn.setBlockState(i1, j1, l, GRAVEL);
-                        }
-                        else
-                        {
-                            chunkPrimerIn.setBlockState(i1, j1, l, iblockstate1);
-                        }
-                    }
-                    else if (j > 0)
-                    {
-                        --j;
-                        chunkPrimerIn.setBlockState(i1, j1, l, iblockstate1);
-
-                        if (j == 0 && iblockstate1.getBlock() == Blocks.SAND && k > 1)
-                        {
-                            j = rand.nextInt(4) + Math.max(0, j1 - 63);
-                            iblockstate1 = iblockstate1.getValue(BlockSand.VARIANT) == BlockSand.EnumType.RED_SAND ? RED_SANDSTONE : SANDSTONE;
-                        }
-                    }
-                }
+            	if (temperature > 0.5 && humidity > 0.675 && swamp < 0.375 && i <= seaLevel + 3)
+            	{
+            		this.biomesForGeneration[xInChunk * 16 + zInChunk] = Biomes.SWAMPLAND;
+            		biome = Biomes.SWAMPLAND;
+            		biomeid = Biome.getIdForBiome(Biomes.SWAMPLAND);
+                    double randVal = rand.nextDouble() * 0.25D;
+                    if (swamp + randVal > 0.175 && swamp + randVal < 0.275 && i == seaLevel - 1)
+                    	chunkPrimerIn.setBlockState(zInChunk, i, xInChunk, WATER);
+            	}
+            	else if (biomeid == Biome.getIdForBiome(Biomes.MESA))
+            	{
+            		if (i <= seaLevel + 50)
+            		{
+            			this.biomesForGeneration[xInChunk * 16 + zInChunk] = Biomes.MESA_ROCK;
+                		biome = Biomes.MESA_ROCK;
+            		}
+            		else
+            		{
+            			this.biomesForGeneration[zInChunk + xInChunk * 16] = Biomes.MESA;
+                		biome = Biomes.MESA;
+            		}
+            	}
+        		return;
             }
         }
     }
@@ -439,8 +312,10 @@ public class EvoChunkGenerator extends ChunkGeneratorOverworld
                         float f7 = this.biomeWeights[k1 + 2 + (l1 + 2) * 5] / (f5 + 2.0F);
                         
                         boolean isBeach = biomeid == Biome.getIdForBiome(Biomes.BEACH) |
+                    			biomeid == Biome.getIdForBiome(BiomeHandler.GRAVEL_BEACH) |
                     			biomeid == Biome.getIdForBiome(Biomes.STONE_BEACH) |
-                    			biomeid == Biome.getIdForBiome(Biomes.COLD_BEACH);
+                    			biomeid == Biome.getIdForBiome(Biomes.COLD_BEACH) |
+                    			biomeid == Biome.getIdForBiome(BiomeHandler.SNOWY_GRAVEL_BEACH);
                         boolean isOcean = biomeid == Biome.getIdForBiome(Biomes.OCEAN) |
                     			biomeid == Biome.getIdForBiome(Biomes.DEEP_OCEAN);
                         
