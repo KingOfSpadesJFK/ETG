@@ -7,6 +7,8 @@ import net.minecraft.world.biome.BiomeTaiga;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.BiomeManager.BiomeEntry;
 import net.minecraftforge.common.BiomeManager.BiomeType;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
@@ -40,7 +42,6 @@ public class BiomeHandler
 		registerOverworldBiomes(SNOWY_GRAVEL_BEACH, BiomeType.ICY, false, 5);
 	}
 
-	//For testing: /tp -733 71 -432 on Weird Fishes
 	private static void registerOverworldBiomes(Biome biome, BiomeType type, boolean isSpawnBiome, int weight) 
 	{
 		BiomeManager.addBiome(type, new BiomeEntry(biome, weight));
@@ -71,5 +72,15 @@ public class BiomeHandler
 		System.out.println("GRAVEL_BEACH: " + Biome.getIdForBiome(GRAVEL_BEACH));
 		event.getRegistry().register(SNOWY_GRAVEL_BEACH);
 		System.out.println("SNOWY_GRAVEL_BEACH: " + Biome.getIdForBiome(SNOWY_GRAVEL_BEACH));
+	}
+	
+	public static void setBiomeTypes()
+	{
+		BiomeDictionary.addTypes(SNOWY_REDWOOD_TAIGA, Type.SNOWY, Type.CONIFEROUS);
+		BiomeDictionary.addTypes(MUTATED_SNOWY_REDWOOD_TAIGA, Type.SNOWY, Type.CONIFEROUS);
+		BiomeDictionary.addTypes(TUNDRA, Type.COLD, Type.PLAINS);
+		BiomeDictionary.addTypes(GRAVELLY_TUNDRA, Type.COLD, Type.PLAINS);
+		BiomeDictionary.addTypes(GRAVEL_BEACH, Type.BEACH);
+		BiomeDictionary.addTypes(SNOWY_GRAVEL_BEACH, Type.BEACH, Type.SNOWY);
 	}
 }

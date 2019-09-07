@@ -36,6 +36,7 @@ public class EvolutionTerrainGenerator {
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event)
 	{
+		BiomeHandler.setBiomeTypes();
 	}
 
 	@Mod.EventHandler
