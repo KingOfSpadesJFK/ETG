@@ -27,6 +27,17 @@ public abstract class EvoBiomes
 	private static final Biome[] DesertArr = {Biomes.DESERT, Biomes.DESERT, Biomes.MESA};
 	private static final Biome[] SnowyRedwoodArr = {BiomeHandler.SNOWY_REDWOOD_TAIGA, BiomeHandler.MUTATED_SNOWY_REDWOOD_TAIGA};
 	private static final Biome[] ExtremeArr = {Biomes.EXTREME_HILLS, Biomes.MUTATED_EXTREME_HILLS};
+	private static final Biome[] RainforestArr =
+		{	BiomeHandler.RAINFOREST, Biomes.ROOFED_FOREST, 
+			BiomeHandler.RAINFOREST, Biomes.ROOFED_FOREST, 
+			BiomeHandler.RAINFOREST, Biomes.ROOFED_FOREST, 
+			BiomeHandler.RAINFOREST, Biomes.ROOFED_FOREST	};
+	private static final Biome[] SavannaPlainsArr =
+		{	Biomes.SAVANNA, Biomes.PLAINS, 
+			Biomes.SAVANNA, Biomes.PLAINS, 
+			Biomes.SAVANNA, Biomes.PLAINS, 
+			Biomes.SAVANNA, Biomes.PLAINS,
+			Biomes.MUTATED_SAVANNA, Biomes.MUTATED_PLAINS};
 	
 	public static final EvoBiome PLAINS = new EvoBiome(Biomes.PLAINS, PlainsArr);
 	public static final EvoBiome FOREST = new EvoBiome(Biomes.FOREST, ForestArr);
@@ -43,6 +54,8 @@ public abstract class EvoBiomes
 	public static final EvoBiome DESERT = new EvoBiome(Biomes.DESERT, DesertArr);
 	public static final EvoBiome SONWY_REDWOOD_TAIGA = new EvoBiome(BiomeHandler.SNOWY_REDWOOD_TAIGA, SnowyRedwoodArr);
 	public static final EvoBiome TUNDRA = new EvoBiome(BiomeHandler.TUNDRA, TundraArr);
+	public static final EvoBiome RAINFOREST = new EvoBiome(BiomeHandler.RAINFOREST, RainforestArr);
+	public static final EvoBiome SAVANNA_PLAINS = new EvoBiome(Biomes.PLAINS, SavannaPlainsArr);
 
 	public static EvoBiome[] SNOWY_BIOMES = {EvoBiomes.ICE_PLAINS, EvoBiomes.COLD_TAIGA};
 	public static EvoBiome[] COLD_BIOMES = {EvoBiomes.TUNDRA, EvoBiomes.TUNDRA, EvoBiomes.TAIGA, EvoBiomes.TAIGA, EvoBiomes.REDWOOD_TAIGA};
@@ -76,19 +89,17 @@ public abstract class EvoBiomes
 		WARM_BIOMES = toArray(temp);
 		temp.clear();
 		
-		temp.add(SAVANNA);
-		temp.add(PLAINS);
+		temp.add(SAVANNA_PLAINS);
 		temp.add(FOREST);
-		temp.add(ROOFED_FOREST);
+		temp.add(RAINFOREST);
 		temp.add(JUNGLE);
 		temp.sort(null);
 		HOT_BIOMES = toArray(temp);
 		temp.clear();
 
 		temp.add(DESERT);
-		temp.add(DESERT);
 		temp.add(SAVANNA);
-		temp.add(PLAINS);
+		temp.add(RAINFOREST);
 		temp.add(JUNGLE);
 		temp.sort(null);
 		ARID_BIOMES = toArray(temp);
@@ -99,14 +110,11 @@ public abstract class EvoBiomes
 	{
 		EvoBiome[] arr = new EvoBiome[list.size()];
 		int i = 0;
-		System.out.print("[");
 		for (EvoBiome b : list)
 		{
 			arr[i] = b;
-			//System.out.print(b.getDefaultBiome().getBiomeName() + " (" + b.getDefaultBiome().getRainfall() + "), ");
 			i++;
 		}
-		System.out.print("]");
 		System.out.println();
 		return arr;
 	}

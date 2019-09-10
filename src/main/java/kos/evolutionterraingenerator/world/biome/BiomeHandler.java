@@ -31,15 +31,18 @@ public class BiomeHandler
     public static final Biome GRAVEL_BEACH = new BiomeGravelBeach((new Biome.BiomeProperties("Gravel Beach")).setBaseHeight(0.0F).setHeightVariation(0.025F).setTemperature(0.8F).setRainfall(0.4F)).setRegistryName(MODID, "gravel_beach");
     @ObjectHolder("snowy_gravel_beach")
     public static final Biome SNOWY_GRAVEL_BEACH = new BiomeGravelBeach((new Biome.BiomeProperties("Snowy Gravel Beach")).setBaseHeight(0.0F).setHeightVariation(0.025F).setTemperature(0.05F).setRainfall(0.3F).setSnowEnabled()).setRegistryName(MODID, "snowy_gravel_beach");
+    @ObjectHolder("rainforest")
+    public static final Biome RAINFOREST = new BiomeRainforest((new Biome.BiomeProperties("Rainforest")).setTemperature(0.8F).setRainfall(0.9F)).setRegistryName(MODID, "rainforest");
 	
 	public BiomeHandler()
 	{
 		registerOverworldBiomes(SNOWY_REDWOOD_TAIGA, BiomeType.ICY, false, 5);
 		registerOverworldBiomes(MUTATED_SNOWY_REDWOOD_TAIGA, BiomeType.COOL, false, 5);
-		registerOverworldBiomes(TUNDRA, BiomeType.COOL, false, 5);
+		registerOverworldBiomes(TUNDRA, BiomeType.COOL, true, 5);
 		registerOverworldBiomes(GRAVELLY_TUNDRA, BiomeType.COOL, false, 5);
 		registerOverworldBiomes(GRAVEL_BEACH, BiomeType.WARM, false, 5);
 		registerOverworldBiomes(SNOWY_GRAVEL_BEACH, BiomeType.ICY, false, 5);
+		registerOverworldBiomes(RAINFOREST, BiomeType.WARM, false, 5);
 	}
 
 	private static void registerOverworldBiomes(Biome biome, BiomeType type, boolean isSpawnBiome, int weight) 
@@ -72,6 +75,8 @@ public class BiomeHandler
 		System.out.println("GRAVEL_BEACH: " + Biome.getIdForBiome(GRAVEL_BEACH));
 		event.getRegistry().register(SNOWY_GRAVEL_BEACH);
 		System.out.println("SNOWY_GRAVEL_BEACH: " + Biome.getIdForBiome(SNOWY_GRAVEL_BEACH));
+		event.getRegistry().register(RAINFOREST);
+		System.out.println("RAINFOREST: " + Biome.getIdForBiome(RAINFOREST));
 	}
 	
 	public static void setBiomeTypes()
@@ -82,5 +87,6 @@ public class BiomeHandler
 		BiomeDictionary.addTypes(GRAVELLY_TUNDRA, Type.COLD, Type.PLAINS);
 		BiomeDictionary.addTypes(GRAVEL_BEACH, Type.BEACH);
 		BiomeDictionary.addTypes(SNOWY_GRAVEL_BEACH, Type.BEACH, Type.SNOWY);
+		BiomeDictionary.addTypes(RAINFOREST, Type.LUSH, Type.FOREST);
 	}
 }

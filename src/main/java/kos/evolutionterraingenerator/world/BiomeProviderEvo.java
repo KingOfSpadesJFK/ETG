@@ -219,7 +219,7 @@ public class BiomeProviderEvo extends BiomeProvider
     				double humidityVal = (humidities[m] * 0.125 + 0.5) * 0.95 + noiseVal * 0.05;
     				double landVal = (landmasses[m]  * 0.25 + 0.65) * 0.997 + noiseVal * 0.003;
     				double landVal2 = (landmasses2[m]  * 0.25 + 0.75) * 0.997 + noiseVal * 0.003;
-    				double chanceVal = (biomeChance[m]  * 0.25 + 0.5) * 0.9999 + noiseVal * 0.0001;
+    				double chanceVal = (biomeChance[m]  * 0.25 + 0.5) * 0.99 + noiseVal * 0.01;
     				double mushroomVal = (mushroomChance[m]  * 0.25 + 0.5) * 0.999 + noiseVal * 0.001;
     				temperatureVal = MathHelper.clamp(temperatureVal, 0.0, 1.0);
     				humidityVal = MathHelper.clamp(humidityVal, 0.0, 1.0);
