@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
 import kos.evolutionterraingenerator.world.biome.BiomeHandler;
+import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockSand;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -14,6 +15,7 @@ import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -23,6 +25,7 @@ import net.minecraft.world.gen.ChunkGeneratorOverworld;
 import net.minecraft.world.gen.ChunkGeneratorSettings;
 import net.minecraft.world.gen.NoiseGeneratorOctaves;
 import net.minecraft.world.gen.NoiseGeneratorPerlin;
+import net.minecraft.world.gen.feature.WorldGenLakes;
 
 public class EvoChunkGenerator extends ChunkGeneratorOverworld
 {
@@ -428,6 +431,26 @@ public class EvoChunkGenerator extends ChunkGeneratorOverworld
     public void populate(int x, int z)
     {
     	super.populate(x, z);
+
+        BlockFalling.fallInstantly = true;
+        int i = x * 16;
+        int j = z * 16;
+        BlockPos blockpos = new BlockPos(i, 0, j);
+        Biome biome = this.world.getBiome(blockpos.add(16, 0, 16));
+        this.rand.setSeed(this.world.getSeed());
+        long k = this.rand.nextLong() / 2L * 2L + 1L;
+        long l = this.rand.nextLong() / 2L * 2L + 1L;
+        this.rand.setSeed((long)x * k + (long)z * l ^ this.world.getSeed());
+        boolean flag = false;
+        
+        if (biome == BiomeHandler.RAINFOREST && this.settings.useWaterLakes && !flag && this.rand.nextInt(this.settings.waterLakeChance / 2) == 0)
+            if (net.minecraftforge.event.terraingen.TerrainGen.populate(this, this.world, this.rand, x, z, flag, net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType.LAKE))
+            {
+                int i1 = this.rand.nextInt(16) + 8;
+                int j1 = this.rand.nextInt(256);
+                int k1 = this.rand.nextInt(16) + 8;
+                (new WorldGenLakes(Blocks.WATER)).generate(this.world, this.rand, blockpos.add(i1, j1, k1));
+            }
     }
 
     /**

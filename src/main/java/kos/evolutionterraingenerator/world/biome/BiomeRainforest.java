@@ -6,6 +6,7 @@ import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeForest;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 
 public class BiomeRainforest extends Biome 
@@ -21,20 +22,47 @@ public class BiomeRainforest extends Biome
 
     public WorldGenAbstractTree getRandomTreeFeature(Random rand)
     {
-    	if (rand.nextInt(4) != 0)
+    	if (rand.nextInt(2) != 0)
     		return BIG_TREE_FEATURE;
         return TREE_FEATURE;
     }
 
     public void decorate(World worldIn, Random rand, BlockPos pos)
     {
-        if(net.minecraftforge.event.terraingen.TerrainGen.decorate(worldIn, rand, new net.minecraft.util.math.ChunkPos(pos), net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate.EventType.FLOWERS))
-        { // no tab for patch
-        int i = rand.nextInt(5) - 3;
+        double d0 = GRASS_COLOR_NOISE.getValue((double)(pos.getX() + 8) / 200.0D, (double)(pos.getZ() + 8) / 200.0D);
+        
+        if (d0 < -0.8D)
+        {
+            this.decorator.flowersPerChunk = 15;
+            this.decorator.grassPerChunk = 5;
+        }
+        else
+        {
+            this.decorator.flowersPerChunk = 4;
+            this.decorator.grassPerChunk = 10;
+            DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.GRASS);
 
-        this.addDoublePlants(worldIn, rand, pos, i);
+            if(net.minecraftforge.event.terraingen.TerrainGen.decorate(worldIn, rand, new net.minecraft.util.math.ChunkPos(pos), net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate.EventType.GRASS))
+            for (int i = 0; i < 7; ++i)
+            {
+                int j = rand.nextInt(16) + 8;
+                int k = rand.nextInt(16) + 8;
+                int l = rand.nextInt(worldIn.getHeight(pos.add(j, 0, k)).getY() + 32);
+                DOUBLE_PLANT_GENERATOR.generate(worldIn, rand, pos.add(j, l, k));
+            }
+        }
+        
+        if(net.minecraftforge.event.terraingen.TerrainGen.decorate(worldIn, rand, new net.minecraft.util.math.ChunkPos(pos), net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate.EventType.FLOWERS))
+        {
+        	int i = rand.nextInt(5) - 3;
+        	this.addDoublePlants(worldIn, rand, pos, i);
         }
         super.decorate(worldIn, rand, pos);
+    }
+
+    public Class <? extends Biome > getBiomeClass()
+    {
+        return BiomeRainforest.class;
     }
 
     private void addDoublePlants(World p_185378_1_, Random p_185378_2_, BlockPos p_185378_3_, int p_185378_4_)
@@ -43,17 +71,11 @@ public class BiomeRainforest extends Biome
         {
             int j = p_185378_2_.nextInt(3);
 
-            if (j == 0)
+            switch (j)
             {
-                DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.SYRINGA);
-            }
-            else if (j == 1)
-            {
-                DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.ROSE);
-            }
-            else if (j == 2)
-            {
-                DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.PAEONIA);
+            	case 0: DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.SYRINGA);
+            	case 1: DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.ROSE);
+            	case 2: DOUBLE_PLANT_GENERATOR.setPlantType(BlockDoublePlant.EnumPlantType.PAEONIA);
             }
 
             for (int k = 0; k < 5; ++k)

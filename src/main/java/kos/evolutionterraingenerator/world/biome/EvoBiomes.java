@@ -54,7 +54,8 @@ public abstract class EvoBiomes
 	public static final EvoBiome DESERT = new EvoBiome(Biomes.DESERT, DesertArr);
 	public static final EvoBiome SONWY_REDWOOD_TAIGA = new EvoBiome(BiomeHandler.SNOWY_REDWOOD_TAIGA, SnowyRedwoodArr);
 	public static final EvoBiome TUNDRA = new EvoBiome(BiomeHandler.TUNDRA, TundraArr);
-	public static final EvoBiome RAINFOREST = new EvoBiome(BiomeHandler.RAINFOREST, RainforestArr);
+	public static final EvoBiome RAINFOREST_ROOFED = new EvoBiome(BiomeHandler.RAINFOREST, RainforestArr);
+	public static final EvoBiome RAINFOREST = new EvoBiome(BiomeHandler.RAINFOREST, null);
 	public static final EvoBiome SAVANNA_PLAINS = new EvoBiome(Biomes.PLAINS, SavannaPlainsArr);
 
 	public static EvoBiome[] SNOWY_BIOMES = {EvoBiomes.ICE_PLAINS, EvoBiomes.COLD_TAIGA};
@@ -88,10 +89,11 @@ public abstract class EvoBiomes
 		temp.sort(null);
 		WARM_BIOMES = toArray(temp);
 		temp.clear();
-		
-		temp.add(SAVANNA_PLAINS);
+
+		temp.add(SAVANNA);
+		temp.add(PLAINS);
 		temp.add(FOREST);
-		temp.add(RAINFOREST);
+		temp.add(RAINFOREST_ROOFED);
 		temp.add(JUNGLE);
 		temp.sort(null);
 		HOT_BIOMES = toArray(temp);
@@ -99,6 +101,7 @@ public abstract class EvoBiomes
 
 		temp.add(DESERT);
 		temp.add(SAVANNA);
+		temp.add(PLAINS);
 		temp.add(RAINFOREST);
 		temp.add(JUNGLE);
 		temp.sort(null);
