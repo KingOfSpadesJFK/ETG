@@ -3,19 +3,23 @@ package kos.evolutionterraingenerator.world;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeManager;
 import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.gen.OverworldGenSettings;
 import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraft.world.gen.layer.Layer;
+import net.minecraft.world.gen.layer.LayerUtil;
 import net.minecraft.world.biome.provider.BiomeProvider;
 import net.minecraft.world.biome.provider.OverworldBiomeProvider;
 import net.minecraft.world.biome.provider.OverworldBiomeProviderSettings;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
 import kos.evolutionterraingenerator.world.biome.EvoBiome;
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -34,6 +38,8 @@ import net.minecraft.world.storage.WorldInfo;
 
 public class BiomeProviderEvo extends OverworldBiomeProvider
 {
+	private final Layer genBiomes;
+	private final Layer biomeFactoryLayer;
     private NoiseGeneratorOpenSimplex tempOctave;
     private NoiseGeneratorOpenSimplex humidOctave;
     private NoiseGeneratorOpenSimplex landOctave;
@@ -42,8 +48,7 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
     private NoiseGeneratorOpenSimplex noiseOctave;
     private NoiseGeneratorOpenSimplex mushroomOctave;
     /** A list of biomes that the player can spawn in. */
-    private final List<Biome> biomesToSpawnIn;
-    public static List<Biome> allowedBiomes = Lists.newArrayList(Biomes.FOREST, Biomes.PLAINS, Biomes.TAIGA, Biomes.BEACH);
+    private final List<Biome> biomesToSpawnIn = Lists.newArrayList(Biomes.FOREST, Biomes.PLAINS, Biomes.TAIGA, Biomes.BEACH);
     
 	public double[] temperatures;
 	public double[] humidities;
@@ -59,10 +64,14 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
 	public static final double WARM_TEMP = 0.625;
 	public static final double HOT_TEMP = 0.875;
 
-	public BiomeProviderEvo(OverworldBiomeProviderSettings settingsIn, IWorld worldIn) {
-		super(settingsIn);
-		// TODO Auto-generated constructor stub
-        this.biomesToSpawnIn = Lists.newArrayList(allowedBiomes);
+	public BiomeProviderEvo(OverworldBiomeProviderSettings settingsProvider, IWorld worldIn) {
+		super(settingsProvider);
+		
+	      WorldInfo worldinfo = worldIn.getWorldInfo();
+	      OverworldGenSettings overworldgensettings = settingsProvider.getGeneratorSettings();
+	      Layer[] alayer = LayerUtil.buildOverworldProcedure(worldinfo.getSeed(), worldinfo.getGenerator(), overworldgensettings);
+	      this.genBiomes = alayer[0];
+	      this.biomeFactoryLayer = alayer[1];
         
         Random rand = new Random(worldIn.getSeed());
         tempOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
@@ -84,6 +93,31 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
     {
     	return getBiomesForGeneration(biomes, x, z, width, height, 1, 1, true);
     }
+
+    public Biome getBiome(int x, int y) {
+    	return getBiomesForGeneration(null, x, y, 1, 1, 1, 1, true)[0];
+    }
+    
+    public Biome func_222366_b(int x, int z) {
+    	return getBiomesForGeneration(null, x, z, 1, 1, 1, 1, true)[0];
+     }
+    
+    public Set<Biome> getBiomesInSquare(int centerX, int centerZ, int sideLength) {
+        int i = centerX - sideLength >> 2;
+        int j = centerZ - sideLength >> 2;
+        int k = centerX + sideLength >> 2;
+        int l = centerZ + sideLength >> 2;
+        int i1 = k - i + 1;
+        int j1 = l - j + 1;
+        Set<Biome> set = Sets.newHashSet();
+        Collections.addAll(set, getBiomesForGeneration(null, i, j, i1, j1));
+        return set;
+     }   
+    
+    public List<Biome> getBiomesToSpawnIn() {
+         return BIOMES_TO_SPAWN_IN;
+     }
+    
     public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height, int xScale, int zScale, boolean findOceans)
     {
         if (biomes == null || biomes.length < width * height)
@@ -327,4 +361,9 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
 
         return blockpos;
     }
+
+	public Biome[] getBiomesForGeneration(Biome[] biomesForGeneration, int i, int j, int k, int l, int m, int n) {
+		// TODO Auto-generated method stub
+		return getBiomesForGeneration(biomesForGeneration, i, j, k, l, m, n, true);
+	}
 }

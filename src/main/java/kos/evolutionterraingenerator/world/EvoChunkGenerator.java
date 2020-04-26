@@ -12,6 +12,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FallingBlock;
 import net.minecraft.block.SandBlock;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.ReportedException;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SharedSeedRandom;
@@ -23,13 +25,13 @@ import net.minecraft.village.VillageSiege;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeContainer;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.provider.BiomeProvider;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.GenerationSettings;
+import net.minecraft.world.gen.GenerationStage;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.Heightmap.Type;
 import net.minecraft.world.gen.OverworldChunkGenerator;
@@ -149,10 +151,10 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
                 
                 if (!isOcean && !isBeach)
                 	setBiome(biome, this.rand, primer, x * 16 + i, z * 16 + j, noiseVal);
-                aBiome[i + j * 16] = biome;
+                aBiome[j + i * 16] = this.biomesForGeneration[j + i * 16];
             }
         }
-        primer.func_225548_a_(new BiomeContainer(aBiome));
+        primer.setBiomes(aBiome);
     }
     
     //Sets biomes according to the conditions of the land
@@ -176,7 +178,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
             	if (temperature > 0.5 && humidity > 0.675 && swamp < 0.375 && i <= seaLevel + 3)
             	{
             		this.biomesForGeneration[xInChunk * 16 + zInChunk] = Biomes.SWAMP;
-            		biome = Biomes.SWAMP;
             		biomeid = biome.getRegistryName();
                     double randVal = rand.nextDouble() * 0.25D;
                     if (swamp + randVal > 0.175 && swamp + randVal < 0.275 && i == seaLevel - 1)
@@ -199,6 +200,10 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
             }
         }
     }
+    
+    protected Biome getBiome(WorldGenRegion worldRegionIn, BlockPos pos) {
+    	return worldRegionIn.getBiome(pos);
+     }
 	
 	//GENERATION METHODS
 	//Modified version of the generator from 1.12
@@ -207,7 +212,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     {
 		int x = chunkIn.getPos().x;
 		int z = chunkIn.getPos().z;
-		this.biomesForGeneration = this.biomeProvider.getBiomesForGeneration(this.biomesForGeneration, x * 4 - 2, z * 4 - 2, 10, 10, 4, 4, true);
+		this.biomesForGeneration = this.biomeProvider.getBiomesForGeneration(this.biomesForGeneration, x * 4 - 2, z * 4 - 2, 10, 10, 4, 4);
         //this.biomeProvider.getBiomesForGeneration(null, x * 4 - 2, z * 4 - 2, 10, 10);
         //this.biomeProvider.getRiver(x * 4 - 2, z * 4 - 2, 10, 10);
         //this.riverChance = this.riverNoise.generateNoiseOctaves(this.riverChance, x * 4 - 2, z * 4 - 2, 10, 10, 300.0, 300.0, 0.5);

@@ -26,7 +26,10 @@ public class EvoType extends WorldType
 		EvoGenSettings settings = new EvoGenSettings();
 		if (world.dimension.getType() == DimensionType.OVERWORLD)
 		{
-			return new EvoChunkGenerator(world, new BiomeProviderEvo(new OverworldBiomeProviderSettings(world.getWorldInfo()), world), settings);
+			OverworldBiomeProviderSettings that = new OverworldBiomeProviderSettings();
+			that.setWorldInfo(world.getWorldInfo());
+			that.setGeneratorSettings(settings);
+			return new EvoChunkGenerator(world, new BiomeProviderEvo(that, world), settings);
 		}
         return world.dimension.createChunkGenerator();
     }
