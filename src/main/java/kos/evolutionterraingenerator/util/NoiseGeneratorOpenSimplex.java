@@ -4,9 +4,9 @@ import java.util.Random;
 
 import kos.evolutionterraingenerator.util.noise.OpenSimplexNoise;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.gen.NoiseGenerator;
+import net.minecraft.world.gen.INoiseGenerator;
 
-public class NoiseGeneratorOpenSimplex extends NoiseGenerator
+public class NoiseGeneratorOpenSimplex
 {
     /** Collection of noise generation functions.  Output is combined to produce different octaves of noise. */
     private final OpenSimplexNoise[] generatorCollection;

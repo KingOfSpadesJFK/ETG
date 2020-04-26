@@ -1,44 +1,39 @@
 package kos.evolutionterraingenerator.world;
 
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeCache;
-import net.minecraft.world.biome.BiomeProvider;
+import net.minecraft.world.biome.BiomeManager;
+import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraft.world.biome.provider.BiomeProvider;
+import net.minecraft.world.biome.provider.OverworldBiomeProvider;
+import net.minecraft.world.biome.provider.OverworldBiomeProviderSettings;
+
 import com.google.common.collect.Lists;
 
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
-import kos.evolutionterraingenerator.world.biome.BiomeHandler;
 import kos.evolutionterraingenerator.world.biome.EvoBiome;
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+
 import javax.annotation.Nullable;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.init.Biomes;
-import net.minecraft.util.ReportedException;
+import net.minecraft.crash.ReportedException;
+import net.minecraft.world.biome.Biomes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
-import net.minecraft.world.gen.ChunkGeneratorSettings;
-import net.minecraft.world.gen.NoiseGeneratorOctaves;
-import net.minecraft.world.gen.layer.GenLayer;
-import net.minecraft.world.gen.layer.IntCache;
 import net.minecraft.world.storage.WorldInfo;
 
-public class BiomeProviderEvo extends BiomeProvider
+public class BiomeProviderEvo extends OverworldBiomeProvider
 {
-    private ChunkGeneratorSettings settings;
-    private GenLayer genBiomes;
-    /** A GenLayer containing the indices into BiomeGenBase.biomeList[] */
-    private GenLayer biomeIndexLayer;
-    /** The biome list. */
-    private final BiomeCache biomeCache;
-    /** A list of biomes that the player can spawn in. */
-    private final List<Biome> biomesToSpawnIn;
-    public static List<Biome> allowedBiomes = Lists.newArrayList(Biomes.FOREST, Biomes.PLAINS, Biomes.TAIGA, Biomes.BEACH);
-    
     private NoiseGeneratorOpenSimplex tempOctave;
     private NoiseGeneratorOpenSimplex humidOctave;
     private NoiseGeneratorOpenSimplex landOctave;
@@ -46,6 +41,9 @@ public class BiomeProviderEvo extends BiomeProvider
     private NoiseGeneratorOpenSimplex biomeChanceOctave;
     private NoiseGeneratorOpenSimplex noiseOctave;
     private NoiseGeneratorOpenSimplex mushroomOctave;
+    /** A list of biomes that the player can spawn in. */
+    private final List<Biome> biomesToSpawnIn;
+    public static List<Biome> allowedBiomes = Lists.newArrayList(Biomes.FOREST, Biomes.PLAINS, Biomes.TAIGA, Biomes.BEACH);
     
 	public double[] temperatures;
 	public double[] humidities;
@@ -61,16 +59,12 @@ public class BiomeProviderEvo extends BiomeProvider
 	public static final double WARM_TEMP = 0.625;
 	public static final double HOT_TEMP = 0.875;
 
-    protected BiomeProviderEvo()
-    {
-        this.biomeCache = new BiomeCache(this);
+	public BiomeProviderEvo(OverworldBiomeProviderSettings settingsIn, IWorld worldIn) {
+		super(settingsIn);
+		// TODO Auto-generated constructor stub
         this.biomesToSpawnIn = Lists.newArrayList(allowedBiomes);
-    }
-
-    private BiomeProviderEvo(long seed, WorldType worldTypeIn, String options)
-    {
-        this();
-        Random rand = new Random(seed);
+        
+        Random rand = new Random(worldIn.getSeed());
         tempOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
 		humidOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
 		landOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
@@ -78,104 +72,20 @@ public class BiomeProviderEvo extends BiomeProvider
 		biomeChanceOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
 		noiseOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
 		mushroomOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
-
-        if (worldTypeIn == WorldType.CUSTOMIZED && !options.isEmpty())
-        {
-            this.settings = ChunkGeneratorSettings.Factory.jsonToFactory(options).build();
-        }
-
-        GenLayer[] agenlayer = GenLayer.initializeAllBiomeGenerators(seed, worldTypeIn, this.settings);
-        agenlayer = getModdedBiomeGenerators(worldTypeIn, seed, agenlayer);
-        this.genBiomes = agenlayer[0];
-        this.biomeIndexLayer = agenlayer[1];
-    }
-
-    public BiomeProviderEvo(WorldInfo info)
-    {
-        this(info.getSeed(), info.getTerrainType(), info.getGeneratorOptions());
-    }
-
-    public BiomeProviderEvo(World world) {
-        this(world.getWorldInfo());
 	}
-
-	/**
-     * Gets the list of valid biomes for the player to spawn in.
-     */
-    public List<Biome> getBiomesToSpawnIn()
-    {
-        return this.biomesToSpawnIn;
-    }
-
-    /**
-     * Returns the biome generator
-     */
-    public Biome getBiome(BlockPos pos)
-    {
-        return this.getBiome(pos, (Biome)null);
-    }
-
-    public Biome getBiome(BlockPos pos, Biome defaultBiome)
-    {
-        return this.biomeCache.getBiome(pos.getX(), pos.getZ(), defaultBiome);
-    }
-
-    /**
-     * Returns an array of biomes for the location input.
-     */
-    public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height)
-    {
-    	return getBiomesForGeneration(biomes, x, z, width, height, 1, 1, true);
-    }
-    
+	
     public static final double biomeScale = 3.0;
     public static final double oceanScale = 1.0;
     public static final double oceanThreshold = 0.75;
     public static final double riverScale = 0.5;
     public static final int riverSamples = 2;		//An unintended method to make rivers bigger
-    
-    public boolean[] getRiver(int x, int z, int width, int height)
-    {
-    	x = (int)(x * riverScale);
-    	z = (int)(z * riverScale);
-        if (isRiver == null || isRiver.length < width * height)
-        	isRiver = new boolean[width * height];
 
-		int[] arr = genBiomes.getInts(x - riverSamples, z - riverSamples, width + riverSamples, height + riverSamples);
-    	double[] riverAvgs = new double[width * height];
-		for (int i = 0; i < width; i++)
-		{
-			for (int j = 0; j < height; j++)
-			{
-	    		int m = i * width + j;
-	    		int k = j * height + i;
-				//double noiseVal = noise[m] * 1.1 + 0.5;
-	    		double valueOfRivia = 0.0;
-				for (int i1 = 0 - riverSamples; i1 <= riverSamples; i1++) 
-				{
-					for (int j1 = 0 - riverSamples; j1 <= riverSamples; j1++)
-					{
-						int i2 = i + i1 + riverSamples;
-						int j2 = j + j1 + riverSamples;
-						int id = arr[(int)(j2  * riverScale) * (height + riverSamples) + (int)(i2 * riverScale)];
-						if (id == 7 || id == 11)
-							valueOfRivia = valueOfRivia + 1.0;
-						else
-							valueOfRivia += 0.0;
-					}
-				}
-				double avg = (double)((riverSamples + riverSamples + 1) * (riverSamples + riverSamples + 1));
-				valueOfRivia /= avg;
-				isRiver[k] = valueOfRivia > 0.0;
-			}
-		}
-		return isRiver;
+    public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height)
+    {
+    	return getBiomesForGeneration(biomes, x, z, width, height, 1, 1, true);
     }
-    
     public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height, int xScale, int zScale, boolean findOceans)
     {
-        IntCache.resetIntCache();
-
         if (biomes == null || biomes.length < width * height)
             biomes = new Biome[width * height];
 
@@ -238,7 +148,7 @@ public class BiomeProviderEvo extends BiomeProvider
     					if (mushroomChance[m] > 0.99975)
     					{
     						if (mushroomChance[m] >= 1.0)
-    							biomes[k] = Biomes.MUSHROOM_ISLAND;
+    							biomes[k] = Biomes.MUSHROOM_FIELDS;
     						else
         						biomes[k] = getOcean(temperatures[m], humidities[m], false);
     					}
@@ -246,7 +156,7 @@ public class BiomeProviderEvo extends BiomeProvider
     					{
         					if (landmasses[m] > oceanThreshold - 0.025 || landmasses2[m] > oceanThreshold - 0.025)
         					{
-        						if (!(biomes[k].equals(Biomes.MESA) | biomes[k].equals(Biomes.DESERT)))
+        						if (!(biomes[k].equals(Biomes.BADLANDS) | biomes[k].equals(Biomes.DESERT)))
         							biomes[k] = getBeach(temperatures[m], humidities[m], landmasses[m] <= oceanThreshold - 0.025);
         					}
         					else
@@ -262,11 +172,11 @@ public class BiomeProviderEvo extends BiomeProvider
         {
             CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Invalid Biome id");
             CrashReportCategory crashreportcategory = crashreport.makeCategory("RawBiomeBlock");
-            crashreportcategory.addCrashSection("biomes[] size", Integer.valueOf(biomes.length));
-            crashreportcategory.addCrashSection("x", Integer.valueOf(x));
-            crashreportcategory.addCrashSection("z", Integer.valueOf(z));
-            crashreportcategory.addCrashSection("w", Integer.valueOf(width));
-            crashreportcategory.addCrashSection("h", Integer.valueOf(height));
+            crashreportcategory.addDetail("biomes[] size", Integer.valueOf(biomes.length));
+            crashreportcategory.addDetail("x", Integer.valueOf(x));
+            crashreportcategory.addDetail("z", Integer.valueOf(z));
+            crashreportcategory.addDetail("w", Integer.valueOf(width));
+            crashreportcategory.addDetail("h", Integer.valueOf(height));
             throw new ReportedException(crashreport);
         }
     }
@@ -276,26 +186,15 @@ public class BiomeProviderEvo extends BiomeProvider
     	EvoBiome[] arr = EvoBiomes.WARM_BIOMES;
     	
 		if (temp < SNOW_TEMP)
-		{
 			arr = EvoBiomes.SNOWY_BIOMES;
-		}
 		else if (temp < COLD_TEMP)
-		{
 			arr = EvoBiomes.COLD_BIOMES;
-		}
 		else if (temp < WARM_TEMP)
-		{
 			arr = EvoBiomes.WARM_BIOMES;
-			
-		}
 		else if (temp < HOT_TEMP)
-		{
 			arr = EvoBiomes.HOT_BIOMES;
-		}
 		else
-		{
 			arr = EvoBiomes.ARID_BIOMES;
-		}
 		
 		return arr[(int)((arr.length - 1) * humid)].getBiome(chance);
     }
@@ -306,11 +205,11 @@ public class BiomeProviderEvo extends BiomeProvider
     	if (temp < SNOW_TEMP)
     	{
     		if (isGravel)
-    			return BiomeHandler.SNOWY_GRAVEL_BEACH;
-    		return Biomes.COLD_BEACH;
+    			return Biomes.SNOWY_BEACH;
+    		return Biomes.SNOWY_BEACH;
     	}
     	if (isGravel)
-    		return BiomeHandler.GRAVEL_BEACH;
+    		return Biomes.BEACH;
     	return Biomes.BEACH;
     }
 
@@ -320,8 +219,24 @@ public class BiomeProviderEvo extends BiomeProvider
     private Biome getOcean(double temp, double humid, boolean deep)
     {
     	if (deep)
-    		return Biomes.DEEP_OCEAN;
-    	return Biomes.OCEAN;
+    	{		
+    		if (temp < SNOW_TEMP)
+    			return Biomes.DEEP_FROZEN_OCEAN;
+    		else if (temp < COLD_TEMP)
+    			return Biomes.DEEP_COLD_OCEAN;
+    		else if (temp < WARM_TEMP)
+    			return Biomes.DEEP_LUKEWARM_OCEAN;
+    		else
+    			return Biomes.DEEP_WARM_OCEAN;
+    	}
+		if (temp < SNOW_TEMP)
+			return Biomes.FROZEN_OCEAN;
+		else if (temp < COLD_TEMP)
+			return Biomes.COLD_OCEAN;
+		else if (temp < WARM_TEMP)
+			return Biomes.LUKEWARM_OCEAN;
+		else
+			return Biomes.WARM_OCEAN;
     }
     
     /**
@@ -338,41 +253,19 @@ public class BiomeProviderEvo extends BiomeProvider
      */
     public Biome[] getBiomes(@Nullable Biome[] listToReuse, int x, int z, int width, int length, boolean cacheFlag)
     {
-        IntCache.resetIntCache();
-
         if (listToReuse == null || listToReuse.length < width * length)
         {
             listToReuse = new Biome[width * length];
         }
         listToReuse = getBiomesForGeneration(listToReuse, x, z, width, length);
         return listToReuse;
-        /*
-        if (cacheFlag && width == 16 && length == 16 && (x & 15) == 0 && (z & 15) == 0)
-        {
-            Biome[] abiome = this.biomeCache.getCachedBiomes(x, z);
-            System.arraycopy(abiome, 0, listToReuse, 0, width * length);
-            return listToReuse;
-        }
-        else
-        {
-            int[] aint = this.biomeIndexLayer.getInts(x, z, width, length);
-
-            for (int i = 0; i < width * length; ++i)
-            {
-                listToReuse[i] = Biome.getBiome(aint[i], Biomes.DEFAULT);
-            }
-
-            return listToReuse;
-        }
-        */
     }
-
+    
     /**
      * checks given Chunk's Biomes against List of allowed ones
      */
     public boolean areBiomesViable(int x, int z, int radius, List<Biome> allowed)
     {
-        IntCache.resetIntCache();
         int i = x - radius >> 2;
         int j = z - radius >> 2;
         int k = x + radius >> 2;
@@ -398,11 +291,10 @@ public class BiomeProviderEvo extends BiomeProvider
         {
             CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Invalid Biome id");
             CrashReportCategory crashreportcategory = crashreport.makeCategory("Layer");
-            crashreportcategory.addCrashSection("Layer", this.genBiomes.toString());
-            crashreportcategory.addCrashSection("x", Integer.valueOf(x));
-            crashreportcategory.addCrashSection("z", Integer.valueOf(z));
-            crashreportcategory.addCrashSection("radius", Integer.valueOf(radius));
-            crashreportcategory.addCrashSection("allowed", allowed);
+            crashreportcategory.addDetail("x", Integer.valueOf(x));
+            crashreportcategory.addDetail("z", Integer.valueOf(z));
+            crashreportcategory.addDetail("radius", Integer.valueOf(radius));
+            crashreportcategory.addDetail("allowed", allowed);
             throw new ReportedException(crashreport);
         }
     }
@@ -410,7 +302,6 @@ public class BiomeProviderEvo extends BiomeProvider
     @Nullable
     public BlockPos findBiomePosition(int x, int z, int range, List<Biome> biomes, Random random)
     {
-        IntCache.resetIntCache();
         int i = x - range >> 2;
         int j = z - range >> 2;
         int k = x + range >> 2;
