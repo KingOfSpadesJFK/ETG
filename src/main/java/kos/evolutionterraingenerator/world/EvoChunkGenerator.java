@@ -278,164 +278,147 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     }
 	
 	 private void generateHeightmap(int x, int y, int z)
-	    {
-	        this.depthRegion = this.depthNoise.generateNoiseOctaves(this.depthRegion, x, z, 5, 5, this.settings.getDepthNoiseScaleX(), this.settings.getDepthNoiseScaleZ());
-	        double f = this.settings.getMainNoiseCoordScale();
-	        double f1 = this.settings.getMainNoiseHeightScale();
-			double[] temps = biomeProvider.temperatures;
-			double[] humidities = biomeProvider.humidities;
-		    //boolean[] rivers = biomeProvider.isRiver;
-	        this.mainNoiseRegion = this.mainPerlinNoise.generateNoiseOctaves(this.mainNoiseRegion, x, y, z, 5, 33, 5, f / this.settings.getCoordScale(), f1 / this.settings.getHeightScale(), f / this.settings.getCoordScale());
-	        this.minLimitRegion = this.minLimitPerlinNoise.generateNoiseOctaves(this.minLimitRegion, x, y, z, 5, 33, 5, f, f1, f);
-	        this.maxLimitRegion = this.maxLimitPerlinNoise.generateNoiseOctaves(this.maxLimitRegion, x, y, z, 5, 33, 5, f, f1, f);
-	        
-	        int i = 0;
-	        int j = 0;
-
-	        for (int k = 0; k < 5; ++k)
-	        {
-	            for (int l = 0; l < 5; ++l)
-	            {
-	                float tempVal = (float) temps[k + 2 + (l + 2) * 10];
-	                float humidVal = (float) humidities[k + 2 + (l + 2) * 10];
-	                
-	                float f2 = tempVal * 0.25F;
-	                float f3 = -humidVal;
-	                float f4 = tempVal * humidVal;
-	                
-	                //Biome biome = this.biomesForGeneration[k + 2 + (l + 2) * 10];
-
-	                for (int k1 = -2; k1 <= 2; ++k1)
-	                {
-	                    for (int l1 = -2; l1 <= 2; ++l1)
-	                    {
-	                        Biome biome1 = this.biomesForGeneration[k + k1 + 2 + (l + l1 + 2) * 10];
-	                        ResourceLocation biomeid = biome1.getRegistryName();
-	                        float tempVal1 = (float) temps[k + k1 + 2 + (l + l1 + 2) * 10];
-	                        float humidVal1 =(float) humidities[k + k1 + 2 + (l + l1 + 2) * 10];
-	                        //float f5 = this.settings.biomeDepthOffSet + biome1.getBaseHeight() * this.settings.biomeDepthWeight;
-	                        //float f6 = this.settings.biomeScaleOffset + biome1.getHeightVariation() * this.settings.biomeScaleWeight;
-	                    	float f5 = 0.75F * this.settings.getBiomeDepthWeight();
-	                    	float f6 = 1.125F * this.settings.getBiomeScaleWeight();
-
+    {
+        this.depthRegion = this.depthNoise.generateNoiseOctaves(this.depthRegion, x, z, 5, 5, this.settings.getDepthNoiseScaleX(), this.settings.getDepthNoiseScaleZ());
+        double coord = this.settings.getMainNoiseCoordScale();
+        double height = this.settings.getMainNoiseHeightScale();
+		double[] temps = biomeProvider.temperatures;
+		double[] humidities = biomeProvider.humidities;
+	    //boolean[] rivers = biomeProvider.isRiver;
+        this.mainNoiseRegion = this.mainPerlinNoise.generateNoiseOctaves(this.mainNoiseRegion, x, y, z, 5, 33, 5, coord / this.settings.getCoordScale(), height / this.settings.getHeightScale(), coord / this.settings.getCoordScale());
+        this.minLimitRegion = this.minLimitPerlinNoise.generateNoiseOctaves(this.minLimitRegion, x, y, z, 5, 33, 5, coord, height, coord);
+        this.maxLimitRegion = this.maxLimitPerlinNoise.generateNoiseOctaves(this.maxLimitRegion, x, y, z, 5, 33, 5, coord, height, coord);
+        
+        int i = 0;
+        int j = 0;
+        for (int k = 0; k < 5; ++k)
+        {
+            for (int l = 0; l < 5; ++l)
+            {
+                float tempVal = (float) temps[k + 2 + (l + 2) * 10];
+                float humidVal = (float) humidities[k + 2 + (l + 2) * 10];
+                
+                float f2 = tempVal * 0.25F;
+                float f3 = -humidVal;
+                float f4 = tempVal * humidVal;
+                
+                //Biome biome = this.biomesForGeneration[k + 2 + (l + 2) * 10];
+                for (int k1 = -2; k1 <= 2; ++k1)
+                {
+                    for (int l1 = -2; l1 <= 2; ++l1)
+                    {
+                        Biome biome1 = this.biomesForGeneration[k + k1 + 2 + (l + l1 + 2) * 10];
+                        ResourceLocation biomeid = biome1.getRegistryName();
+                        float tempVal1 = (float) temps[k + k1 + 2 + (l + l1 + 2) * 10];
+                        float humidVal1 =(float) humidities[k + k1 + 2 + (l + l1 + 2) * 10];
+                        //float f5 = this.settings.biomeDepthOffSet + biome1.getBaseHeight() * this.settings.biomeDepthWeight;
+                        //float f6 = this.settings.biomeScaleOffset + biome1.getHeightVariation() * this.settings.biomeScaleWeight;
+                    	float f5 = 0.75F * this.settings.getBiomeDepthWeight();
+                    	float f6 = 1.125F * this.settings.getBiomeScaleWeight();
 	                        float f7 = this.biomeWeights[k1 + 2 + (l1 + 2) * 5] / (f5 + 2.0F);
-	                        
-	                        boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName());
-	                        
-	                        boolean isOcean = 
-	                        		biomeid.equals(Biomes.FROZEN_OCEAN.getRegistryName()) |
-	                        		biomeid.equals(Biomes.DEEP_FROZEN_OCEAN.getRegistryName()) |
-	                        		biomeid.equals(Biomes.COLD_OCEAN.getRegistryName()) |
-	                        		biomeid.equals(Biomes.DEEP_COLD_OCEAN.getRegistryName()) |
-	                        		biomeid.equals(Biomes.LUKEWARM_OCEAN.getRegistryName()) |
-	                        		biomeid.equals(Biomes.DEEP_LUKEWARM_OCEAN.getRegistryName()) |
-	                        		biomeid.equals(Biomes.WARM_OCEAN.getRegistryName()) |
-	                        		biomeid.equals(Biomes.DEEP_WARM_OCEAN.getRegistryName()) |
-	                        		biomeid.equals(Biomes.OCEAN.getRegistryName()) |
-	                        		biomeid.equals(Biomes.DEEP_OCEAN.getRegistryName());
-	                        
-	                    	if (isBeach | isOcean)
-	                    	{
-	                    		if (isBeach)
-	                    		{
-	                                f5 = this.settings.getBiomeDepthOffset() + Biomes.BEACH.getDepth() * this.settings.getBiomeDepthWeight();
-	                                f6 = this.settings.getBiomeScaleOffset() + Biomes.BEACH.getScale() * this.settings.getBiomeScaleWeight();
-	                    		}
-	                    		else 
-	                    		{
-	                                f5 = this.settings.getBiomeDepthOffset() + biome1.getDepth() * this.settings.getBiomeDepthWeight();
-	                                f6 = this.settings.getBiomeScaleOffset() + biome1.getScale() * this.settings.getBiomeScaleWeight();
-	                    		}
+                        
+                        boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName());
+                        
+                        boolean isOcean = 
+                        		biomeid.equals(Biomes.FROZEN_OCEAN.getRegistryName()) |
+                        		biomeid.equals(Biomes.DEEP_FROZEN_OCEAN.getRegistryName()) |
+                        		biomeid.equals(Biomes.COLD_OCEAN.getRegistryName()) |
+                        		biomeid.equals(Biomes.DEEP_COLD_OCEAN.getRegistryName()) |
+                        		biomeid.equals(Biomes.LUKEWARM_OCEAN.getRegistryName()) |
+                        		biomeid.equals(Biomes.DEEP_LUKEWARM_OCEAN.getRegistryName()) |
+                        		biomeid.equals(Biomes.WARM_OCEAN.getRegistryName()) |
+                        		biomeid.equals(Biomes.DEEP_WARM_OCEAN.getRegistryName()) |
+                        		biomeid.equals(Biomes.OCEAN.getRegistryName()) |
+                        		biomeid.equals(Biomes.DEEP_OCEAN.getRegistryName());
+                        
+                    	if (isBeach | isOcean)
+                    	{
+                    		if (isBeach)
+                    		{
+                                f5 = this.settings.getBiomeDepthOffset() + Biomes.BEACH.getDepth() * this.settings.getBiomeDepthWeight();
+                                f6 = this.settings.getBiomeScaleOffset() + Biomes.BEACH.getScale() * this.settings.getBiomeScaleWeight();
+                    		}
+                    		else 
+                    		{
+                                f5 = this.settings.getBiomeDepthOffset() + biome1.getDepth() * this.settings.getBiomeDepthWeight();
+                                f6 = this.settings.getBiomeScaleOffset() + biome1.getScale() * this.settings.getBiomeScaleWeight();
+                    		}
 	                            f7 = this.biomeWeights[k1 + 2 + (l1 + 2) * 5] / (f5 + 2.0F);
-	                            
-	                            if (biome1.getDepth() > 0.125F)
-	                            {
-	                                f7 /= 2.0F;
-	                            }
-	                    	}
-	                    	
-	                    	//int riverIndex = (k + k1 + 2) + (l + l1 + 2) * 10;
-	                    	/*
-	                    	if (rivers[riverIndex] && !isOcean)
-	                    	{
-	                        	//f5 = -0.75F;
-	                        	//f6 = 0.0F;
-	                            //f7 = this.biomeWeights[k1 + 2 + (l1 + 2) * 5] / (f5 + 2.0F) / 2.0F;
-	                    	}
-	                    	*/
-
+                            
+                            if (biome1.getDepth() > 0.125F)
+                            {
+                                f7 /= 2.0F;
+                            }
+                    	}
+                    	
+                    	//int riverIndex = (k + k1 + 2) + (l + l1 + 2) * 10;
+                    	/*
+                    	if (rivers[riverIndex] && !isOcean)
+                    	{
+                        	//f5 = -0.75F;
+                        	//f6 = 0.0F;
+                            //f7 = this.biomeWeights[k1 + 2 + (l1 + 2) * 5] / (f5 + 2.0F) / 2.0F;
+                    	}
+                    	*/
 	                        f2 += f6 * f7;
-	                        f3 += f5 * f7;
-	                        f4 += f7;
-	                    }
-	                }
-
-	                f2 = f2 / f4;
-	                f3 = f3 / f4;
-	                f2 = f2 * 0.9F + 0.1F;
-	                f3 = (f3 * 4.0F - 1.0F) / 8.0F;
-	                double d7 = this.depthRegion[j] / 8000.0D;
-
-	                if (d7 < 0.0D)
-	                {
-	                    d7 = -d7 * 0.3D;
-	                }
-
-	                d7 = d7 * 3.0D - 2.0D;
-
-	                if (d7 < 0.0D)
-	                {
-	                    d7 = d7 / 2.0D;
-
-	                    if (d7 < -1.0D)
-	                    {
-	                        d7 = -1.0D;
-	                    }
-
-	                    d7 = d7 / 1.4D;
-	                    d7 = d7 / 2.0D;
-	                }
-	                else
-	                {
-	                    if (d7 > 1.0D)
-	                    {
-	                        d7 = 1.0D;
-	                    }
-
-	                    d7 = d7 / 8.0D;
-	                }
-
-	                ++j;
-	                double d8 = (double)f3;
-	                double d9 = (double)f2;
-	                d8 = d8 + d7 * 0.2D;
-	                d8 = d8 * (double)this.settings.getDepthBaseSize() / 8.0D;
-	                double d0 = (double)this.settings.getDepthBaseSize() + d8 * 4.0D;
-
-	                for (int l1 = 0; l1 < 33; ++l1)
-	                {
-	                    double d1 = ((double)l1 - d0) * (double)this.settings.getHeightStretch() * 128.0D / 256.0D / d9;
-
-	                    if (d1 < 0.0D)
-	                    {
-	                        d1 *= 4.0D;
-	                    }
-
-	                    double d2 = this.minLimitRegion[i] / (double)this.settings.getLowerLimitScale();
-	                    double d3 = this.maxLimitRegion[i] / (double)this.settings.getUpperLimitScale();
-	                    double d4 = (this.mainNoiseRegion[i] / 10.0D + 1.0D) / 2.0D;
-	                    double d5 = MathHelper.clampedLerp(d2, d3, d4) - d1;
-
-	                    if (l1 > 29)
-	                    {
-	                        double d6 = (double)((float)(l1 - 29) / 3.0F);
-	                        d5 = d5 * (1.0D - d6) + -10.0D * d6;
-	                    }
-
-	                    this.heightMap[i] = d5;
-	                    ++i;
-	                }
-	            }
-	        }
-	    }
+                        f3 += f5 * f7;
+                        f4 += f7;
+                    }
+                }
+                f2 = f2 / f4;
+                f3 = f3 / f4;
+                f2 = f2 * 0.9F + 0.1F;
+                f3 = (f3 * 4.0F - 1.0F) / 8.0F;
+                double d7 = this.depthRegion[j] / 8000.0D;
+                if (d7 < 0.0D)
+                {
+                    d7 = -d7 * 0.3D;
+                }
+                d7 = d7 * 3.0D - 2.0D;
+                if (d7 < 0.0D)
+                {
+                    d7 = d7 / 2.0D;
+                    if (d7 < -1.0D)
+                    {
+                        d7 = -1.0D;
+                    }
+                    d7 = d7 / 1.4D;
+                    d7 = d7 / 2.0D;
+                }
+                else
+                {
+                    if (d7 > 1.0D)
+                    {
+                        d7 = 1.0D;
+                    }
+                    d7 = d7 / 8.0D;
+                }
+                ++j;
+                double d8 = (double)f3;
+                double d9 = (double)f2;
+                d8 = d8 + d7 * 0.2D;
+                d8 = d8 * (double)this.settings.getDepthBaseSize() / 8.0D;
+                double d0 = (double)this.settings.getDepthBaseSize() + d8 * 4.0D;
+                for (int l1 = 0; l1 < 33; ++l1)
+                {
+                    double d1 = ((double)l1 - d0) * (double)this.settings.getHeightStretch() * 128.0D / 256.0D / d9;
+                    if (d1 < 0.0D)
+                    {
+                        d1 *= 4.0D;
+                    }
+                    double d2 = this.minLimitRegion[i] / (double)this.settings.getLowerLimitScale();
+                    double d3 = this.maxLimitRegion[i] / (double)this.settings.getUpperLimitScale();
+                    double d4 = (this.mainNoiseRegion[i] / 10.0D + 1.0D) / 2.0D;
+                    double d5 = MathHelper.clampedLerp(d2, d3, d4) - d1;
+                    if (l1 > 29)
+                    {
+                        double d6 = (double)((float)(l1 - 29) / 3.0F);
+                        d5 = d5 * (1.0D - d6) + -10.0D * d6;
+                    }
+                    this.heightMap[i] = d5;
+                    ++i;
+                }
+            }
+        }
+    }
 }
