@@ -1,6 +1,6 @@
 package kos.evolutionterraingenerator.world.biome;
 
-import net.minecraft.init.Biomes;
+import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.Biome;
 
 public class EvoBiome implements Comparable<EvoBiome>
@@ -28,9 +28,9 @@ public class EvoBiome implements Comparable<EvoBiome>
 
 	public int compareTo(EvoBiome evoBiome)
 	{
-		if (this.biome.getRainfall() < evoBiome.biome.getRainfall())
+		if (this.biome.getDownfall() < evoBiome.biome.getDownfall())
 			return -1;
-		if (this.biome.getRainfall() > evoBiome.biome.getRainfall())
+		if (this.biome.getDownfall() > evoBiome.biome.getDownfall())
 			return 1;
 		return 0;
 	}

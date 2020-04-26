@@ -2,7 +2,6 @@ package kos.evolutionterraingenerator;
 
 import kos.evolutionterraingenerator.world.EvoType;
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
-import kos.evolutionterraingenerator.world.biome.BiomeHandler;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
@@ -16,7 +15,7 @@ import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-@Mod(value = EvolutionTerrainGenerator.MODID)
+@Mod(value = "evolutionterraingenerator")
 public class EvolutionTerrainGenerator {
 	
 	public static final String MODID = "evolutionterraingenerator";
@@ -31,17 +30,17 @@ public class EvolutionTerrainGenerator {
 	private void setup(final FMLCommonSetupEvent event)
 	{
 		EvoType.register();
-		//NewBiomes.initBiomes();
-		MinecraftForge.EVENT_BUS.register(new BiomeHandler());
+	}
+	
+	@SubscribeEvent
+	public void registerBlocks(RegistryEvent.Register<Biome> event)
+	{
+		
 	}
 
 	private void init(final FMLCommonSetupEvent event)
 	{
-		BiomeHandler.setBiomeTypes();
-	}
-
-	private void init(FMLPostInitializationEvent event)
-	{
 		EvoBiomes.init();
 	}
+	
 }

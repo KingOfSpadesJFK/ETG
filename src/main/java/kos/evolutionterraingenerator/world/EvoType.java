@@ -2,53 +2,32 @@ package kos.evolutionterraingenerator.world;
 
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
-import net.minecraft.world.biome.BiomeProvider;
-import net.minecraft.world.gen.IChunkGenerator;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.biome.provider.OverworldBiomeProviderSettings;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.gen.ChunkGenerator;
 
 public class EvoType extends WorldType
 {    
 	public static void register()
 	{
-		System.out.println("Registering New World Type....");
-		new EvoType();
-		System.out.println("Evolution Grips is online");
+		new EvoType("EVOLUTION");
 	}
 	
-	private EvoType()
-	{
-		super("EVOLUTION");
-	}
-	
-	public IChunkGenerator getChunkGenerator(World world, String generatorOptions)
-	{
-		System.out.println(generatorOptions);
-		return new EvoChunkGenerator(world, world.getSeed(), true, generatorOptions);
-	}
-
-	protected EvoType(String name)
+	private EvoType(String name)
 	{
 		super(name);
 	}
 	
 	@Override
-	public BiomeProvider getBiomeProvider(World world)
-	{
-		System.out.println("Here's that BiomeProvider provider you ordered.");
-		return new BiomeProviderEvo(world);
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public boolean hasInfoNotice()
-	{
-		return false;
-	}
-
-	@Override
-	public boolean isCustomizable()
-	{
-		return false;
-	}
+	@SuppressWarnings("deprecation")
+	public ChunkGenerator<?> createChunkGenerator(World world)
+    {
+		ChunkGenerator<?> generator;
+		EvoGenSettings settings = new EvoGenSettings();
+		if (world.dimension.getType() == DimensionType.OVERWORLD)
+		{
+			return new EvoChunkGenerator(world, new BiomeProviderEvo(new OverworldBiomeProviderSettings(world.getWorldInfo()), world), settings);
+		}
+        return world.dimension.createChunkGenerator();
+    }
 }
