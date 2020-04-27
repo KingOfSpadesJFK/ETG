@@ -50,14 +50,14 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
     /** A list of biomes that the player can spawn in. */
     private final List<Biome> biomesToSpawnIn = Lists.newArrayList(Biomes.FOREST, Biomes.PLAINS, Biomes.TAIGA, Biomes.BEACH);
     
-	public double[] temperatures;
-	public double[] humidities;
-	public double[] landmasses;
-	public double[] landmasses2;
-	public double[] biomeChance;
-	public double[] mushroomChance;
-	public boolean[] isRiver;
-	public double[] noise;
+    private double[] temperatures;
+	private double[] humidities;
+	private double[] landmasses;
+	private double[] landmasses2;
+	private double[] biomeChance;
+	private double[] mushroomChance;
+	private boolean[] isRiver;
+	private double[] noise;
 	
 	public static final double SNOW_TEMP = 0.125;
 	public static final double COLD_TEMP = 0.375;
@@ -91,16 +91,70 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
 
     public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height)
     {
-    	return getBiomesForGeneration(biomes, x, z, width, height, 1, 1, true);
+    	return getBiomesForGeneration(biomes, x, z, width, height, 1, 1);
     }
 
-    public Biome getBiome(int x, int y) {
-    	return getBiomesForGeneration(null, x, y, 1, 1, 1, 1, true)[0];
+    public Biome getBiome(int x, int z) {
+    	return generateBiome((double)x, (double)z);
+    }
+    
+    public double getTemperature(double x, double z)
+    {
+    	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
+    	return MathHelper.clamp((tempOctave.getNoise(x * (0.0045 / biomeScale), z * (0.0045 / biomeScale)) * 0.125 + WARM_TEMP) * 0.99 + noise * 0.01, 0.0, 1.0);
+    }
+    
+    public double getHumidity(double x, double z)
+    {
+    	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
+    	return MathHelper.clamp((humidOctave.getNoise((double)x * (0.035 / biomeScale), (double)z * (0.035 / biomeScale)) * 0.125 + 0.5) * 0.95 + noise * 0.05, 0.0, 1.0);
     }
     
     public Biome func_222366_b(int x, int z) {
-    	return getBiomesForGeneration(null, x, z, 1, 1, 1, 1, true)[0];
+    	return generateBiome(x, z);
      }
+    
+    public Biome generateBiome(double x, double z)
+    {
+    	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
+    	double temperature = (tempOctave.getNoise((double)x * (0.0045 / biomeScale), (double)z * (0.0045 / biomeScale))* 0.125 + WARM_TEMP) * 0.99 + noise * 0.01;
+    	double humidity = (humidOctave.getNoise((double)x * (0.035 / biomeScale), (double)z * (0.035 / biomeScale))* 0.125 + 0.5) * 0.95 + noise * 0.05;
+    	double landmass1 = (landOctave.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale))  * 0.25 + 0.65) * 0.997 + noise * 0.003;
+    	double landmass2 = (landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.25 + 0.75) * 0.997 + noise * 0.003;
+    	double biomeChance = (biomeChanceOctave.getNoise((double)x * 0.0025, (double)z * 0.0025) * 0.25 + 0.5) * 0.99 + noise * 0.01;
+    	double mushroomChance = (mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) * 0.25 + 0.5) * 0.999 + noise * 0.001;
+    	
+    	temperature = MathHelper.clamp(temperature, 0.0, 1.0);
+		humidity = MathHelper.clamp(humidity, 0.0, 1.0);
+		landmass1 = MathHelper.clamp(landmass1, 0.0, 1.0);
+		landmass2 = MathHelper.clamp(landmass2, 0.0, 1.0);
+		biomeChance = MathHelper.clamp(biomeChance, 0.0, 1.0);
+		mushroomChance = MathHelper.clamp(mushroomChance, 0.0, 1.0);
+
+		Biome biome = getLandBiome(temperature, humidity, biomeChance);
+		if (landmass1 < oceanThreshold && landmass2 < oceanThreshold)
+		{
+			if (mushroomChance > 0.99975)
+			{
+				if (mushroomChance >= 1.0)
+					biome = Biomes.MUSHROOM_FIELDS;
+				else
+					biome = getOcean(temperature, humidity, false);
+			}
+			else
+			{
+				if (landmass1 > oceanThreshold - 0.025 || landmass2 > oceanThreshold - 0.025)
+				{
+					if (!(biome.equals(Biomes.BADLANDS) | biome.equals(Biomes.DESERT)))
+						biome = getBeach(temperature, humidity, landmass1 <= oceanThreshold - 0.025);
+				}
+				else
+					biome = getOcean(temperature, humidity, landmass1 < oceanThreshold * 0.75 && landmass2 < oceanThreshold * 0.75);
+			}
+		}
+		
+    	return biome;
+    }
     
     public Set<Biome> getBiomesInSquare(int centerX, int centerZ, int sideLength) {
         int i = centerX - sideLength >> 2;
@@ -118,38 +172,13 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
          return BIOMES_TO_SPAWN_IN;
      }
     
-    public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height, int xScale, int zScale, boolean findOceans)
+    public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height, int xScale, int zScale)
     {
         if (biomes == null || biomes.length < width * height)
             biomes = new Biome[width * height];
 
-        if (temperatures == null || temperatures.length < width * height)
-        	temperatures = new double[width * height];
-        if (humidities == null || humidities.length < width * height)
-        	humidities = new double[width * height];
-        if (landmasses == null || landmasses.length < width * height)
-        	landmasses = new double[width * height];
-        if (landmasses2 == null || landmasses2.length < width * height)
-        	landmasses2 = new double[width * height];
-        if (biomeChance == null || biomeChance.length < width * height)
-        	biomeChance = new double[width * height];
-        if (mushroomChance == null || mushroomChance.length < width * height)
-        	mushroomChance = new double[width * height];
-
-        if (noise == null || noise.length < width * height)
-        	noise = new double[width * height];
-
         try
         {
-    		temperatures = tempOctave.generateNoiseOctaves(temperatures, x, z, width, height, (0.0045 / biomeScale) * xScale, (0.0045 / biomeScale) * zScale);
-    		humidities = humidOctave.generateNoiseOctaves(humidities, x, z, width, height, (0.035 / biomeScale) * xScale, (0.035 / biomeScale) * zScale);
-    		landmasses = landOctave.generateNoiseOctaves(landmasses, x, z, width, height, (0.00125 / oceanScale) * xScale,( 0.00125 / oceanScale) * zScale);
-    		landmasses2 = landOctave2.generateNoiseOctaves(landmasses2, x, z, width, height, (0.00125 / oceanScale) * xScale,( 0.00125 / oceanScale) * zScale);
-    		biomeChance = biomeChanceOctave.generateNoiseOctaves(biomeChance, x, z, width, height, 0.0025 * xScale, 0.0025 * zScale);
-    		mushroomChance = mushroomOctave.generateNoiseOctaves(mushroomChance, x, z, width, height, (0.00375 / biomeScale) * xScale, (0.00375 / biomeScale) * zScale);
-    		//double[] riverChance = riverOctave.generateNoiseOctaves(null, x, z, width, height, 0.0125 * xScale, 0.0125 * zScale, 0.25);
-    		noise = noiseOctave.generateNoiseOctaves(noise, x, z, width, height, 0.25 * xScale, 0.25 * zScale);
-
     		for (int i = 0; i < width; i++)
     		{
 
@@ -158,46 +187,7 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
     	    		int l = width * height - 1;
     	    		int m = i * width + j;
     	    		int k = j * height + i;
-    				double noiseVal = noise[m] * 1.1 + 0.5;
-    				double temperatureVal = (temperatures[m] * 0.125 + WARM_TEMP) * 0.99 + noiseVal * 0.01;
-    				double humidityVal = (humidities[m] * 0.125 + 0.5) * 0.95 + noiseVal * 0.05;
-    				double landVal = (landmasses[m]  * 0.25 + 0.65) * 0.997 + noiseVal * 0.003;
-    				double landVal2 = (landmasses2[m]  * 0.25 + 0.75) * 0.997 + noiseVal * 0.003;
-    				double chanceVal = (biomeChance[m]  * 0.25 + 0.5) * 0.99 + noiseVal * 0.01;
-    				double mushroomVal = (mushroomChance[m]  * 0.25 + 0.5) * 0.999 + noiseVal * 0.001;
-    				temperatureVal = MathHelper.clamp(temperatureVal, 0.0, 1.0);
-    				humidityVal = MathHelper.clamp(humidityVal, 0.0, 1.0);
-    				landVal = MathHelper.clamp(landVal, 0.0, 1.0);
-    				landVal2 = MathHelper.clamp(landVal2, 0.0, 1.0);
-    				chanceVal = MathHelper.clamp(chanceVal, 0.0, 1.0);
-    				mushroomVal = MathHelper.clamp(mushroomVal, 0.0, 1.0);
-    				temperatures[m] = temperatureVal;
-    				humidities[m] = humidityVal;
-    				landmasses[m] = landVal;
-    				landmasses2[m] = landVal2;
-    				mushroomChance[m] = mushroomVal;
-					biomes[k] = getLandBiome(temperatures[m], humidities[m], chanceVal);
-    				if (findOceans && landmasses[m] < oceanThreshold && landmasses2[m] < oceanThreshold)
-    				{
-    					if (mushroomChance[m] > 0.99975)
-    					{
-    						if (mushroomChance[m] >= 1.0)
-    							biomes[k] = Biomes.MUSHROOM_FIELDS;
-    						else
-        						biomes[k] = getOcean(temperatures[m], humidities[m], false);
-    					}
-    					else
-    					{
-        					if (landmasses[m] > oceanThreshold - 0.025 || landmasses2[m] > oceanThreshold - 0.025)
-        					{
-        						if (!(biomes[k].equals(Biomes.BADLANDS) | biomes[k].equals(Biomes.DESERT)))
-        							biomes[k] = getBeach(temperatures[m], humidities[m], landmasses[m] <= oceanThreshold - 0.025);
-        					}
-        					else
-        						biomes[k] = getOcean(temperatures[m], humidities[m], landmasses[m] < oceanThreshold * 0.75 && landmasses2[m] < oceanThreshold * 0.75);
-    					}
-    				}
-    				//isRiver[k] = valueOfRivia >= 0.25F && valueOfRivia <= 0.3F && !biomes[k].getBiomeName().contains("Ocean");
+    	    		biomes[k] = generateBiome((double)x * xScale, (double)z * zScale);
     			}
     		}
     		return biomes;
@@ -279,7 +269,7 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
      */
     public Biome[] getBiomes(@Nullable Biome[] oldBiomeList, int x, int z, int width, int depth)
     {
-        return this.getBiomes(oldBiomeList, x, z, width, depth, true);
+        return this.getBiomes(oldBiomeList, x, z, width, depth);
     }
 
     /**
@@ -306,7 +296,7 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
         int l = z + radius >> 2;
         int i1 = k - i + 1;
         int j1 = l - j + 1;
-        Biome[] arr = getBiomesForGeneration(null, i, j, i1, j1, 4, 4, true);
+        Biome[] arr = getBiomesForGeneration(null, i, j, i1, j1, 4, 4);
 
         try
         {
@@ -342,7 +332,7 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
         int l = z + range >> 2;
         int i1 = k - i + 1;
         int j1 = l - j + 1;
-        Biome[] arr = getBiomesForGeneration(null, i, j, i1, j1, 4, 4, false);
+        Biome[] arr = getBiomesForGeneration(null, i, j, i1, j1, 4, 4);
         BlockPos blockpos = null;
         int k1 = 0;
 
@@ -361,9 +351,4 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
 
         return blockpos;
     }
-
-	public Biome[] getBiomesForGeneration(Biome[] biomesForGeneration, int i, int j, int k, int l, int m, int n) {
-		// TODO Auto-generated method stub
-		return getBiomesForGeneration(biomesForGeneration, i, j, k, l, m, n, true);
-	}
 }

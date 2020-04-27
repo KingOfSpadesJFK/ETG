@@ -5,8 +5,10 @@ import java.util.Random;
 import kos.evolutionterraingenerator.util.noise.OpenSimplexNoise;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.gen.INoiseGenerator;
+import net.minecraft.world.gen.ImprovedNoiseGenerator;
+import net.minecraft.world.gen.OctavesNoiseGenerator;
 
-public class NoiseGeneratorOpenSimplex
+public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
 {
     /** Collection of noise generation functions.  Output is combined to produce different octaves of noise. */
     private final OpenSimplexNoise[] generatorCollection;
@@ -15,6 +17,7 @@ public class NoiseGeneratorOpenSimplex
 
     public NoiseGeneratorOpenSimplex(Random seed, int octavesIn)
     {
+    	super(seed, octavesIn);
         this.octaves = octavesIn;
         this.generatorCollection = new OpenSimplexNoise[octavesIn];
         this.vertexCollection = new Point3D[octavesIn];
@@ -82,7 +85,7 @@ public class NoiseGeneratorOpenSimplex
         		{
         			double z = zOffset + (double)j * zScale + vertex.z;
 
-        			noiseArray[c] += noise.eval(x, z) * (1.0 / noiseScale);
+        			noiseArray[c] += noise.eval(x, z) / noiseScale;
         			c++;
         		}
         	}
@@ -99,7 +102,7 @@ public class NoiseGeneratorOpenSimplex
         			for (int k = 0; k < ySize; k++)
         			{
             			double y = yOffset + (double)k * yScale + vertex.y;
-            			noiseArray[c] += noise.eval(x, y, z) * (1.0 / noiseScale);
+            			noiseArray[c] += noise.eval(x, y, z) / noiseScale;
             			c++;
         			}
         		}
@@ -114,9 +117,43 @@ public class NoiseGeneratorOpenSimplex
     {
         return this.generateNoiseOctaves(noiseArray, xOffset, 10, zOffset, xSize, 1, zSize, xScale, 1.0D, zScale);
     }
+
+    public OpenSimplexNoise getOpenSimplexOctave(int p_215463_1_) {
+       return this.generatorCollection[p_215463_1_];
+    }
     
     private class Point3D
     {
     	public double x, y, z;
     }
+
+	public double func_215460_a(double p_215462_1_, double p_215462_3_, double p_215462_5_, double p_215462_7_, double p_215462_9_, boolean p_215462_11_) {
+        double d0 = 0.0D;
+        double d1 = 1.0D;
+
+        for(int i = 0; i < octaves; i++)
+        {
+            d0 += this.generatorCollection[i].eval(this.generatorCollection[i].eval(maintainPrecision(p_215462_1_ * d1), p_215462_11_ ? -vertexCollection[i].y : maintainPrecision(p_215462_3_ * d1), maintainPrecision(p_215462_5_ * d1)), p_215462_7_ * d1, p_215462_9_ * d1) / d1;
+            d1 /= 2.0D;
+        }
+
+        return d0;
+	}
+	
+	public double getNoise(double x, double y, double z)
+	{
+        double d0 = 0.0D;
+        double d1 = 1.0D;
+
+        for(int i = 0; i < octaves; i++)
+        {
+            d0 += this.generatorCollection[i].eval(maintainPrecision(x * d1), maintainPrecision(y * d1), maintainPrecision(z * d1)) / d1;
+            d1 /= 2.0D;
+        }
+        return d0;
+	}
+
+	public double getNoise(double x, double z) {
+		return getNoise(x, 10, z);
+	}
 }

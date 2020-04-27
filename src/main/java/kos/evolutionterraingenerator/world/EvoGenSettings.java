@@ -21,7 +21,7 @@ public class EvoGenSettings extends OverworldGenSettings
 	private final double depthNoiseScaleZ = 200.0;
 	private final double coordScale = 160.0;
 	private final double heightScale = 60.0;
-	private final double depthBaseSize = 8.5;
+	private final double depthBaseSize = 8.555149841308594D;
 	private final double heightStretch = 12.0;
 	private final double lowerLimitScale = 512.0;
 	private final double upperLimitScale = 512.0;
