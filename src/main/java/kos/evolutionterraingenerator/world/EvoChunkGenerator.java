@@ -304,9 +304,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
        double height = this.settings.getMainNoiseHeightScale();
 
        for(int i = 0; i < 16; ++i) {
-          double d4 = OctavesNoiseGenerator.maintainPrecision((double)x * coord * d3);
-          double d5 = OctavesNoiseGenerator.maintainPrecision((double)y * height * d3);
-          double d6 = OctavesNoiseGenerator.maintainPrecision((double)z * coord * d3);
+          double d4 = (double)x * coord * d3;
+          double d5 = (double)y * height * d3;
+          double d6 = (double)z * coord * d3;
           
           long k = MathHelper.lfloor(d4);
           long l = MathHelper.lfloor(d6);
@@ -321,9 +321,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
           d1 += this.maxLimitPerlinNoise.getOpenSimplexOctave(i).eval(d4, d5, d6) / d3;
           if (i < 8) 
           {
-              d4 = OctavesNoiseGenerator.maintainPrecision((double)x * coord / coordScale * d3);
-              d5 = OctavesNoiseGenerator.maintainPrecision((double)y * height / heightScale * d3);
-              d6 = OctavesNoiseGenerator.maintainPrecision((double)z * coord / coordScale * d3);
+              d4 = (double)x * coord / coordScale * d3;
+              d5 = (double)y * height / heightScale * d3;
+              d6 = (double)z * coord / coordScale * d3;
               
               k = MathHelper.lfloor(d4);
               l = MathHelper.lfloor(d6);
@@ -339,7 +339,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
           d3 /= 2.0D;
        }
 
-       return MathHelper.clampedLerp(d0 / 512.0D, d1 / 512.0D, (d2 / 10.0D + 1.0D) / 2.0D);
+       return MathHelper.clampedLerp(d0 / this.settings.getLowerLimitScale(), d1 / this.settings.getUpperLimitScale(), (d2 / 10.0D + 1.0D) / 2.0D);
     }
 
     protected double[] func_222549_a(int x, int z) {

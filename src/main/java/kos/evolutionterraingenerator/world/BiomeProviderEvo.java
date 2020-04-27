@@ -18,6 +18,7 @@ import com.google.common.collect.Sets;
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
 import kos.evolutionterraingenerator.world.biome.EvoBiome;
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
+import kos.evolutionterraingenerator.world.biome.NewBiomes;
 
 import java.util.Collections;
 import java.util.List;
@@ -229,11 +230,11 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
     	if (temp < SNOW_TEMP)
     	{
     		if (isGravel)
-    			return Biomes.SNOWY_BEACH;
+    			return NewBiomes.SNOWY_GRAVEL_BEACH;
     		return Biomes.SNOWY_BEACH;
     	}
     	if (isGravel)
-    		return Biomes.BEACH;
+    		return NewBiomes.GRAVEL_BEACH;
     	return Biomes.BEACH;
     }
 

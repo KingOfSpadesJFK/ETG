@@ -1,14 +1,11 @@
 package kos.evolutionterraingenerator.world.biome;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
 
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
-import net.minecraftforge.event.RegistryEvent;
+import kos.evolutionterraingenerator.world.biome.NewBiomes;
 
 public abstract class EvoBiomes 
 {
@@ -16,11 +13,11 @@ public abstract class EvoBiomes
 	private static final Biome[] ForestArr = {Biomes.FOREST, Biomes.FLOWER_FOREST};
 	private static final Biome[] BirchForestArr = {Biomes.BIRCH_FOREST, Biomes.TALL_BIRCH_FOREST};
 	private static final Biome[] IcePlainsArr = {Biomes.SNOWY_TUNDRA, Biomes.SNOWY_TUNDRA, Biomes.SNOWY_TUNDRA, Biomes.ICE_SPIKES};
-	//private static final Biome[] TundraArr = {BiomeHandler.TUNDRA, BiomeHandler.GRAVELLY_TUNDRA};
+	private static final Biome[] TundraArr = {NewBiomes.TUNDRA, NewBiomes.GRAVELLY_TUNDRA};
 	private static final Biome[] RedwoodArr = {Biomes.GIANT_TREE_TAIGA, Biomes.GIANT_SPRUCE_TAIGA};
 	private static final Biome[] SavannaArr = {Biomes.SAVANNA, Biomes.SHATTERED_SAVANNA};
 	private static final Biome[] DesertArr = {Biomes.DESERT, Biomes.DESERT, Biomes.BADLANDS};
-	//private static final Biome[] SnowyRedwoodArr = {BiomeHandler.SNOWY_REDWOOD_TAIGA, BiomeHandler.MUTATED_SNOWY_REDWOOD_TAIGA};
+	private static final Biome[] SnowyRedwoodArr = {NewBiomes.SNOWY_GIANT_TREE_TAIGA, NewBiomes.SNOWY_GIANT_SPRUCE_TAIGA};
 	private static final Biome[] ExtremeArr = {Biomes.MOUNTAINS, Biomes.GRAVELLY_MOUNTAINS};
 	/*private static final Biome[] RainforestArr =
 		{	BiomeHandler.RAINFOREST, Biomes.DARK_FOREST, 
@@ -47,8 +44,9 @@ public abstract class EvoBiomes
 	public static final EvoBiome JUNGLE_EDGE = new EvoBiome(Biomes.JUNGLE_EDGE, null);
 	public static final EvoBiome SAVANNA = new EvoBiome(Biomes.SAVANNA, SavannaArr);
 	public static final EvoBiome DESERT = new EvoBiome(Biomes.DESERT, DesertArr);
-	//public static final EvoBiome SONWY_REDWOOD_TAIGA = new EvoBiome(BiomeHandler.SNOWY_REDWOOD_TAIGA, SnowyRedwoodArr);
-	//public static final EvoBiome TUNDRA = new EvoBiome(BiomeHandler.TUNDRA, TundraArr);
+	public static final EvoBiome SONWY_GIANT_TREE_TAIGA = new EvoBiome(NewBiomes.SNOWY_GIANT_TREE_TAIGA, SnowyRedwoodArr);
+	public static final EvoBiome TUNDRA = new EvoBiome(NewBiomes.TUNDRA, TundraArr);
+	public static final EvoBiome WOODED_TUNDRA = new EvoBiome(NewBiomes.TUNDRA_WOODED, null);
 	//public static final EvoBiome RAINFOREST_ROOFED = new EvoBiome(BiomeHandler.RAINFOREST, RainforestArr);
 	//public static final EvoBiome RAINFOREST = new EvoBiome(BiomeHandler.RAINFOREST, null);
 	public static final EvoBiome SAVANNA_PLAINS = new EvoBiome(Biomes.PLAINS, SavannaPlainsArr);
@@ -64,13 +62,14 @@ public abstract class EvoBiomes
 		ArrayList<EvoBiome> temp = new ArrayList<EvoBiome>();
 		temp.add(ICE_PLAINS);
 		temp.add(COLD_TAIGA);
-		//temp.add(SONWY_REDWOOD_TAIGA);
+		temp.add(SONWY_GIANT_TREE_TAIGA);
 		//To fix Plains and Taiga's sorting
 		//temp.sort(null);
 		SNOWY_BIOMES = toArray(temp);
 		temp.clear();
 		
-		temp.add(EXTREME_HILLS);
+		temp.add(TUNDRA);
+		temp.add(WOODED_TUNDRA);
 		temp.add(TAIGA);
 		temp.add(REDWOOD_TAIGA);
 		temp.sort(null);

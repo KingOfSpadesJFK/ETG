@@ -147,7 +147,7 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
 
         for(int i = 0; i < octaves; i++)
         {
-            d0 += this.generatorCollection[i].eval(maintainPrecision(x * d1), maintainPrecision(y * d1), maintainPrecision(z * d1)) / d1;
+            d0 += this.generatorCollection[i].eval(x * d1, y * d1, z * d1) / d1;
             d1 /= 2.0D;
         }
         return d0;
