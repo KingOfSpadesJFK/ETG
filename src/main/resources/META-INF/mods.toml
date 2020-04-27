@@ -4,7 +4,7 @@
 
     [[mods]]
       modId="evolutionterraingenerator"
-      version="0.2.0"
+      version="0.1.0"
       displayName="Evolution Terrain Generator"
       credits="Mojang for base terrain generators
   Kurt \"KdotJPG\" Spencer for Open Simplex Noise generator"

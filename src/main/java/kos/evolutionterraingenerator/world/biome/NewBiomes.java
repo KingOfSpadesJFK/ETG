@@ -3,8 +3,11 @@ package kos.evolutionterraingenerator.world.biome;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ObjectHolder;
+
 import kos.evolutionterraingenerator.EvolutionTerrainGenerator;
+import net.minecraftforge.common.BiomeDictionary;
 
 @ObjectHolder(EvolutionTerrainGenerator.MODID)
 public class NewBiomes {
@@ -26,9 +29,25 @@ public class NewBiomes {
 			NewBiomes.TUNDRA, 
 			NewBiomes.TUNDRA_WOODED, 
 			NewBiomes.GRAVELLY_TUNDRA};
+	
+	@Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
+	public static class RegistryEvents
+	{
+		@SubscribeEvent
+		public static void registerBiomes(final RegistryEvent.Register<Biome> event)
+		{
+			event.getRegistry().registerAll(NEW_BIOMES);
+			for (Biome b : NEW_BIOMES)
+			{
+				System.out.println(b.getRegistryName());
+			}
+			EvoBiomes.init();
+		}
+	}
 
 	private static Biome register(String name, Biome biome)
 	{
-		return biome.setRegistryName(EvolutionTerrainGenerator.MODID, name);
+		biome.setRegistryName(EvolutionTerrainGenerator.MODID, name);
+		return biome;
 	}
 }

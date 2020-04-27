@@ -5,10 +5,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.gen.OverworldGenSettings;
-import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.layer.Layer;
 import net.minecraft.world.gen.layer.LayerUtil;
-import net.minecraft.world.biome.provider.BiomeProvider;
 import net.minecraft.world.biome.provider.OverworldBiomeProvider;
 import net.minecraft.world.biome.provider.OverworldBiomeProviderSettings;
 
@@ -29,12 +27,8 @@ import javax.annotation.Nullable;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.crash.ReportedException;
-import net.minecraft.world.biome.Biomes;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldType;
 import net.minecraft.world.storage.WorldInfo;
 
 public class BiomeProviderEvo extends OverworldBiomeProvider
@@ -49,16 +43,7 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
     private NoiseGeneratorOpenSimplex noiseOctave;
     private NoiseGeneratorOpenSimplex mushroomOctave;
     /** A list of biomes that the player can spawn in. */
-    private final List<Biome> biomesToSpawnIn = Lists.newArrayList(Biomes.FOREST, Biomes.PLAINS, Biomes.TAIGA, Biomes.BEACH);
-    
-    private double[] temperatures;
-	private double[] humidities;
-	private double[] landmasses;
-	private double[] landmasses2;
-	private double[] biomeChance;
-	private double[] mushroomChance;
-	private boolean[] isRiver;
-	private double[] noise;
+    private final List<Biome> BIOMES_TO_SPAWN_IN = Lists.newArrayList(Biomes.FOREST, Biomes.PLAINS, Biomes.TAIGA, Biomes.BEACH);
 	
 	public static final double SNOW_TEMP = 0.125;
 	public static final double COLD_TEMP = 0.375;
@@ -185,8 +170,6 @@ public class BiomeProviderEvo extends OverworldBiomeProvider
 
     			for (int j = 0; j < height; j++)
     			{
-    	    		int l = width * height - 1;
-    	    		int m = i * width + j;
     	    		int k = j * height + i;
     	    		biomes[k] = generateBiome((double)x * xScale, (double)z * zScale);
     			}

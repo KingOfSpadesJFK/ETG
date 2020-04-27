@@ -1,74 +1,25 @@
 package kos.evolutionterraingenerator.world;
 
-import java.rmi.registry.Registry;
-import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
-import javax.annotation.Nullable;
-
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
+import kos.evolutionterraingenerator.world.biome.NewBiomes;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.FallingBlock;
-import net.minecraft.block.SandBlock;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.ReportedException;
-import net.minecraft.entity.EntityClassification;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.village.VillageSiege;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
-import net.minecraft.world.biome.provider.BiomeProvider;
 import net.minecraft.world.chunk.ChunkPrimer;
-import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.GenerationSettings;
-import net.minecraft.world.gen.GenerationStage;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.OctavesNoiseGenerator;
-import net.minecraft.world.gen.Heightmap.Type;
 import net.minecraft.world.gen.OverworldChunkGenerator;
-import net.minecraft.world.gen.OverworldGenSettings;
 import net.minecraft.world.gen.WorldGenRegion;
-import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.jigsaw.JigsawJunction;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
-import net.minecraft.world.gen.feature.structure.AbstractVillagePiece;
-import net.minecraft.world.gen.feature.structure.Structure;
-import net.minecraft.world.gen.feature.structure.StructurePiece;
-import net.minecraft.world.gen.feature.structure.StructureStart;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.spawner.CatSpawner;
-import net.minecraft.world.spawner.PatrolSpawner;
-import net.minecraft.world.spawner.PhantomSpawner;
-import net.minecraft.world.spawner.WorldEntitySpawner;
 
 public class EvoChunkGenerator extends OverworldChunkGenerator
 {
-	   private static final float[] field_222561_h = Util.make(new float[13824], (p_222557_0_) -> {
-		      for(int i = 0; i < 24; ++i) {
-		         for(int j = 0; j < 24; ++j) {
-		            for(int k = 0; k < 24; ++k) {
-		               p_222557_0_[i * 24 * 24 + j * 24 + k] = (float)func_222554_b(j - 12, k - 12, i - 12);
-		            }
-		         }
-		      }
-
-		   });
 	   private static final float[] field_222576_h = Util.make(new float[25], (p_222575_0_) -> {
 		      for(int i = -2; i <= 2; ++i) {
 		         for(int j = -2; j <= 2; ++j) {
@@ -98,7 +49,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     public NoiseGeneratorOpenSimplex depthNoise;
     public NoiseGeneratorOpenSimplex swampNoise;
     private final IWorld world;
-    private final double[] heightMap;
     private final float[] biomeWeights;
     private double[] swamplandChance;
     private double[] depthBuffer = new double[256];
@@ -130,7 +80,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         this.scaleNoise = new NoiseGeneratorOpenSimplex(this.rand, 10);
         this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
         this.swampNoise = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
-        this.heightMap = new double[825];
         this.biomeWeights = new float[25];
         
         this.horizontalNoiseGranularity = 4;
@@ -150,20 +99,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		
 	}
 
-	   private static double func_222554_b(int p_222554_0_, int p_222554_1_, int p_222554_2_) {
-	      double d0 = (double)(p_222554_0_ * p_222554_0_ + p_222554_2_ * p_222554_2_);
-	      double d1 = (double)p_222554_1_ + 0.5D;
-	      double d2 = d1 * d1;
-	      double d3 = Math.pow(Math.E, -(d2 / 16.0D + d0 / 16.0D));
-	      double d4 = -d1 * MathHelper.fastInvSqrt(d2 / 2.0D + d0 / 2.0D) / 2.0D;
-	      return d4 * d3;
-	   }
-
 	public void makeBase(IWorld worldIn, IChunk chunkIn)
 	{
 		super.makeBase(worldIn, chunkIn);
-		int x = chunkIn.getPos().x;
-		int z = chunkIn.getPos().z;
 		//setBlocksInChunk(chunkIn);
 		ChunkPrimer primer = (ChunkPrimer) chunkIn;
         //this.biomesForGeneration = this.biomeProvider.getBiomesForGeneration(this.biomesForGeneration, x * 16, z * 16, 16, 16);
@@ -193,7 +131,10 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
             	double noiseVal = this.depthBuffer[i * 16 + j];
             	ResourceLocation biomeid = biome.getRegistryName();
             	
-                boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName());
+                boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | 
+               		 biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName()) |
+               		 biomeid.equals(NewBiomes.GRAVEL_BEACH.getRegistryName()) |
+               		 biomeid.equals(NewBiomes.SNOWY_GRAVEL_BEACH.getRegistryName());
                 boolean isOcean = 
                 		biomeid.equals(Biomes.FROZEN_OCEAN.getRegistryName()) |
                 		biomeid.equals(Biomes.DEEP_FROZEN_OCEAN.getRegistryName()) |
@@ -360,7 +301,10 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 
              float f6 = field_222576_h[j + 2 + (k + 2) * 5] / (f4 + 2.0F);
              
-             boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName());
+             boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | 
+            		 biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName()) |
+            		 biomeid.equals(NewBiomes.GRAVEL_BEACH.getRegistryName()) |
+            		 biomeid.equals(NewBiomes.SNOWY_GRAVEL_BEACH.getRegistryName());
              
              boolean isOcean = 
              		biomeid.equals(Biomes.FROZEN_OCEAN.getRegistryName()) |
@@ -376,16 +320,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
              
          	if (isBeach | isOcean)
          	{
-         		if (isBeach)
-         		{
-         			f4 = this.settings.getBiomeDepthOffset() + Biomes.BEACH.getDepth() * this.settings.getBiomeDepthWeight();
-                    f5 = this.settings.getBiomeScaleOffset() + Biomes.BEACH.getScale() * this.settings.getBiomeScaleWeight();
-         		}
-         		else 
-         		{
-                    f4 = this.settings.getBiomeDepthOffset() + biome.getDepth() * this.settings.getBiomeDepthWeight();
-                    f5 = this.settings.getBiomeScaleOffset() + biome.getScale() * this.settings.getBiomeScaleWeight();
-         		}
+                f4 = this.settings.getBiomeDepthOffset() + biome.getDepth() * this.settings.getBiomeDepthWeight();
+                f5 = this.settings.getBiomeScaleOffset() + biome.getScale() * this.settings.getBiomeScaleWeight();
                 f6 = field_222576_h[j + 2 + (k + 2) * 5] / (f4 + 2.0F);
                  
                 if (biome.getDepth() > 0.125F)
