@@ -40,7 +40,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     protected static final BlockState WATER = Blocks.WATER.getDefaultState();
 	
 	private EvoGenSettings settings;
-	private final BiomeProviderEvo biomeProvider;
+	private final EvoBiomeProvider biomeProvider;
 	private final Random rand;
     private NoiseGeneratorOpenSimplex minLimitPerlinNoise;
     private NoiseGeneratorOpenSimplex maxLimitPerlinNoise;
@@ -63,7 +63,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	private final int verticalNoiseGranularity;
 	private final int horizontalNoiseGranularity;
 	
-	public EvoChunkGenerator(IWorld worldIn, BiomeProviderEvo biomeProviderIn, EvoGenSettings settingsIn) {
+	public EvoChunkGenerator(IWorld worldIn, EvoBiomeProvider biomeProviderIn, EvoGenSettings settingsIn) {
 		super(worldIn, biomeProviderIn, settingsIn);
 
 		this.world = worldIn;

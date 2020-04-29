@@ -28,7 +28,7 @@ public class EvoType extends WorldType
 			OverworldBiomeProviderSettings that = new OverworldBiomeProviderSettings();
 			that.setWorldInfo(world.getWorldInfo());
 			that.setGeneratorSettings(settings);
-			return new EvoChunkGenerator(world, new BiomeProviderEvo(that, world), settings);
+			return new EvoChunkGenerator(world, new EvoBiomeProvider(that, world), settings);
 		}
         return world.dimension.createChunkGenerator();
     }

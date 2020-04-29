@@ -9,7 +9,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ObjectHolder;
 
 import kos.evolutionterraingenerator.EvolutionTerrainGenerator;
-import kos.evolutionterraingenerator.world.BiomeProviderEvo;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
 

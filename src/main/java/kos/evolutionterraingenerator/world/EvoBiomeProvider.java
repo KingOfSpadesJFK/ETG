@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IWorld;
 
-public class BiomeProviderEvo extends BiomeProvider
+public class EvoBiomeProvider extends BiomeProvider
 {
     private NoiseGeneratorOpenSimplex tempOctave;
     private NoiseGeneratorOpenSimplex humidOctave;
@@ -45,7 +45,7 @@ public class BiomeProviderEvo extends BiomeProvider
 	public static final double WARM_TEMP = 0.625;
 	public static final double HOT_TEMP = 0.875;
 
-	public BiomeProviderEvo(OverworldBiomeProviderSettings settingsProvider, IWorld worldIn) {
+	public EvoBiomeProvider(OverworldBiomeProviderSettings settingsProvider, IWorld worldIn) {
 		super();
         
         Random rand = new Random(worldIn.getSeed());
@@ -72,7 +72,7 @@ public class BiomeProviderEvo extends BiomeProvider
     public double getTemperature(double x, double z)
     {
     	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
-    	return MathHelper.clamp((tempOctave.getNoise(x * (0.0045 / biomeScale), z * (0.0045 / biomeScale)) * 0.075 + 0.5) * 0.99 + noise * 0.01, 0.0, 1.0);
+    	return MathHelper.clamp((tempOctave.getNoise(x * (0.0045 / biomeScale), z * (0.0045 / biomeScale)) * 0.1 + 0.5) * 0.99 + noise * 0.01, 0.0, 1.0);
     }
     
     public double getHumidity(double x, double z)
@@ -88,7 +88,7 @@ public class BiomeProviderEvo extends BiomeProvider
     public static final double biomeScale = 3.0;
     public static final double oceanScale = 0.025;
     public static final double oceanThreshold = 4.0;
-    public static final double beachThreshold = 0.0125;
+    public static final double beachThreshold = 0.0175;
     public static final double deepThreshold = 0.375;
     
     public static final double riverThreshold = 0.025;
@@ -108,8 +108,8 @@ public class BiomeProviderEvo extends BiomeProvider
     	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
     	double temperature = getTemperature(x, z);
     	double humidity = getHumidity(x, z);
-    	double landmass1 = (landOctave.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale))  * 0.125 + 0.875) * 0.997 + noise * 0.003;
-    	double landmass2 = (landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 + 0.875) * 0.997 + noise * 0.003;
+    	double landmass1 = (landOctave.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale))  * 0.125 + 0.875);
+    	double landmass2 = (landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 + 0.875);
     	double biomeChance = (biomeChanceOctave.getNoise((double)x * 0.0025, (double)z * 0.0025) * 0.25 + 0.5) * 0.99 + noise * 0.01;
     	double mushroomChance = (mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) * 0.25 + 0.5) * 0.999 + noise * 0.001;
     	
