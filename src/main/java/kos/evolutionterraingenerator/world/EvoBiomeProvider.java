@@ -221,7 +221,7 @@ public class EvoBiomeProvider extends BiomeProvider
         int i1 = k - i + 1;
         int j1 = l - j + 1;
         Set<Biome> set = Sets.newHashSet();
-        Collections.addAll(set, getBiomesForGeneration(null, i, j, i1, j1));
+        Collections.addAll(set, getBiomesForGeneration(null, i, j, i1, j1, 4, 4));
         return set;
      }
 
