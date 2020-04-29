@@ -83,9 +83,10 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
             	double x = xOffset + (double)i * xScale + vertex.x;
         		for (int j = 0; j < zSize; j++)
         		{
+        			double y = yOffset * yScale + vertex.y;
         			double z = zOffset + (double)j * zScale + vertex.z;
 
-        			noiseArray[c] += noise.eval(x, z) / noiseScale;
+        			noiseArray[c] += noise.eval(x, y, z) / noiseScale;
         			c++;
         		}
         	}
@@ -118,8 +119,8 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
         return this.generateNoiseOctaves(noiseArray, xOffset, 10, zOffset, xSize, 1, zSize, xScale, 1.0D, zScale);
     }
 
-    public OpenSimplexNoise getOpenSimplexOctave(int p_215463_1_) {
-       return this.generatorCollection[p_215463_1_];
+    public OpenSimplexNoise getOpenSimplexOctave(int i) {
+       return this.generatorCollection[i];
     }
     
     private class Point3D
@@ -142,18 +143,50 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
 	
 	public double getNoise(double x, double y, double z)
 	{
-        double d0 = 0.0D;
-        double d1 = 1.0D;
+        double d3 = 1.0D;
+        double d4 = 0.0D;
 
         for(int i = 0; i < octaves; i++)
         {
-            d0 += this.generatorCollection[i].eval(x * d1, y * d1, z * d1) / d1;
-            d1 /= 2.0D;
+            double d0 = x * d3;
+            double d1 = y * d3;
+            double d2 = z * d3;
+            long k = MathHelper.lfloor(d0);
+            long l = MathHelper.lfloor(d2);
+            d0 = d0 - (double)k;
+            d2 = d2 - (double)l;
+            k = k % 16777216L;
+            l = l % 16777216L;
+            d0 = d0 + (double)k;
+            d2 = d2 + (double)l;
+            
+            d4 += this.generatorCollection[i].eval(d0, d1, d2) / d3;
+            d3 /= 2.0D;
         }
-        return d0;
+        return d4;
 	}
 
-	public double getNoise(double x, double z) {
-		return getNoise(x, 10, z);
+	public double getNoise(double x, double z) 
+	{
+        double d3 = 1.0D;
+        double d4 = 0.0D;
+
+        for(int i = 0; i < octaves; i++)
+        {
+            double d0 = x * d3;
+            double d2 = z * d3;
+            long k = MathHelper.lfloor(d0);
+            long l = MathHelper.lfloor(d2);
+            d0 = d0 - (double)k;
+            d2 = d2 - (double)l;
+            k = k % 16777216L;
+            l = l % 16777216L;
+            d0 = d0 + (double)k;
+            d2 = d2 + (double)l;
+            
+            d4 += this.generatorCollection[i].eval(d0, d2) / d3;
+            d3 /= 2.0D;
+        }
+        return d4;
 	}
 }

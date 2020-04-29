@@ -13,6 +13,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.provider.BiomeProvider;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.OverworldChunkGenerator;
@@ -50,8 +51,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     public NoiseGeneratorOpenSimplex swampNoise;
     private final IWorld world;
     private final float[] biomeWeights;
-    private double[] swamplandChance;
-    private double[] depthBuffer = new double[256];
     private Biome[] biomesForGeneration;
     double[] mainNoiseRegion;
     double[] minLimitRegion;
@@ -119,8 +118,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     	int x = primer.getPos().x;
     	int z = primer.getPos().z;
     	Biome[] aBiome = new Biome[16*16];
-        this.swamplandChance = swampNoise.generateNoiseOctaves(null, x * 16, z * 16, 16, 16, 0.0125, 0.0125);
-        this.depthBuffer = this.surfaceNoise.generateNoiseOctaves(this.depthBuffer,x * 16, z * 16, 16, 16, 0.0875D, 0.0875D);
 
         for (int i = 0; i < 16; ++i)
         {
@@ -128,7 +125,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
             {
             	Biome biome = this.biomeProvider.getBiome(x * 16 + i, z * 16 + j);
     			this.biomesForGeneration[i * 16 + j] = biome;
-            	double noiseVal = this.depthBuffer[i * 16 + j];
+            	double noiseVal = this.surfaceNoise.getNoise((double)(x * 16 + i) * 0.0875, (double)(z * 16 + j) * 0.0875);
             	ResourceLocation biomeid = biome.getRegistryName();
             	
                 boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | 
@@ -163,7 +160,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         int seaLevel = this.settings.getSeaLevel();
         int xInChunk = x & 15;
         int zInChunk = z & 15;
-        double swamp = swamplandChance[xInChunk * 16 + zInChunk] * 0.5 + 0.5;
+        double swamp = swampNoise.getNoise((double)x * 0.0125, (double)z * 0.0125);
         swamp = MathHelper.clamp(swamp, 0.0, 1.0);
         double temperature = this.biomeProvider.getTemperature(x, z);
         double humidity = this.biomeProvider.getHumidity(x, z);
@@ -202,6 +199,10 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     protected Biome getBiome(WorldGenRegion worldRegionIn, BlockPos pos) {
     	return worldRegionIn.getBiome(pos);
      }
+
+    public BiomeProvider getBiomeProvider() {
+       return this.biomeProvider;
+    }
 	
 	/* 1.14 GENERATION METHODS */
 
@@ -215,6 +216,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
        this.func_222546_a(p_222548_1_, x, z, coordScale, heightScale, depthBase, d3, j, i);
     }
 
+    
+    //The only reason it's here is because of func_222552_a() being private in NoiseChunkGenerator
     protected void func_222546_a(double[] p_222546_1_, int x, int z, double coordScale, double heightScale, double depthBase, double p_222546_10_, int p_222546_12_, int p_222546_13_) {
        double[] adouble = this.func_222549_a(x, z);
        double d0 = adouble[0];
@@ -237,48 +240,12 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     }
 
     private double func_222552_a(int x, int y, int z, double coordScale, double heightScale, double depthBase, double p_222552_10_) {
-       double d0 = 0.0D;
-       double d1 = 0.0D;
-       double d2 = 0.0D;
-       double d3 = 1.0D;
+
        double coord = this.settings.getMainNoiseCoordScale();
        double height = this.settings.getMainNoiseHeightScale();
-
-       for(int i = 0; i < 16; ++i) {
-          double d4 = (double)x * coord * d3;
-          double d5 = (double)y * height * d3;
-          double d6 = (double)z * coord * d3;
-          
-          long k = MathHelper.lfloor(d4);
-          long l = MathHelper.lfloor(d6);
-          d4 = d4 - (double)k;
-          d6 = d6 - (double)l;
-          k = k % 16777216L;
-          l = l % 16777216L;
-          d4 = d4 + (double)k;
-          d6 = d6 + (double)l;
-          
-          d0 += this.minLimitPerlinNoise.getOpenSimplexOctave(i).eval(d4, d5, d6) / d3;
-          d1 += this.maxLimitPerlinNoise.getOpenSimplexOctave(i).eval(d4, d5, d6) / d3;
-          if (i < 8) 
-          {
-              d4 = (double)x * coord / coordScale * d3;
-              d5 = (double)y * height / heightScale * d3;
-              d6 = (double)z * coord / coordScale * d3;
-              
-              k = MathHelper.lfloor(d4);
-              l = MathHelper.lfloor(d6);
-              d4 = d4 - (double)k;
-              d6 = d6 - (double)l;
-              k = k % 16777216L;
-              l = l % 16777216L;
-              d4 = d4 + (double)k;
-              d6 = d6 + (double)l;
-              d2 += this.mainPerlinNoise.getOpenSimplexOctave(i).eval(d4, d5, d6) / d3;
-          }
-
-          d3 /= 2.0D;
-       }
+       double d0 = this.minLimitPerlinNoise.getNoise(x * coord, y * height, z * coord);
+       double d1 = this.maxLimitPerlinNoise.getNoise(x * coord, y * height, z * coord);
+       double d2 = this.mainPerlinNoise.getNoise(x * coord / coordScale, y * height / heightScale, z * coord / coordScale);
 
        return MathHelper.clampedLerp(d0 / this.settings.getLowerLimitScale(), d1 / this.settings.getUpperLimitScale(), (d2 / 10.0D + 1.0D) / 2.0D);
     }
@@ -296,8 +263,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
              float temperature =  (float) this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
              float humidity =  (float) this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
              ResourceLocation biomeid = biome.getRegistryName();
-             float f4 = 0.75F * this.settings.getBiomeDepthWeight() + (0.0025F - temperature * 0.0025F);
-             float f5 = 0.75F * this.settings.getBiomeScaleWeight() + humidity * 0.0025F;
+             float f4 = 0.75F  + (0.025F - humidity * temperature * 0.025F) * this.settings.getBiomeDepthWeight();
+             float f5 = 1.115F + humidity * temperature * 0.025F * this.settings.getBiomeScaleWeight();
 
              float f6 = field_222576_h[j + 2 + (k + 2) * 5] / (f4 + 2.0F);
              
@@ -318,16 +285,25 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
              		biomeid.equals(Biomes.OCEAN.getRegistryName()) |
              		biomeid.equals(Biomes.DEEP_OCEAN.getRegistryName());
              
+             boolean isRiver = this.biomeProvider.getRiver((x + j) * 4, (z + k) * 4);
+             
          	if (isBeach | isOcean)
          	{
                 f4 = this.settings.getBiomeDepthOffset() + biome.getDepth() * this.settings.getBiomeDepthWeight();
-                f5 = this.settings.getBiomeScaleOffset() + biome.getScale() * this.settings.getBiomeScaleWeight();
+                f5 = this.settings.getBiomeScaleOffset() + biome.getScale() * 0.25F * this.settings.getBiomeScaleWeight();
                 f6 = field_222576_h[j + 2 + (k + 2) * 5] / (f4 + 2.0F);
                  
                 if (biome.getDepth() > 0.125F)
                 {
                     f6 /= 2.0F;
                 }
+         	}
+         	
+         	if (isRiver && !isOcean)
+         	{
+                f4 = this.settings.getBiomeDepthOffset() + Biomes.OCEAN.getDepth() * this.settings.getBiomeDepthWeight();
+                f5 = this.settings.getBiomeScaleOffset() + Biomes.OCEAN.getScale() * 0.25F * this.settings.getBiomeScaleWeight();
+                f6 = field_222576_h[j + 2 + (k + 2) * 5] / (f4 + 2.0F);
          	}
 
              f += f5 * f6;

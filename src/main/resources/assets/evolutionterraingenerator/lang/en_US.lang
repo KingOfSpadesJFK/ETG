@@ -1,1 +1,3 @@
-generator.EVOLUTION=Evolution
+{
+	"generator.evolution": "Evolution"
+}

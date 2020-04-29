@@ -19,11 +19,12 @@ public abstract class EvoBiomes
 	private static final Biome[] DesertArr = {Biomes.DESERT, Biomes.DESERT, Biomes.BADLANDS};
 	private static final Biome[] SnowyRedwoodArr = {NewBiomes.SNOWY_GIANT_TREE_TAIGA, NewBiomes.SNOWY_GIANT_SPRUCE_TAIGA};
 	private static final Biome[] ExtremeArr = {Biomes.MOUNTAINS, Biomes.GRAVELLY_MOUNTAINS};
-	/*private static final Biome[] RainforestArr =
-		{	BiomeHandler.RAINFOREST, Biomes.DARK_FOREST, 
-			BiomeHandler.RAINFOREST, Biomes.DARK_FOREST, 
-			BiomeHandler.RAINFOREST, Biomes.DARK_FOREST, 
-			BiomeHandler.RAINFOREST, Biomes.DARK_FOREST	};*/
+	private static final Biome[] JungleArr = {Biomes.JUNGLE, Biomes.BAMBOO_JUNGLE};
+	private static final Biome[] RainforestArr =
+		{	NewBiomes.RAINFOREST, Biomes.DARK_FOREST, 
+			NewBiomes.RAINFOREST, Biomes.DARK_FOREST, 
+			NewBiomes.RAINFOREST, Biomes.DARK_FOREST, 
+			NewBiomes.RAINFOREST, Biomes.DARK_FOREST	};
 	private static final Biome[] SavannaPlainsArr =
 		{	Biomes.SAVANNA, Biomes.PLAINS, 
 			Biomes.SAVANNA, Biomes.PLAINS, 
@@ -40,22 +41,22 @@ public abstract class EvoBiomes
 	public static final EvoBiome COLD_TAIGA = new EvoBiome(Biomes.SNOWY_TAIGA, null);
 	public static final EvoBiome REDWOOD_TAIGA = new EvoBiome(Biomes.DARK_FOREST, RedwoodArr);
 	public static final EvoBiome ROOFED_FOREST = new EvoBiome(Biomes.DARK_FOREST, null);
-	public static final EvoBiome JUNGLE = new EvoBiome(Biomes.JUNGLE, null);
+	public static final EvoBiome JUNGLE = new EvoBiome(Biomes.JUNGLE, JungleArr);
 	public static final EvoBiome JUNGLE_EDGE = new EvoBiome(Biomes.JUNGLE_EDGE, null);
 	public static final EvoBiome SAVANNA = new EvoBiome(Biomes.SAVANNA, SavannaArr);
 	public static final EvoBiome DESERT = new EvoBiome(Biomes.DESERT, DesertArr);
 	public static final EvoBiome SONWY_GIANT_TREE_TAIGA = new EvoBiome(NewBiomes.SNOWY_GIANT_TREE_TAIGA, SnowyRedwoodArr);
 	public static final EvoBiome TUNDRA = new EvoBiome(NewBiomes.TUNDRA, TundraArr);
 	public static final EvoBiome WOODED_TUNDRA = new EvoBiome(NewBiomes.TUNDRA_WOODED, null);
-	//public static final EvoBiome RAINFOREST_ROOFED = new EvoBiome(BiomeHandler.RAINFOREST, RainforestArr);
-	//public static final EvoBiome RAINFOREST = new EvoBiome(BiomeHandler.RAINFOREST, null);
+	public static final EvoBiome RAINFOREST_ROOFED = new EvoBiome(NewBiomes.RAINFOREST, RainforestArr);
+	public static final EvoBiome RAINFOREST = new EvoBiome(NewBiomes.RAINFOREST, null);
 	public static final EvoBiome SAVANNA_PLAINS = new EvoBiome(Biomes.PLAINS, SavannaPlainsArr);
 
 	public static EvoBiome[] SNOWY_BIOMES = {EvoBiomes.ICE_PLAINS, EvoBiomes.COLD_TAIGA};
 	public static EvoBiome[] COLD_BIOMES = {EvoBiomes.EXTREME_HILLS, EvoBiomes.EXTREME_HILLS, EvoBiomes.TAIGA, EvoBiomes.TAIGA, EvoBiomes.REDWOOD_TAIGA};
 	public static EvoBiome[] WARM_BIOMES = {EvoBiomes.PLAINS, EvoBiomes.BIRCH_FOREST, EvoBiomes.FOREST, EvoBiomes.ROOFED_FOREST};
-    public static EvoBiome[] HOT_BIOMES = {EvoBiomes.SAVANNA, EvoBiomes.PLAINS, EvoBiomes.FOREST, EvoBiomes.ROOFED_FOREST, EvoBiomes.JUNGLE};
-    public static EvoBiome[] ARID_BIOMES = {EvoBiomes.DESERT, EvoBiomes.SAVANNA, EvoBiomes.SAVANNA, EvoBiomes.PLAINS, EvoBiomes.PLAINS, EvoBiomes.JUNGLE};
+    public static EvoBiome[] HOT_BIOMES = {EvoBiomes.SAVANNA, EvoBiomes.PLAINS, EvoBiomes.FOREST, EvoBiomes.ROOFED_FOREST, EvoBiomes.RAINFOREST};
+    public static EvoBiome[] ARID_BIOMES = {EvoBiomes.DESERT, EvoBiomes.SAVANNA, EvoBiomes.SAVANNA, EvoBiomes.PLAINS, EvoBiomes.PLAINS, EvoBiomes.RAINFOREST, EvoBiomes.RAINFOREST, EvoBiomes.JUNGLE};
     
 	public static void init()
 	{
@@ -87,8 +88,8 @@ public abstract class EvoBiomes
 		temp.add(SAVANNA);
 		temp.add(PLAINS);
 		temp.add(FOREST);
+		temp.add(RAINFOREST);
 		temp.add(ROOFED_FOREST);
-		temp.add(JUNGLE);
 		temp.sort(null);
 		HOT_BIOMES = toArray(temp);
 		temp.clear();
@@ -96,7 +97,7 @@ public abstract class EvoBiomes
 		temp.add(DESERT);
 		temp.add(SAVANNA);
 		temp.add(PLAINS);
-		temp.add(ROOFED_FOREST);
+		temp.add(RAINFOREST_ROOFED);
 		temp.add(JUNGLE);
 		temp.sort(null);
 		ARID_BIOMES = toArray(temp);

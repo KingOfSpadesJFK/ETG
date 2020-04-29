@@ -10,7 +10,7 @@ public class EvoType extends WorldType
 {    
 	public static void register()
 	{
-		new EvoType("EVOLUTION");
+		new EvoType("evolution");
 	}
 	
 	private EvoType(String name)
@@ -22,7 +22,6 @@ public class EvoType extends WorldType
 	@SuppressWarnings("deprecation")
 	public ChunkGenerator<?> createChunkGenerator(World world)
     {
-		ChunkGenerator<?> generator;
 		EvoGenSettings settings = new EvoGenSettings();
 		if (world.dimension.getType() == DimensionType.OVERWORLD)
 		{
