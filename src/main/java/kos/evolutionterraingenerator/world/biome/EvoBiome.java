@@ -1,6 +1,5 @@
 package kos.evolutionterraingenerator.world.biome;
 
-import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.Biome;
 
 public class EvoBiome implements Comparable<EvoBiome>

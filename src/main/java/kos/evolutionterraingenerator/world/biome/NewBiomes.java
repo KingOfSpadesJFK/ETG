@@ -1,10 +1,6 @@
 package kos.evolutionterraingenerator.world.biome;
 
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.provider.BiomeProviderType;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ObjectHolder;
 

@@ -3,9 +3,7 @@ package kos.evolutionterraingenerator.world.biome;
 import java.util.ArrayList;
 
 import net.minecraft.world.biome.Biomes;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
-import kos.evolutionterraingenerator.world.biome.NewBiomes;
 
 public abstract class EvoBiomes 
 {

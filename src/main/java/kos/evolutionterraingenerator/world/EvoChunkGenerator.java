@@ -50,18 +50,14 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     public NoiseGeneratorOpenSimplex depthNoise;
     public NoiseGeneratorOpenSimplex swampNoise;
     private final IWorld world;
-    private final float[] biomeWeights;
     private Biome[] biomesForGeneration;
     double[] mainNoiseRegion;
     double[] minLimitRegion;
     double[] maxLimitRegion;
     double[] depthRegion;
     
-	private final int noiseSizeZ;
 	private final int noiseSizeY;
-	private final int noiseSizeX;
 	private final int verticalNoiseGranularity;
-	private final int horizontalNoiseGranularity;
 	
 	public EvoChunkGenerator(IWorld worldIn, EvoBiomeProvider biomeProviderIn, EvoGenSettings settingsIn) {
 		super(worldIn, biomeProviderIn, settingsIn);
@@ -79,23 +75,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         this.scaleNoise = new NoiseGeneratorOpenSimplex(this.rand, 10);
         this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
         this.swampNoise = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
-        this.biomeWeights = new float[25];
         
-        this.horizontalNoiseGranularity = 4;
     	this.verticalNoiseGranularity = 8;
-        this.noiseSizeX = 16 / this.horizontalNoiseGranularity;
-        this.noiseSizeY = 256 / this.verticalNoiseGranularity;
-        this.noiseSizeZ = 16 / this.horizontalNoiseGranularity;
-
-        for (int i = -2; i <= 2; ++i)
-        {
-            for (int j = -2; j <= 2; ++j)
-            {
-                float f = 10.0F / MathHelper.sqrt((float)(i * i + j * j) + 0.2F);
-                this.biomeWeights[i + 2 + (j + 2) * 5] = f;
-            }
-        }
-		
+        this.noiseSizeY = 256 / this.verticalNoiseGranularity;		
 	}
 
 	public void makeBase(IWorld worldIn, IChunk chunkIn)

@@ -7,13 +7,8 @@ import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.ChunkGenerator;
 
 public class EvoType extends WorldType
-{    
-	public static void register()
-	{
-		new EvoType("evolution");
-	}
-	
-	private EvoType(String name)
+{
+	public EvoType(String name)
 	{
 		super(name);
 	}
