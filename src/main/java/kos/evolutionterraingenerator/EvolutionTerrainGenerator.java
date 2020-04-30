@@ -2,7 +2,6 @@ package kos.evolutionterraingenerator;
 
 import kos.evolutionterraingenerator.config.Config;
 import kos.evolutionterraingenerator.world.EvoType;
-import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -32,7 +31,6 @@ public class EvolutionTerrainGenerator {
         MinecraftForge.EVENT_BUS.register(this);
         
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-		EvoBiomes.init();
 	}
 	
 	//TODO

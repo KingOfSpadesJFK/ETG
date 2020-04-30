@@ -30,25 +30,24 @@ public abstract class EvoBiomes
 			Biomes.SAVANNA, Biomes.PLAINS,
 			Biomes.SHATTERED_SAVANNA, Biomes.SUNFLOWER_PLAINS};
 	
-	public static final EvoBiome PLAINS = new EvoBiome(Biomes.PLAINS, PlainsArr);
-	public static final EvoBiome FOREST = new EvoBiome(Biomes.FOREST, ForestArr);
-	public static final EvoBiome BIRCH_FOREST = new EvoBiome(Biomes.BIRCH_FOREST, BirchForestArr);
-	public static final EvoBiome ICE_PLAINS = new EvoBiome(Biomes.SNOWY_TUNDRA, IcePlainsArr);
-	public static final EvoBiome EXTREME_HILLS = new EvoBiome(Biomes.MOUNTAINS, ExtremeArr);
-	public static final EvoBiome TAIGA = new EvoBiome(Biomes.TAIGA, null);
-	public static final EvoBiome COLD_TAIGA = new EvoBiome(Biomes.SNOWY_TAIGA, null);
-	public static final EvoBiome REDWOOD_TAIGA = new EvoBiome(Biomes.DARK_FOREST, RedwoodArr);
-	public static final EvoBiome ROOFED_FOREST = new EvoBiome(Biomes.DARK_FOREST, null);
-	public static final EvoBiome JUNGLE = new EvoBiome(Biomes.JUNGLE, JungleArr);
-	public static final EvoBiome JUNGLE_EDGE = new EvoBiome(Biomes.JUNGLE_EDGE, null);
-	public static final EvoBiome SAVANNA = new EvoBiome(Biomes.SAVANNA, SavannaArr);
-	public static final EvoBiome DESERT = new EvoBiome(Biomes.DESERT, DesertArr);
-	public static final EvoBiome SONWY_GIANT_TREE_TAIGA = new EvoBiome(NewBiomes.SNOWY_GIANT_TREE_TAIGA, SnowyRedwoodArr);
-	public static final EvoBiome TUNDRA = new EvoBiome(NewBiomes.TUNDRA, TundraArr);
-	public static final EvoBiome WOODED_TUNDRA = new EvoBiome(NewBiomes.TUNDRA_WOODED, null);
-	public static final EvoBiome RAINFOREST_ROOFED = new EvoBiome(NewBiomes.RAINFOREST, RainforestArr);
-	public static final EvoBiome RAINFOREST = new EvoBiome(NewBiomes.RAINFOREST, null);
-	public static final EvoBiome SAVANNA_PLAINS = new EvoBiome(Biomes.PLAINS, SavannaPlainsArr);
+	public static EvoBiome PLAINS = new EvoBiome(Biomes.PLAINS, PlainsArr);
+	public static EvoBiome FOREST = new EvoBiome(Biomes.FOREST, ForestArr);
+	public static EvoBiome BIRCH_FOREST = new EvoBiome(Biomes.BIRCH_FOREST, BirchForestArr);
+	public static EvoBiome ICE_PLAINS = new EvoBiome(Biomes.SNOWY_TUNDRA, IcePlainsArr);
+	public static EvoBiome EXTREME_HILLS = new EvoBiome(Biomes.MOUNTAINS, ExtremeArr);
+	public static EvoBiome TAIGA = new EvoBiome(Biomes.TAIGA, null);
+	public static EvoBiome COLD_TAIGA = new EvoBiome(Biomes.SNOWY_TAIGA, null);
+	public static EvoBiome REDWOOD_TAIGA = new EvoBiome(Biomes.DARK_FOREST, RedwoodArr);
+	public static EvoBiome ROOFED_FOREST = new EvoBiome(Biomes.DARK_FOREST, null);
+	public static EvoBiome JUNGLE = new EvoBiome(Biomes.JUNGLE, JungleArr);
+	public static EvoBiome SAVANNA = new EvoBiome(Biomes.SAVANNA, SavannaArr);
+	public static EvoBiome DESERT = new EvoBiome(Biomes.DESERT, DesertArr);
+	public static EvoBiome SONWY_GIANT_TREE_TAIGA = new EvoBiome(NewBiomes.SNOWY_GIANT_TREE_TAIGA, SnowyRedwoodArr);
+	public static EvoBiome TUNDRA = new EvoBiome(NewBiomes.TUNDRA, TundraArr);
+	public static EvoBiome WOODED_TUNDRA = new EvoBiome(NewBiomes.TUNDRA_WOODED, null);
+	public static EvoBiome RAINFOREST_ROOFED = new EvoBiome(NewBiomes.RAINFOREST, RainforestArr);
+	public static EvoBiome RAINFOREST = new EvoBiome(NewBiomes.RAINFOREST, null);
+	public static EvoBiome SAVANNA_PLAINS = new EvoBiome(Biomes.PLAINS, SavannaPlainsArr);
 
 	public static EvoBiome[] SNOWY_BIOMES = {EvoBiomes.ICE_PLAINS, EvoBiomes.COLD_TAIGA};
 	public static EvoBiome[] COLD_BIOMES = {EvoBiomes.EXTREME_HILLS, EvoBiomes.EXTREME_HILLS, EvoBiomes.TAIGA, EvoBiomes.TAIGA, EvoBiomes.REDWOOD_TAIGA};

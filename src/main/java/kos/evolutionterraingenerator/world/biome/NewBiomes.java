@@ -7,7 +7,9 @@ import net.minecraftforge.registries.ObjectHolder;
 import kos.evolutionterraingenerator.EvolutionTerrainGenerator;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
+import net.minecraftforge.fml.common.Mod;
 
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 @ObjectHolder(EvolutionTerrainGenerator.MODID)
 public class NewBiomes {
 	public static final Biome SNOWY_GIANT_TREE_TAIGA = register("snowy_giant_tree_taiga", new SnowyGiantTreeTaigaBiome(), false, BiomeDictionary.Type.CONIFEROUS, BiomeDictionary.Type.FOREST);
