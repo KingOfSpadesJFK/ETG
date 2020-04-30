@@ -106,10 +106,10 @@ public class EvoBiomeProvider extends BiomeProvider
     	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
     	double temperature = getTemperature(x, z);
     	double humidity = getHumidity(x, z);
-    	double landmass1 = (landOctave.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale))  * 0.125 + 0.875);
-    	double landmass2 = (landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 + 0.875);
+    	double landmass1 = landOctave.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale))  * 0.125 + 0.875;
+    	double landmass2 = landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 + 0.875;
     	double biomeChance = (biomeChanceOctave.getNoise((double)x * 0.0025, (double)z * 0.0025) * 0.25 + 0.5) * 0.99 + noise * 0.01;
-    	double mushroomChance = (mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) * 0.25 + 0.5) * 0.999 + noise * 0.001;
+    	double mushroomChance = mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) * 0.25 + 0.5;
     	
     	temperature = MathHelper.clamp(temperature, 0.0, 1.0);
 		humidity = MathHelper.clamp(humidity, 0.0, 1.0);
@@ -118,7 +118,7 @@ public class EvoBiomeProvider extends BiomeProvider
 		Biome biome = getLandBiome(temperature, humidity, biomeChance);
 		if (landmass1 < oceanThreshold && landmass2 < oceanThreshold)
 		{
-			if (mushroomChance > 0.9999975 && landmass1 < oceanThreshold * 0.85 && landmass2 < oceanThreshold * 0.85)
+			if (mushroomChance > 1.05 && landmass1 < oceanThreshold * 0.85 && landmass2 < oceanThreshold * 0.85)
 			{
 				if (mushroomChance >= 1.0)
 					biome = Biomes.MUSHROOM_FIELDS;
