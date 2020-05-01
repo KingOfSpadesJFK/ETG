@@ -6,7 +6,6 @@ import biomesoplenty.api.biome.BOPBiomes;
 
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 import kos.evolutionterraingenerator.world.biome.NewBiomes;
-import kos.evolutionterraingenerator.EvolutionTerrainGenerator;
 import kos.evolutionterraingenerator.world.biome.EvoBiome;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
