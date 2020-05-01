@@ -10,10 +10,12 @@ import net.minecraft.world.gen.feature.structure.Structure;
 
 import com.google.common.collect.Sets;
 
+import kos.evolutionterraingenerator.EvolutionTerrainGenerator;
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
 import kos.evolutionterraingenerator.world.biome.EvoBiome;
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 import kos.evolutionterraingenerator.world.biome.NewBiomes;
+import kos.evolutionterraingenerator.world.biome.support.BOPSupport;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +25,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IWorld;
+
+import biomesoplenty.api.enums.BOPClimates;
 
 public class EvoBiomeProvider extends BiomeProvider
 {
@@ -35,7 +39,7 @@ public class EvoBiomeProvider extends BiomeProvider
     private NoiseGeneratorOpenSimplex mushroomOctave;
     private NoiseGeneratorOpenSimplex riverOctave;
     private NoiseGeneratorOpenSimplex riverOctave2;
-    private final Biome[] biomes = new Biome[]{Biomes.OCEAN,
+    private final Set<Biome> biomes = Sets.newHashSet(Biomes.OCEAN,
     		Biomes.PLAINS,
     		Biomes.DESERT,
     		Biomes.FOREST,
@@ -107,28 +111,127 @@ public class EvoBiomeProvider extends BiomeProvider
     		NewBiomes.SNOWY_GRAVEL_BEACH,
     		NewBiomes.SNOWY_GIANT_TREE_TAIGA,
     		NewBiomes.SNOWY_GIANT_SPRUCE_TAIGA,
-    		NewBiomes.RAINFOREST};
-    /** A list of biomes that the player can spawn in. */
+    		NewBiomes.RAINFOREST);
 	
 	public static final double SNOW_TEMP = 0.125;
 	public static final double COLD_TEMP = 0.375;
 	public static final double WARM_TEMP = 0.625;
 	public static final double HOT_TEMP = 0.875;
+	
+	private EvoBiomeProviderSettings providerSettings;
 
-	public EvoBiomeProvider(OverworldBiomeProviderSettings settingsProvider, IWorld worldIn) {
+	public EvoBiomeProvider(EvoBiomeProviderSettings settingsProvider, IWorld worldIn) {
 		super();
         
         Random rand = new Random(worldIn.getSeed());
-        tempOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
-		humidOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
-		landOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 8);
-		landOctave2 = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 8);
-		biomeChanceOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
-		noiseOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
-		mushroomOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
-		riverOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 8);
-		riverOctave2 = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 8);
+        this.landOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), oceanOctaves);
+		this.landOctave2 = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), oceanOctaves);
+		this.riverOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 8);
+		this.riverOctave2 = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 8);
+		this.tempOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
+        this.humidOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
+		this.biomeChanceOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
+		this.noiseOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
+		this.mushroomOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
+		this.providerSettings = settingsProvider;
 		EvoBiomes.init();
+		try
+		{
+			if (providerSettings.isUseBOPBiomes())
+			{
+				BOPSupport.setup();
+			}
+		}
+		catch (Exception e)
+		{
+			EvolutionTerrainGenerator.logger.error("ETG: Biomes O' Plenty support broken! Check if the right version of any of the mods are listed");
+		}
+	}
+
+	public static final int oceanOctaves = 8;
+    public static final double biomeScale = 3.0;
+    public static final double oceanScale = 0.0375;
+    public static final double oceanThreshold = 0.75;
+    public static final double beachThreshold = 0.01;
+    public static final double deepThreshold = 0.375;
+    
+    public static final double riverThreshold = 0.025;
+    public static final double riverMidPoint = 0.0;
+    public static final double riverScale = 4.0;
+    
+    public boolean getRiver(int x, int z)
+    {
+    	double riverChance = riverOctave.getNoise((double)x * (0.025 / riverScale), (double)z * (0.025 / riverScale)) * 0.125;
+    	double riverChance2 = riverOctave2.getNoise((double)x * (0.025 / riverScale), (double)z * (0.025 / riverScale)) * 0.125;
+    	return (riverChance >= riverMidPoint - riverThreshold && riverChance <= riverMidPoint + riverThreshold) ||
+    			(riverChance2 >= riverMidPoint - riverThreshold && riverChance2 <= riverMidPoint + riverThreshold);
+    }
+    
+    public Biome generateBiome(double x, double z)
+    {
+    	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
+    	double temperature = getTemperature(x, z);
+    	double humidity = getHumidity(x, z);
+    	double landmass1 = landOctave.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale))  * 0.125 / (double)oceanOctaves;
+    	double landmass2 = landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 / (double)oceanOctaves;
+    	double biomeChance = (biomeChanceOctave.getNoise((double)x * 0.0025, (double)z * 0.0025) * 0.25 + 0.5) * 0.99 + noise * 0.01;
+    	double mushroomChance = mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) * 0.25 + 0.5;
+    	
+    	temperature = MathHelper.clamp(temperature, 0.0, 1.0);
+		humidity = MathHelper.clamp(humidity, 0.0, 1.0);
+		biomeChance = MathHelper.clamp(biomeChance, 0.0, 1.0);
+
+		Biome biome = getLandBiome(temperature, humidity, biomeChance);
+		if (landmass1 < oceanThreshold && landmass2 < oceanThreshold)
+		{
+			if (mushroomChance > 1.00 && landmass1 < deepThreshold && landmass2 < deepThreshold)
+			{
+				if (mushroomChance >= 1.05)
+					biome = Biomes.MUSHROOM_FIELDS;
+				else
+					biome = getOcean(temperature, humidity, false);
+			}
+			else
+			{
+				if (landmass1 > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale || 
+						landmass2 > oceanThreshold - beachThreshold / (double)oceanOctaves  / oceanScale)
+				{
+					if (canBeBeach(x, z))
+						if (!(biome.equals(Biomes.BADLANDS) | biome.equals(Biomes.DESERT)))
+							biome = getBeach(temperature, humidity, landmass1 <= oceanThreshold - 0.025 / oceanScale);
+				}
+				else
+					biome = getOcean(temperature, humidity, landmass1 < deepThreshold && landmass2 < deepThreshold);
+			}
+		}
+		return biome;
+    }
+	
+	private static final int BEACH_SAMPLES = 16;
+	private boolean canBeBeach(double x, double z)
+	{
+    	double landmass1 = 0;
+    	double landmass2 = 0;
+		double xO = 0;
+		double zO = 0;
+		
+    	for (int i = 1; i <= BEACH_SAMPLES; i++)
+    	{
+    		for (int j = 1; j <= BEACH_SAMPLES; j ++)
+    		{
+    			xO = (double)(i - BEACH_SAMPLES / 2) * 4.0 + x;
+    			zO = (double)(j - BEACH_SAMPLES / 2) * 4.0 + z;
+    	    	landmass1 = landOctave.getNoise(xO * (0.00125 / oceanScale), zO * (0.00125 / oceanScale))
+    	    			* 0.125 / (double)oceanOctaves;
+    	    	landmass2 = landOctave2.getNoise(xO * (0.00125 / oceanScale), zO * (0.00125 / oceanScale)) 
+    	    			* 0.125 / (double)oceanOctaves;
+    	    	
+    	    	if (landmass1 < oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale && 
+    	    			landmass2 < oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
+    	    		return true;
+    		}
+    	}
+    	return false;
 	}
 
     public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height)
@@ -149,69 +252,12 @@ public class EvoBiomeProvider extends BiomeProvider
     public double getHumidity(double x, double z)
     {
     	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
-    	return MathHelper.clamp((humidOctave.getNoise((double)x * (0.035 / biomeScale), (double)z * (0.035 / biomeScale)) * 0.1 + 0.5) * 0.95 + noise * 0.05, 0.0, 1.0);
+    	return MathHelper.clamp((humidOctave.getNoise((double)x * (0.035 / biomeScale), (double)z * (0.035 / biomeScale)) * 0.15 + 0.5) * 0.95 + noise * 0.05, 0.0, 1.0);
     }
     
     public Biome func_222366_b(int x, int z) {
     	return generateBiome(x, z);
      }
-	
-    public static final double biomeScale = 3.0;
-    public static final double oceanScale = 0.025;
-    public static final double oceanThreshold = 4.0;
-    public static final double beachThreshold = 0.0175;
-    public static final double deepThreshold = 0.375;
-    
-    public static final double riverThreshold = 0.025;
-    public static final double riverMidPoint = 0.0;
-    public static final double riverScale = 6.0;
-    
-    public boolean getRiver(int x, int z)
-    {
-    	double riverChance = riverOctave.getNoise((double)x * (0.025 / riverScale), (double)z * (0.025 / riverScale)) * 0.125;
-    	double riverChance2 = riverOctave2.getNoise((double)x * (0.025 / riverScale), (double)z * (0.025 / riverScale)) * 0.125;
-    	return (riverChance >= riverMidPoint - riverThreshold && riverChance <= riverMidPoint + riverThreshold) ||
-    			(riverChance2 >= riverMidPoint - riverThreshold && riverChance2 <= riverMidPoint + riverThreshold);
-    }
-    
-    public Biome generateBiome(double x, double z)
-    {
-    	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
-    	double temperature = getTemperature(x, z);
-    	double humidity = getHumidity(x, z);
-    	double landmass1 = landOctave.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale))  * 0.125 + 0.875;
-    	double landmass2 = landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 + 0.875;
-    	double biomeChance = (biomeChanceOctave.getNoise((double)x * 0.0025, (double)z * 0.0025) * 0.25 + 0.5) * 0.99 + noise * 0.01;
-    	double mushroomChance = mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) * 0.25 + 0.5;
-    	
-    	temperature = MathHelper.clamp(temperature, 0.0, 1.0);
-		humidity = MathHelper.clamp(humidity, 0.0, 1.0);
-		biomeChance = MathHelper.clamp(biomeChance, 0.0, 1.0);
-
-		Biome biome = getLandBiome(temperature, humidity, biomeChance);
-		if (landmass1 < oceanThreshold && landmass2 < oceanThreshold)
-		{
-			if (mushroomChance > 1.05 && landmass1 < oceanThreshold * 0.85 && landmass2 < oceanThreshold * 0.85)
-			{
-				if (mushroomChance >= 1.0)
-					biome = Biomes.MUSHROOM_FIELDS;
-				else
-					biome = getOcean(temperature, humidity, false);
-			}
-			else
-			{
-				if (landmass1 > oceanThreshold - beachThreshold / oceanScale || landmass2 > oceanThreshold - beachThreshold / oceanScale)
-				{
-					if (!(biome.equals(Biomes.BADLANDS) | biome.equals(Biomes.DESERT)))
-						biome = getBeach(temperature, humidity, landmass1 <= oceanThreshold - 0.025 / oceanScale);
-				}
-				else
-					biome = getOcean(temperature, humidity, landmass1 < oceanThreshold * deepThreshold && landmass2 < oceanThreshold * deepThreshold);
-			}
-		}
-		
-    	return biome;
-    }
     
     public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height, int xScale, int zScale)
     {

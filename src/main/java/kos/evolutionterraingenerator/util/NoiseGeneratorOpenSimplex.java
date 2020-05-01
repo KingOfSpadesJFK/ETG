@@ -126,65 +126,34 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
     	public double x, y, z;
     }
 
-	public double func_215460_a(double p_215462_1_, double p_215462_3_, double p_215462_5_, double p_215462_7_, double p_215462_9_, boolean p_215462_11_) {
-        double d0 = 0.0D;
-        double d1 = 1.0D;
+	public double func_215460_a(double x, double y, double z, double p_215462_7_, double p_215462_9_, boolean p_215462_11_) 
+	{
+        double d3 = 1.0D;
+        double d4 = 0.0D;
 
         for(int i = 0; i < octaves; i++)
         {
-            d0 += this.generatorCollection[i].eval(this.generatorCollection[i].eval(maintainPrecision(p_215462_1_ * d1), p_215462_11_ ? -vertexCollection[i].y : maintainPrecision(p_215462_3_ * d1), maintainPrecision(p_215462_5_ * d1)), p_215462_7_ * d1, p_215462_9_ * d1) / d1;
-            d1 /= 2.0D;
+            double d0 = maintainPrecision(x * d3 + vertexCollection[i].x);
+            double d1 = maintainPrecision(y * d3 + vertexCollection[i].y);
+            double d2 = maintainPrecision(z * d3 + vertexCollection[i].z);
+            
+            if (p_215462_11_)
+                d4 += this.generatorCollection[i].eval(d0, d2) / d3;
+            else
+            	d4 += this.generatorCollection[i].eval(d0, d1, d2) / d3;
+            d3 /= 2.0D;
         }
 
-        return d0;
+        return d4;
 	}
 	
 	public double getNoise(double x, double y, double z)
 	{
-        double d3 = 1.0D;
-        double d4 = 0.0D;
-
-        for(int i = 0; i < octaves; i++)
-        {
-            double d0 = x * d3;
-            double d1 = y * d3;
-            double d2 = z * d3;
-            long k = MathHelper.lfloor(d0);
-            long l = MathHelper.lfloor(d2);
-            d0 = d0 - (double)k;
-            d2 = d2 - (double)l;
-            k = k % 16777216L;
-            l = l % 16777216L;
-            d0 = d0 + (double)k;
-            d2 = d2 + (double)l;
-            
-            d4 += this.generatorCollection[i].eval(d0, d1, d2) / d3;
-            d3 /= 2.0D;
-        }
-        return d4;
+        return func_215460_a(x, y, z, 0, 0, false);
 	}
 
 	public double getNoise(double x, double z) 
 	{
-        double d3 = 1.0D;
-        double d4 = 0.0D;
-
-        for(int i = 0; i < octaves; i++)
-        {
-            double d0 = x * d3;
-            double d2 = z * d3;
-            long k = MathHelper.lfloor(d0);
-            long l = MathHelper.lfloor(d2);
-            d0 = d0 - (double)k;
-            d2 = d2 - (double)l;
-            k = k % 16777216L;
-            l = l % 16777216L;
-            d0 = d0 + (double)k;
-            d2 = d2 + (double)l;
-            
-            d4 += this.generatorCollection[i].eval(d0, d2) / d3;
-            d3 /= 2.0D;
-        }
-        return d4;
+        return func_215460_a(x, 0, z, 0, 0, true);
 	}
 }

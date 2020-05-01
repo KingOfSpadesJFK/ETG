@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.Biome;
 
-public abstract class EvoBiomes 
+public class EvoBiomes 
 {
 	private static final Biome[] PlainsArr = {Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS};
 	private static final Biome[] ForestArr = {Biomes.FOREST, Biomes.FLOWER_FOREST};
@@ -48,6 +48,7 @@ public abstract class EvoBiomes
 	public static EvoBiome RAINFOREST_ROOFED = new EvoBiome(NewBiomes.RAINFOREST, RainforestArr);
 	public static EvoBiome RAINFOREST = new EvoBiome(NewBiomes.RAINFOREST, null);
 	public static EvoBiome SAVANNA_PLAINS = new EvoBiome(Biomes.PLAINS, SavannaPlainsArr);
+	public static EvoBiome SWAMP = new EvoBiome(Biomes.SWAMP, null);
 
 	public static EvoBiome[] SNOWY_BIOMES = {EvoBiomes.ICE_PLAINS, EvoBiomes.COLD_TAIGA};
 	public static EvoBiome[] COLD_BIOMES = {EvoBiomes.EXTREME_HILLS, EvoBiomes.EXTREME_HILLS, EvoBiomes.TAIGA, EvoBiomes.TAIGA, EvoBiomes.REDWOOD_TAIGA};
@@ -101,7 +102,7 @@ public abstract class EvoBiomes
 		temp.clear();
 	}
 	
-	private static EvoBiome[] toArray(ArrayList<EvoBiome> list)
+	public static EvoBiome[] toArray(ArrayList<EvoBiome> list)
 	{
 		EvoBiome[] arr = new EvoBiome[list.size()];
 		int i = 0;
