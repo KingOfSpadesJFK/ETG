@@ -48,58 +48,55 @@ public class EvoBiomes
 	public static EvoBiome RAINFOREST_ROOFED = new EvoBiome(NewBiomes.RAINFOREST, RainforestArr);
 	public static EvoBiome RAINFOREST = new EvoBiome(NewBiomes.RAINFOREST, null);
 	public static EvoBiome SAVANNA_PLAINS = new EvoBiome(Biomes.PLAINS, SavannaPlainsArr);
-	public static EvoBiome SWAMP = new EvoBiome(Biomes.SWAMP, null);
+	
+	public static EvoBiome HOT_SWAMP = new EvoBiome(Biomes.SWAMP, null);
+	public static EvoBiome WARM_SWAMP = new EvoBiome(Biomes.SWAMP, null);
+	public static EvoBiome COLD_SWAMP = new EvoBiome(Biomes.SWAMP, null);
 
-	public static EvoBiome[] SNOWY_BIOMES = {EvoBiomes.ICE_PLAINS, EvoBiomes.COLD_TAIGA};
-	public static EvoBiome[] COLD_BIOMES = {EvoBiomes.EXTREME_HILLS, EvoBiomes.EXTREME_HILLS, EvoBiomes.TAIGA, EvoBiomes.TAIGA, EvoBiomes.REDWOOD_TAIGA};
-	public static EvoBiome[] WARM_BIOMES = {EvoBiomes.PLAINS, EvoBiomes.BIRCH_FOREST, EvoBiomes.FOREST, EvoBiomes.ROOFED_FOREST};
-    public static EvoBiome[] HOT_BIOMES = {EvoBiomes.SAVANNA, EvoBiomes.PLAINS, EvoBiomes.FOREST, EvoBiomes.ROOFED_FOREST, EvoBiomes.RAINFOREST};
-    public static EvoBiome[] ARID_BIOMES = {EvoBiomes.DESERT, EvoBiomes.SAVANNA, EvoBiomes.SAVANNA, EvoBiomes.PLAINS, EvoBiomes.PLAINS, EvoBiomes.RAINFOREST, EvoBiomes.RAINFOREST, EvoBiomes.JUNGLE};
+	public static ArrayList<EvoBiome> SNOWY_BIOMES;
+	public static ArrayList<EvoBiome> COLD_BIOMES;
+	public static ArrayList<EvoBiome> WARM_BIOMES;
+    public static ArrayList<EvoBiome> HOT_BIOMES;
+    public static ArrayList<EvoBiome> ARID_BIOMES;
     
 	public static void init()
 	{
-		ArrayList<EvoBiome> temp = new ArrayList<EvoBiome>();
-		temp.add(ICE_PLAINS);
-		temp.add(COLD_TAIGA);
-		temp.add(SONWY_GIANT_TREE_TAIGA);
+		SNOWY_BIOMES = new ArrayList<EvoBiome>();
+		SNOWY_BIOMES.add(ICE_PLAINS);
+		SNOWY_BIOMES.add(COLD_TAIGA);
+		SNOWY_BIOMES.add(SONWY_GIANT_TREE_TAIGA);
 		//To fix Plains and Taiga's sorting
 		//temp.sort(null);
-		SNOWY_BIOMES = toArray(temp);
-		temp.clear();
-		
-		temp.add(TUNDRA);
-		temp.add(WOODED_TUNDRA);
-		temp.add(TAIGA);
-		temp.add(REDWOOD_TAIGA);
-		temp.sort(null);
-		COLD_BIOMES = toArray(temp);
-		temp.clear();
-		
-		temp.add(PLAINS);
-		temp.add(BIRCH_FOREST);
-		temp.add(FOREST);
-		temp.add(ROOFED_FOREST);
-		temp.sort(null);
-		WARM_BIOMES = toArray(temp);
-		temp.clear();
 
-		temp.add(SAVANNA);
-		temp.add(PLAINS);
-		temp.add(FOREST);
-		temp.add(RAINFOREST);
-		temp.add(ROOFED_FOREST);
-		temp.sort(null);
-		HOT_BIOMES = toArray(temp);
-		temp.clear();
+		COLD_BIOMES = new ArrayList<EvoBiome>();
+		COLD_BIOMES.add(TUNDRA);
+		COLD_BIOMES.add(WOODED_TUNDRA);
+		COLD_BIOMES.add(TAIGA);
+		COLD_BIOMES.add(REDWOOD_TAIGA);
+		COLD_BIOMES.sort(null);
 
-		temp.add(DESERT);
-		temp.add(SAVANNA);
-		temp.add(PLAINS);
-		temp.add(RAINFOREST_ROOFED);
-		temp.add(JUNGLE);
-		temp.sort(null);
-		ARID_BIOMES = toArray(temp);
-		temp.clear();
+		WARM_BIOMES = new ArrayList<EvoBiome>();
+		WARM_BIOMES.add(PLAINS);
+		WARM_BIOMES.add(BIRCH_FOREST);
+		WARM_BIOMES.add(FOREST);
+		WARM_BIOMES.add(ROOFED_FOREST);
+		WARM_BIOMES.sort(null);
+
+		HOT_BIOMES = new ArrayList<EvoBiome>();
+		HOT_BIOMES.add(SAVANNA);
+		HOT_BIOMES.add(PLAINS);
+		HOT_BIOMES.add(FOREST);
+		HOT_BIOMES.add(RAINFOREST);
+		HOT_BIOMES.add(ROOFED_FOREST);
+		HOT_BIOMES.sort(null);
+
+		ARID_BIOMES = new ArrayList<EvoBiome>();
+		ARID_BIOMES.add(DESERT);
+		ARID_BIOMES.add(SAVANNA);
+		ARID_BIOMES.add(PLAINS);
+		ARID_BIOMES.add(RAINFOREST_ROOFED);
+		ARID_BIOMES.add(JUNGLE);
+		ARID_BIOMES.sort(null);
 	}
 	
 	public static EvoBiome[] toArray(ArrayList<EvoBiome> list)

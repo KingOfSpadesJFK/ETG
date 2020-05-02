@@ -3,6 +3,7 @@ package kos.evolutionterraingenerator.world;
 import java.util.Random;
 
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
+import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 import kos.evolutionterraingenerator.world.biome.NewBiomes;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -32,11 +33,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		   });
     protected static final BlockState STONE = Blocks.STONE.getDefaultState();
     protected static final BlockState AIR = Blocks.AIR.getDefaultState();
-    protected static final BlockState BEDROCK = Blocks.BEDROCK.getDefaultState();
-    protected static final BlockState GRAVEL = Blocks.GRAVEL.getDefaultState();
-    protected static final BlockState RED_SANDSTONE = Blocks.RED_SANDSTONE.getDefaultState();
-    protected static final BlockState SANDSTONE = Blocks.SANDSTONE.getDefaultState();
-    protected static final BlockState ICE = Blocks.ICE.getDefaultState();
     protected static final BlockState WATER = Blocks.WATER.getDefaultState();
 	
 	private EvoGenSettings settings;
@@ -73,8 +69,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         
         this.surfaceNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
         this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
-        this.swampChance = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
-        this.swampType = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
+        this.swampChance = new NoiseGeneratorOpenSimplex(this.rand, 4);
+        this.swampType = new NoiseGeneratorOpenSimplex(this.rand, 4);
         
     	this.verticalNoiseGranularity = 8;
         this.noiseSizeY = 256 / this.verticalNoiseGranularity;		
@@ -113,7 +109,10 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
                 boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | 
                		 biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName()) |
                		 biomeid.equals(NewBiomes.GRAVEL_BEACH.getRegistryName()) |
-               		 biomeid.equals(NewBiomes.SNOWY_GRAVEL_BEACH.getRegistryName());
+               		 biomeid.equals(NewBiomes.SNOWY_GRAVEL_BEACH.getRegistryName()) |
+               		 biomeid.equals(NewBiomes.DRY_BEACH.getRegistryName()) |
+               		 biomeid.equals(NewBiomes.DRY_GRAVEL_BEACH.getRegistryName()) |
+               		 biomeid.equals(NewBiomes.RED_BEACH.getRegistryName());
                 boolean isOcean = 
                 		biomeid.equals(Biomes.FROZEN_OCEAN.getRegistryName()) |
                 		biomeid.equals(Biomes.DEEP_FROZEN_OCEAN.getRegistryName()) |
@@ -137,6 +136,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     }
     
     //Sets biomes according to the conditions of the land
+    // /tp -4047 128 -6395
     private void setBiome(Biome biome, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal)
     {
         int seaLevel = this.settings.getSeaLevel();
@@ -154,20 +154,27 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
             BlockState block = chunkPrimerIn.getBlockState(new BlockPos(xInChunk, i, zInChunk));
         	if (block.getBlock() == Blocks.STONE)
             {
-            	if (temperature > 0.5 && humidity > 0.675 && swampChance < 0.375 && i <= seaLevel + 3)
+            	if (temperature > 0.5 && humidity > 0.675 && swampChance < 0.375 - 0.25 * ((MathHelper.clamp(temperature, 0.5, 1.0) - 0.5) * 2.0) && i <= seaLevel + 3)
             	{
-            		biome = Biomes.SWAMP;
+                    double swampType = this.swampType.getNoise((double)x * 0.0125, (double)z * 0.0125) * 0.125 + 0.5;
+                    swampType = MathHelper.clamp(swampType, 0.0, 1.0);
+                    Biome swamp = null;
+                    if (temperature < EvoBiomeProvider.WARM_TEMP)
+                    	swamp = EvoBiomes.COLD_SWAMP.getBiome(swampType);
+                    else if (temperature < EvoBiomeProvider.HOT_TEMP)
+                      	swamp = EvoBiomes.WARM_SWAMP.getBiome(swampType);
+                    else
+                    	swamp = EvoBiomes.HOT_SWAMP.getBiome(swampType);
+                    
+                    if (swamp != null)
+                    	biome = swamp;
                     double randVal = rand.nextDouble() * 0.25D;
                     if (swampChance + randVal > 0.175 && swampChance + randVal < 0.275 && i == seaLevel - 1)
                     	chunkPrimerIn.setBlockState(new BlockPos(xInChunk, i, zInChunk), WATER, false);
             	}
             	else if (biomeid.equals(Biomes.BADLANDS.getRegistryName()))
             	{
-            		if (i <= seaLevel + 50)
-            		{
-                		biome = Biomes.BADLANDS;
-            		}
-            		else
+            		if (i >= seaLevel + 50)
             		{
                 		biome = Biomes.WOODED_BADLANDS_PLATEAU;
             		}
@@ -252,9 +259,12 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
              float f6 = field_222576_h[j + 2 + (k + 2) * 5] / (f4 + 2.0F);
              
              boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | 
-            		 biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName()) |
-            		 biomeid.equals(NewBiomes.GRAVEL_BEACH.getRegistryName()) |
-            		 biomeid.equals(NewBiomes.SNOWY_GRAVEL_BEACH.getRegistryName());
+               		 biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName()) |
+               		 biomeid.equals(NewBiomes.GRAVEL_BEACH.getRegistryName()) |
+               		 biomeid.equals(NewBiomes.SNOWY_GRAVEL_BEACH.getRegistryName()) |
+               		 biomeid.equals(NewBiomes.DRY_BEACH.getRegistryName()) |
+               		 biomeid.equals(NewBiomes.DRY_GRAVEL_BEACH.getRegistryName()) |
+               		 biomeid.equals(NewBiomes.RED_BEACH.getRegistryName());
              
              boolean isOcean = 
              		biomeid.equals(Biomes.FROZEN_OCEAN.getRegistryName()) |
@@ -273,7 +283,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
          	if (isBeach | isOcean)
          	{
                 f4 = this.settings.getBiomeDepthOffset() + biome.getDepth() * this.settings.getBiomeDepthWeight();
-                f5 = this.settings.getBiomeScaleOffset() + biome.getScale() * 0.25F * this.settings.getBiomeScaleWeight();
+                f5 = this.settings.getBiomeScaleOffset() + biome.getScale() * 0.0125F * this.settings.getBiomeScaleWeight();
                 f6 = field_222576_h[j + 2 + (k + 2) * 5] / (f4 + 2.0F);
                  
                 if (biome.getDepth() > 0.125F)

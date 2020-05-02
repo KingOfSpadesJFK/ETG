@@ -18,6 +18,10 @@ public class NewBiomes {
 	public static final Biome GRAVEL_BEACH = register("gravel_beach", new GravelBeachBiome(), true, BiomeDictionary.Type.BEACH);
 	public static final Biome SNOWY_GRAVEL_BEACH = register("snowy_gravel_beach", new SnowyGravelBeachBiome(), false, BiomeDictionary.Type.BEACH);
 
+	public static final Biome DRY_BEACH = register("dry_beach", new DryBeach(), false, BiomeDictionary.Type.BEACH, BiomeDictionary.Type.DRY, BiomeDictionary.Type.SANDY);
+	public static final Biome DRY_GRAVEL_BEACH = register("dry_gravel_beach", new DryGravelBeach(), false, BiomeDictionary.Type.BEACH, BiomeDictionary.Type.DRY);
+	public static final Biome RED_BEACH = register("red_beach", new RedBeachBiome(), false, BiomeDictionary.Type.BEACH, BiomeDictionary.Type.DRY, BiomeDictionary.Type.SANDY);
+	
 	public static final Biome TUNDRA = register("tundra", new TundraBiome(), true, BiomeDictionary.Type.COLD, BiomeDictionary.Type.MOUNTAIN);
 	public static final Biome TUNDRA_WOODED = register("tundra_wooded", new TundraWooded(), true, BiomeDictionary.Type.COLD, BiomeDictionary.Type.MOUNTAIN);
 	public static final Biome GRAVELLY_TUNDRA = register("gravelly_tundra", new GravellyTundra(), false, BiomeDictionary.Type.COLD, BiomeDictionary.Type.MOUNTAIN, BiomeDictionary.Type.RARE);
@@ -32,7 +36,10 @@ public class NewBiomes {
 			NewBiomes.TUNDRA, 
 			NewBiomes.TUNDRA_WOODED, 
 			NewBiomes.GRAVELLY_TUNDRA,
-			NewBiomes.RAINFOREST};
+			NewBiomes.RAINFOREST,
+			NewBiomes.DRY_BEACH,
+			NewBiomes.DRY_GRAVEL_BEACH,
+			NewBiomes.RED_BEACH};
 
 	private static Biome register(String name, Biome biome, boolean spawn, BiomeDictionary.Type...types)
 	{

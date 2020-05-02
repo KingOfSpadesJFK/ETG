@@ -9,6 +9,7 @@ import net.minecraft.world.gen.feature.structure.Structure;
 
 import com.google.common.collect.Sets;
 
+import biomesoplenty.api.biome.BOPBiomes;
 import kos.evolutionterraingenerator.EvolutionTerrainGenerator;
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
 import kos.evolutionterraingenerator.world.biome.EvoBiome;
@@ -23,7 +24,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.IWorld;
 
 public class EvoBiomeProvider extends OverworldBiomeProvider
 {
@@ -115,32 +115,36 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 	public static final double WARM_TEMP = 0.625;
 	public static final double HOT_TEMP = 0.875;
 	
+	private static double chanceScale = 1.0;
+	
 	private EvoBiomeProviderSettings providerSettings;
 
-	public EvoBiomeProvider(EvoBiomeProviderSettings settingsProvider, IWorld worldIn) {
+	public EvoBiomeProvider(EvoBiomeProviderSettings settingsProvider) {
 		super(settingsProvider);
         
-        Random rand = new Random(worldIn.getSeed());
-        this.landOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), oceanOctaves);
-		this.landOctave2 = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), oceanOctaves);
-		this.riverOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 8);
-		this.riverOctave2 = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 8);
-		this.tempOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
-        this.humidOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
-		this.biomeChanceOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
-		this.noiseOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
-		this.mushroomOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 2);
+        Random rand = new Random(settingsProvider.getWorldInfo().getSeed());
+        this.landOctave = new NoiseGeneratorOpenSimplex(rand, oceanOctaves);
+		this.landOctave2 = new NoiseGeneratorOpenSimplex(rand, oceanOctaves);
+		this.riverOctave = new NoiseGeneratorOpenSimplex(rand, 8);
+		this.riverOctave2 = new NoiseGeneratorOpenSimplex(rand, 8);
+		this.tempOctave = new NoiseGeneratorOpenSimplex(rand, 4);
+        this.humidOctave = new NoiseGeneratorOpenSimplex(rand, 4);
+		this.biomeChanceOctave = new NoiseGeneratorOpenSimplex(rand, 2);
+		this.noiseOctave = new NoiseGeneratorOpenSimplex(rand, 2);
+		this.mushroomOctave = new NoiseGeneratorOpenSimplex(rand, 2);
 		this.providerSettings = settingsProvider;
 		EvoBiomes.init();
 		try
 		{
 			if (providerSettings.isUseBOPBiomes())
 			{
+				chanceScale = 2.0;
 				BOPSupport.setup();
 			}
 		}
 		catch (Exception e)
 		{
+			chanceScale = 1.0;
 			this.providerSettings.setUseBOPBiomes(false);
 			EvolutionTerrainGenerator.logger.error("ETG: Biomes O' Plenty support broken! Check if the right version of any of the mods are listed");
 		}
@@ -172,11 +176,9 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     	double humidity = getHumidity(x, z);
     	double landmass1 = landOctave.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale))  * 0.125 / (double)oceanOctaves;
     	double landmass2 = landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 / (double)oceanOctaves;
-    	double biomeChance = (biomeChanceOctave.getNoise((double)x * 0.0025, (double)z * 0.0025) * 0.25 + 0.5) * 0.99 + noise * 0.01;
+    	double biomeChance = (biomeChanceOctave.getNoise((double)x * 0.0025 / chanceScale, (double)z * 0.0025 / chanceScale) * 0.225 + 0.5) * 0.99 + noise * 0.01;
     	double mushroomChance = mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) * 0.25 + 0.5;
     	
-    	temperature = MathHelper.clamp(temperature, 0.0, 1.0);
-		humidity = MathHelper.clamp(humidity, 0.0, 1.0);
 		biomeChance = MathHelper.clamp(biomeChance, 0.0, 1.0);
 
 		Biome biome = getLandBiome(temperature, humidity, biomeChance);
@@ -195,8 +197,19 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 						landmass2 > oceanThreshold - beachThreshold / (double)oceanOctaves  / oceanScale)
 				{
 					if (canBeBeach(x, z))
-						if (!(biome.equals(Biomes.BADLANDS) | biome.equals(Biomes.DESERT)))
-							biome = getBeach(temperature, humidity, landmass1 <= oceanThreshold - 0.025 / oceanScale);
+					{
+						if (biome.equals(Biomes.BADLANDS))
+							biome = NewBiomes.RED_BEACH;
+						else if (providerSettings.isUseBOPBiomes())
+						{
+							if (biome == BOPBiomes.outback.get())
+								biome = NewBiomes.RED_BEACH;
+							else
+								biome = getBeach(temperature, humidity, landmass1 <= oceanThreshold - 0.025 / oceanScale, biome.getDownfall() <= 0.0);
+						}
+						else
+							biome = getBeach(temperature, humidity, landmass1 <= oceanThreshold - 0.025 / oceanScale, biome.getDownfall() <= 0.0);
+					}
 				}
 				else
 					biome = getOcean(temperature, humidity, landmass1 < deepThreshold && landmass2 < deepThreshold);
@@ -204,7 +217,6 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 		}
 		return biome;
     }
-	
 	private static final int BEACH_SAMPLES = 16;
 	private boolean canBeBeach(double x, double z)
 	{
@@ -275,30 +287,36 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 
     private Biome getLandBiome(double temp, double humid, double chance)
     {
-    	EvoBiome[] arr = EvoBiomes.WARM_BIOMES;
+    	EvoBiome[] arr = EvoBiomes.WARM_BIOMES.toArray(new EvoBiome[EvoBiomes.WARM_BIOMES.size()]);
     	
 		if (temp < SNOW_TEMP)
-			arr = EvoBiomes.SNOWY_BIOMES;
+			arr = EvoBiomes.SNOWY_BIOMES.toArray(new EvoBiome[EvoBiomes.SNOWY_BIOMES.size()]);
 		else if (temp < COLD_TEMP)
-			arr = EvoBiomes.COLD_BIOMES;
+			arr = EvoBiomes.COLD_BIOMES.toArray(new EvoBiome[EvoBiomes.COLD_BIOMES.size()]);
 		else if (temp < WARM_TEMP)
-			arr = EvoBiomes.WARM_BIOMES;
+			arr = EvoBiomes.WARM_BIOMES.toArray(new EvoBiome[EvoBiomes.WARM_BIOMES.size()]);
 		else if (temp < HOT_TEMP)
-			arr = EvoBiomes.HOT_BIOMES;
+			arr = EvoBiomes.HOT_BIOMES.toArray(new EvoBiome[EvoBiomes.HOT_BIOMES.size()]);
 		else
-			arr = EvoBiomes.ARID_BIOMES;
+			arr = EvoBiomes.ARID_BIOMES.toArray(new EvoBiome[EvoBiomes.ARID_BIOMES.size()]);
 		
 		return arr[(int)((arr.length - 1) * humid)].getBiome(chance);
     }
 
 
-    private Biome getBeach(double temp, double humid, boolean isGravel)
+    private Biome getBeach(double temp, double humid, boolean isGravel, boolean noDownfall)
     {
     	if (temp < SNOW_TEMP)
     	{
     		if (isGravel)
     			return NewBiomes.SNOWY_GRAVEL_BEACH;
     		return Biomes.SNOWY_BEACH;
+    	}
+    	if (noDownfall)
+    	{
+        	if (isGravel)
+        		return NewBiomes.DRY_GRAVEL_BEACH;
+    		return NewBiomes.DRY_BEACH;
     	}
     	if (isGravel)
     		return NewBiomes.GRAVEL_BEACH;
