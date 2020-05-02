@@ -46,9 +46,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     private NoiseGeneratorOpenSimplex maxLimitPerlinNoise;
     private NoiseGeneratorOpenSimplex mainPerlinNoise;
     private NoiseGeneratorOpenSimplex surfaceNoise;
-    public NoiseGeneratorOpenSimplex scaleNoise;
     public NoiseGeneratorOpenSimplex depthNoise;
-    public NoiseGeneratorOpenSimplex swampNoise;
+    public NoiseGeneratorOpenSimplex swampChance;
+    public NoiseGeneratorOpenSimplex swampType;
     private final IWorld world;
     private Biome[] biomesForGeneration;
     double[] mainNoiseRegion;
@@ -72,9 +72,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         this.mainPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 8);
         
         this.surfaceNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
-        this.scaleNoise = new NoiseGeneratorOpenSimplex(this.rand, 10);
         this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
-        this.swampNoise = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
+        this.swampChance = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
+        this.swampType = new NoiseGeneratorOpenSimplex(new Random(this.rand.nextLong()), 4);
         
     	this.verticalNoiseGranularity = 8;
         this.noiseSizeY = 256 / this.verticalNoiseGranularity;		
@@ -142,8 +142,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         int seaLevel = this.settings.getSeaLevel();
         int xInChunk = x & 15;
         int zInChunk = z & 15;
-        double swamp = swampNoise.getNoise((double)x * 0.0125, (double)z * 0.0125);
-        swamp = MathHelper.clamp(swamp, 0.0, 1.0);
+        double swampChance = this.swampChance.getNoise((double)x * 0.0125, (double)z * 0.0125);
+        swampChance = MathHelper.clamp(swampChance, 0.0, 1.0);
         double temperature = this.biomeProvider.getTemperature(x, z);
         double humidity = this.biomeProvider.getHumidity(x, z);
 
@@ -154,11 +154,11 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
             BlockState block = chunkPrimerIn.getBlockState(new BlockPos(xInChunk, i, zInChunk));
         	if (block.getBlock() == Blocks.STONE)
             {
-            	if (temperature > 0.5 && humidity > 0.675 && swamp < 0.375 && i <= seaLevel + 3)
+            	if (temperature > 0.5 && humidity > 0.675 && swampChance < 0.375 && i <= seaLevel + 3)
             	{
             		biome = Biomes.SWAMP;
                     double randVal = rand.nextDouble() * 0.25D;
-                    if (swamp + randVal > 0.175 && swamp + randVal < 0.275 && i == seaLevel - 1)
+                    if (swampChance + randVal > 0.175 && swampChance + randVal < 0.275 && i == seaLevel - 1)
                     	chunkPrimerIn.setBlockState(new BlockPos(xInChunk, i, zInChunk), WATER, false);
             	}
             	else if (biomeid.equals(Biomes.BADLANDS.getRegistryName()))

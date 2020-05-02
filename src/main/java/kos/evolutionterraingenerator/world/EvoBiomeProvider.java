@@ -4,8 +4,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
-import net.minecraft.world.biome.provider.BiomeProvider;
-import net.minecraft.world.biome.provider.OverworldBiomeProviderSettings;
+import net.minecraft.world.biome.provider.OverworldBiomeProvider;
 import net.minecraft.world.gen.feature.structure.Structure;
 
 import com.google.common.collect.Sets;
@@ -26,9 +25,7 @@ import javax.annotation.Nullable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IWorld;
 
-import biomesoplenty.api.enums.BOPClimates;
-
-public class EvoBiomeProvider extends BiomeProvider
+public class EvoBiomeProvider extends OverworldBiomeProvider
 {
     private NoiseGeneratorOpenSimplex tempOctave;
     private NoiseGeneratorOpenSimplex humidOctave;
@@ -121,7 +118,7 @@ public class EvoBiomeProvider extends BiomeProvider
 	private EvoBiomeProviderSettings providerSettings;
 
 	public EvoBiomeProvider(EvoBiomeProviderSettings settingsProvider, IWorld worldIn) {
-		super();
+		super(settingsProvider);
         
         Random rand = new Random(worldIn.getSeed());
         this.landOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), oceanOctaves);
@@ -144,6 +141,7 @@ public class EvoBiomeProvider extends BiomeProvider
 		}
 		catch (Exception e)
 		{
+			this.providerSettings.setUseBOPBiomes(false);
 			EvolutionTerrainGenerator.logger.error("ETG: Biomes O' Plenty support broken! Check if the right version of any of the mods are listed");
 		}
 	}
@@ -151,9 +149,9 @@ public class EvoBiomeProvider extends BiomeProvider
 	public static final int oceanOctaves = 8;
     public static final double biomeScale = 3.0;
     public static final double oceanScale = 0.0375;
-    public static final double oceanThreshold = 0.75;
+    public static final double oceanThreshold = 0.5;
     public static final double beachThreshold = 0.01;
-    public static final double deepThreshold = 0.375;
+    public static final double deepThreshold = 0.05;
     
     public static final double riverThreshold = 0.025;
     public static final double riverMidPoint = 0.0;
@@ -256,7 +254,7 @@ public class EvoBiomeProvider extends BiomeProvider
     }
     
     public Biome func_222366_b(int x, int z) {
-    	return generateBiome(x, z);
+    	return generateBiome(x << 2, z << 2);
      }
     
     public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height, int xScale, int zScale)
@@ -385,11 +383,11 @@ public class EvoBiomeProvider extends BiomeProvider
 	            {
 	               return true;
 	            }
-	         }
+	        }
 
-	         return false;
-	      });
-	   }
+	        return false;
+	   });
+	}
 
 	@Override
 	   public Set<BlockState> getSurfaceBlocks() {

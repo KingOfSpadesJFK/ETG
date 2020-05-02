@@ -3,6 +3,7 @@ package kos.evolutionterraingenerator;
 import kos.evolutionterraingenerator.config.Config;
 import kos.evolutionterraingenerator.world.EvoType;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -28,6 +29,7 @@ public class EvolutionTerrainGenerator {
 		instance = this;
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::serverSetup);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::config);
         MinecraftForge.EVENT_BUS.register(this);
         
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
@@ -37,6 +39,15 @@ public class EvolutionTerrainGenerator {
 	public void serverSetup(FMLDedicatedServerSetupEvent event)
 	{
 		
+	}
+	
+	@SubscribeEvent
+	public void config(final ModConfig.ModConfigEvent event)
+	{
+		if (event.getConfig().getSpec() == Config.SPEC)
+		{
+			Config.bake();
+		}
 	}
 
 	//Event Loaders

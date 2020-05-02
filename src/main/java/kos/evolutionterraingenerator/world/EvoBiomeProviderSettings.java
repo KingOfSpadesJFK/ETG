@@ -1,21 +1,23 @@
 package kos.evolutionterraingenerator.world;
 
-import net.minecraft.world.biome.provider.IBiomeProviderSettings;
+import net.minecraft.world.biome.provider.OverworldBiomeProviderSettings;
 import net.minecraft.world.storage.WorldInfo;
 
-public class EvoBiomeProviderSettings implements IBiomeProviderSettings
+public class EvoBiomeProviderSettings extends OverworldBiomeProviderSettings
 {
 	private WorldInfo worldInfo;
 	private EvoGenSettings settings;
 	private boolean useBOPBiomes;
 	
-	public void setWorldInfo(WorldInfo worldInfo)
+	public OverworldBiomeProviderSettings setWorldInfo(WorldInfo worldInfo)
 	{
 		this.worldInfo = worldInfo;
+		return this;
 	}
-	public void setGeneratorSettings(EvoGenSettings settings) 
+	public OverworldBiomeProviderSettings setGeneratorSettings(EvoGenSettings settings) 
 	{
 		this.settings = settings;
+		return this;
 	}
 	
 	public EvoGenSettings getSettings()
