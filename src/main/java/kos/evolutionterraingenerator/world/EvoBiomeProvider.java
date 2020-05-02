@@ -249,6 +249,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     	return getBiomesForGeneration(biomes, x, z, width, height, 1, 1);
     }
 
+    @Override
     public Biome getBiome(int x, int z) {
     	return generateBiome((double)x, (double)z);
     }
@@ -265,6 +266,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     	return MathHelper.clamp((humidOctave.getNoise((double)x * (0.035 / biomeScale), (double)z * (0.035 / biomeScale)) * 0.15 + 0.5) * 0.95 + noise * 0.05, 0.0, 1.0);
     }
     
+    @Override
     public Biome func_222366_b(int x, int z) {
     	return generateBiome(x << 2, z << 2);
      }
@@ -345,7 +347,8 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 		else
 			return Biomes.WARM_OCEAN;
     }
-    
+
+    @Override
     public Set<Biome> getBiomesInSquare(int centerX, int centerZ, int sideLength) {
         int i = centerX - sideLength >> 2;
         int j = centerZ - sideLength >> 2;
@@ -359,6 +362,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
      }
 
     @Nullable
+    @Override
     public BlockPos findBiomePosition(int x, int z, int range, List<Biome> biomes, Random random)
     {
         int i = x - range >> 2;
@@ -386,6 +390,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
         return blockpos;
     }
 
+    @Override
 	public Biome[] getBiomes(int x, int z, int width, int length, boolean cacheFlag) {
 		return getBiomesForGeneration(null, x, z, width, length);
 	}

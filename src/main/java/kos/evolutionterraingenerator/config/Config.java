@@ -19,15 +19,9 @@ public class Config
 	}
 	
 	public static class GeneralConfig
-	{
-		protected final ForgeConfigSpec.ConfigValue<Boolean> modEnabled;
-		
+	{		
 		public GeneralConfig(ForgeConfigSpec.Builder builder)
 		{
-			builder.push("General Options");
-			modEnabled = builder.comment("(NOT WORKING. SETTING THIS TO TRUE WILL DO NOTHING!!!) Enables ETG mod on servers. SETTING THIS ON SERVER.PROPERTIES WILL NOT WORK!!!")
-					.define("enableMod", false);
-			builder.pop();
 		}
 	}
 	

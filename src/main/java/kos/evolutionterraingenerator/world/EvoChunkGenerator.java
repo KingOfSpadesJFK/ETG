@@ -76,6 +76,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         this.noiseSizeY = 256 / this.verticalNoiseGranularity;		
 	}
 
+    @Override
 	public void makeBase(IWorld worldIn, IChunk chunkIn)
 	{
 		super.makeBase(worldIn, chunkIn);
@@ -85,7 +86,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         this.biomesForGeneration = new Biome[16*16];
 		replaceBiomeBlocks(primer);
 	}
-	
+
+    @Override
 	public EvoGenSettings getSettings()
 	{
 		return this.settings;
@@ -136,7 +138,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     }
     
     //Sets biomes according to the conditions of the land
-    // /tp -4047 128 -6395
     private void setBiome(Biome biome, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal)
     {
         int seaLevel = this.settings.getSeaLevel();
@@ -184,17 +185,20 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
             }
         }
     }
-    
+
+    @Override
     protected Biome getBiome(WorldGenRegion worldRegionIn, BlockPos pos) {
     	return worldRegionIn.getBiome(pos);
      }
 
+    @Override
     public BiomeProvider getBiomeProvider() {
        return this.biomeProvider;
     }
 	
 	/* 1.14 GENERATION METHODS */
 
+    @Override
     protected void func_222548_a(double[] p_222548_1_, int x, int z) {
        double coordScale = this.settings.getCoordScale();
        double heightScale = this.settings.getHeightScale();
@@ -207,6 +211,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 
     
     //The only reason it's here is because of func_222552_a() being private in NoiseChunkGenerator
+    @Override
     protected void func_222546_a(double[] p_222546_1_, int x, int z, double coordScale, double heightScale, double depthBase, double p_222546_10_, int p_222546_12_, int p_222546_13_) {
        double[] adouble = this.func_222549_a(x, z);
        double d0 = adouble[0];
@@ -228,7 +233,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 
     }
 
-    ///tp 271 145 701
     private double func_222552_a(int x, int y, int z, double coordScale, double heightScale, double depthBase, double p_222552_10_) {
 
        double coord = this.settings.getMainNoiseCoordScale();
@@ -240,6 +244,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
        return MathHelper.clampedLerp(d0 / this.settings.getLowerLimitScale(), d1 / this.settings.getUpperLimitScale(), (d2 / 10.0D + 1.0D) / 2.0D);
     }
 
+    @Override
     protected double[] func_222549_a(int x, int z) {
        double[] adouble = new double[2];
        float f = 0.0F;
