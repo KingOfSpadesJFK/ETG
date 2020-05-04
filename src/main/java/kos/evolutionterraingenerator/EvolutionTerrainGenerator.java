@@ -27,12 +27,13 @@ public class EvolutionTerrainGenerator {
 	{
 		instance = this;
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::config);
+		//FMLJavaModLoadingContext.get().getModEventBus().addListener(this::config);
         MinecraftForge.EVENT_BUS.register(this);
         
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        //ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 	}
 	
+	/*
 	@SubscribeEvent
 	public void config(final ModConfig.ModConfigEvent event)
 	{
@@ -41,6 +42,7 @@ public class EvolutionTerrainGenerator {
 			Config.bake();
 		}
 	}
+	*/
 
 	//Event Loaders
 	private void setup(final FMLCommonSetupEvent event)

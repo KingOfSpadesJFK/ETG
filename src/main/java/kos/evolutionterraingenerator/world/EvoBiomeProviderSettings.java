@@ -7,31 +7,67 @@ public class EvoBiomeProviderSettings extends OverworldBiomeProviderSettings
 {
 	private WorldInfo worldInfo;
 	private EvoGenSettings settings;
+	
 	private boolean useBOPBiomes;
+	private float biomeScale = 1.0f;
+	private float humidScale = 1.0f;
+	private float tempScale = 1.0f;
+	private float oceanScale = 1.0f;
+	
+	public void setup()
+	{
+		useBOPBiomes = worldInfo.getGeneratorOptions().getBoolean(EvoType.USE_BOP_TAG);
+	}
 	
 	public OverworldBiomeProviderSettings setWorldInfo(WorldInfo worldInfo)
 	{
 		this.worldInfo = worldInfo;
 		return this;
 	}
+
+	public WorldInfo getWorldInfo()
+	{
+		return this.worldInfo;
+	}
+	
 	public OverworldBiomeProviderSettings setGeneratorSettings(EvoGenSettings settings) 
 	{
 		this.settings = settings;
 		return this;
 	}
 	
+	public void setUseBOPBiomes(boolean useBOPBiomes)
+	{
+		this.useBOPBiomes = useBOPBiomes;
+	}
+	
 	public EvoGenSettings getSettings()
 	{
 		return settings;
 	}
-	public WorldInfo getWorldInfo()
+	
+	public boolean isUseBOPBiomes() 
 	{
-		return worldInfo;
-	}
-	public boolean isUseBOPBiomes() {
 		return useBOPBiomes;
 	}
-	public void setUseBOPBiomes(boolean useBOPBiomes) {
-		this.useBOPBiomes = useBOPBiomes;
+
+	public float getBiomeScale()
+	{
+		return biomeScale;
+	}
+
+	public float getHumidityScale()
+	{
+		return humidScale;
+	}
+
+	public float getTemperatureScale()
+	{
+		return tempScale;
+	}
+
+	public float getOceanScale()
+	{
+		return oceanScale;
 	}
 }

@@ -5,11 +5,15 @@
 	"biome.evolutionterraingenerator.dry_gravel_beach": "Dry Gravel Beach",
 	"biome.evolutionterraingenerator.red_beach": "Red Beach",
 	"biome.evolutionterraingenerator.rainforest": "Rainforest",
-	"biome.evolutionterraingenerator.tundra": "Tundra",
-	"biome.evolutionterraingenerator.tundra_wooded": "Wooded Tundra",
-	"biome.evolutionterraingenerator.gravelly_tundra": "Gravelly Tundra",
+	"biome.evolutionterraingenerator.tundra": "Cold Plains",
+	"biome.evolutionterraingenerator.tundra_wooded": "Wooded Cold Plains",
+	"biome.evolutionterraingenerator.gravelly_tundra": "Gravelly Cold Plains",
 	"biome.evolutionterraingenerator.gravel_beach": "Gravel Beach",
 	"biome.evolutionterraingenerator.snowy_gravel_beach": "Snowy Gravel Beach",
 	"biome.evolutionterraingenerator.snowy_giant_tree_taiga": "Snowy Giant Tree Taiga",
-	"biome.evolutionterraingenerator.snowy_giant_spruce_taiga": "Snowy Giant Spruce Taiga"
+	"biome.evolutionterraingenerator.snowy_giant_spruce_taiga": "Snowy Giant Spruce Taiga",
+	
+	"createworld.customize.etg_settings.title": "ETG Settings",
+	"gui.etg_settings.use_bop_biomes": "Biomes O' Plenty",
+	"gui.etg_settings.bop_unavailable": "Biomes O' Plenty Unavailable"
 }

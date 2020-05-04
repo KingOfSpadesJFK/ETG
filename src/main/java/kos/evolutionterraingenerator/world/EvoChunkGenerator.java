@@ -2,23 +2,31 @@ package kos.evolutionterraingenerator.world;
 
 import java.util.Random;
 
+import biomesoplenty.api.biome.BOPBiomes;
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 import kos.evolutionterraingenerator.world.biome.NewBiomes;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
-import net.minecraft.world.biome.provider.BiomeProvider;
-import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.OverworldChunkGenerator;
 import net.minecraft.world.gen.WorldGenRegion;
+import net.minecraft.world.gen.feature.Feature;
+import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraft.world.gen.feature.structure.StructureStart;
+import net.minecraft.world.gen.feature.template.TemplateManager;
 
 public class EvoChunkGenerator extends OverworldChunkGenerator
 {
@@ -41,12 +49,11 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     private NoiseGeneratorOpenSimplex minLimitPerlinNoise;
     private NoiseGeneratorOpenSimplex maxLimitPerlinNoise;
     private NoiseGeneratorOpenSimplex mainPerlinNoise;
-    private NoiseGeneratorOpenSimplex surfaceNoise;
     public NoiseGeneratorOpenSimplex depthNoise;
     public NoiseGeneratorOpenSimplex swampChance;
     public NoiseGeneratorOpenSimplex swampType;
+	private NoiseGeneratorOpenSimplex surfaceDepthNoise;
     private final IWorld world;
-    private Biome[] biomesForGeneration;
     double[] mainNoiseRegion;
     double[] minLimitRegion;
     double[] maxLimitRegion;
@@ -67,8 +74,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         this.maxLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
         this.mainPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 8);
         
-        this.surfaceNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
         this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
+        this.surfaceDepthNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
         this.swampChance = new NoiseGeneratorOpenSimplex(this.rand, 4);
         this.swampType = new NoiseGeneratorOpenSimplex(this.rand, 4);
         
@@ -76,124 +83,146 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         this.noiseSizeY = 256 / this.verticalNoiseGranularity;		
 	}
 
-    @Override
-	public void makeBase(IWorld worldIn, IChunk chunkIn)
-	{
-		super.makeBase(worldIn, chunkIn);
-		//setBlocksInChunk(chunkIn);
-		ChunkPrimer primer = (ChunkPrimer) chunkIn;
-        //this.biomesForGeneration = this.biomeProvider.getBiomesForGeneration(this.biomesForGeneration, x * 16, z * 16, 16, 16);
-        this.biomesForGeneration = new Biome[16*16];
-		replaceBiomeBlocks(primer);
-	}
-
-    @Override
+	@Override
 	public EvoGenSettings getSettings()
 	{
 		return this.settings;
 	}
 
-    public void replaceBiomeBlocks(ChunkPrimer primer)
-    {
-    	int x = primer.getPos().x;
-    	int z = primer.getPos().z;
-    	Biome[] aBiome = new Biome[16*16];
+	@Override
+	public void generateBiomes(IChunk chunkIn) 
+	{
+		ChunkPos chunkpos = chunkIn.getPos();
+		int x = chunkpos.x;
+		int z = chunkpos.z;
+		Biome[] abiome = this.biomeProvider.getBiomes(x * 16, z * 16, 16, 16, true);
+		chunkIn.setBiomes(abiome);
+	}
 
-        for (int i = 0; i < 16; ++i)
-        {
-            for (int j = 0; j < 16; ++j)
-            {
-            	Biome biome = this.biomeProvider.getBiome(x * 16 + i, z * 16 + j);
-    			this.biomesForGeneration[i * 16 + j] = biome;
-            	double noiseVal = this.surfaceNoise.getNoise((double)(x * 16 + i) * 0.0875, (double)(z * 16 + j) * 0.0875);
-            	ResourceLocation biomeid = biome.getRegistryName();
-            	
-                boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | 
-               		 biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName()) |
-               		 biomeid.equals(NewBiomes.GRAVEL_BEACH.getRegistryName()) |
-               		 biomeid.equals(NewBiomes.SNOWY_GRAVEL_BEACH.getRegistryName()) |
-               		 biomeid.equals(NewBiomes.DRY_BEACH.getRegistryName()) |
-               		 biomeid.equals(NewBiomes.DRY_GRAVEL_BEACH.getRegistryName()) |
-               		 biomeid.equals(NewBiomes.RED_BEACH.getRegistryName());
-                boolean isOcean = 
-                		biomeid.equals(Biomes.FROZEN_OCEAN.getRegistryName()) |
-                		biomeid.equals(Biomes.DEEP_FROZEN_OCEAN.getRegistryName()) |
-                		biomeid.equals(Biomes.COLD_OCEAN.getRegistryName()) |
-                		biomeid.equals(Biomes.DEEP_COLD_OCEAN.getRegistryName()) |
-                		biomeid.equals(Biomes.LUKEWARM_OCEAN.getRegistryName()) |
-                		biomeid.equals(Biomes.DEEP_LUKEWARM_OCEAN.getRegistryName()) |
-                		biomeid.equals(Biomes.WARM_OCEAN.getRegistryName()) |
-                		biomeid.equals(Biomes.DEEP_WARM_OCEAN.getRegistryName()) |
-                		biomeid.equals(Biomes.OCEAN.getRegistryName()) |
-                		biomeid.equals(Biomes.DEEP_OCEAN.getRegistryName());
-                
-                if (!isOcean && !isBeach)
-                {
-                	setBiome(biome, this.rand, primer, x * 16 + i, z * 16 + j, noiseVal);
-                }
-            	aBiome[j * 16 + i] = this.biomesForGeneration[i * 16 + j];
-            }
-        }
-        primer.setBiomes(aBiome);
-    }
-    
-    //Sets biomes according to the conditions of the land
-    private void setBiome(Biome biome, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal)
+	@Override
+	public void generateSurface(IChunk chunkIn) 
+	{
+	      ChunkPos chunkpos = chunkIn.getPos();
+	      SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
+	      sharedseedrandom.setBaseChunkSeed(chunkpos.x, chunkpos.z);
+	      int x = chunkpos.getXStart();
+	      int z = chunkpos.getZStart();
+	      Biome[] abiome = chunkIn.getBiomes();
+	      boolean changeBiomes = false;
+
+	      for(int i = 0; i < 16; ++i) 
+	      {
+	         for(int j = 0; j < 16; ++j)
+	         {
+	        	 int x1 = x + i;
+	        	 int z1 = z + j;
+	        	 int y = chunkIn.getTopBlockY(Heightmap.Type.WORLD_SURFACE_WG, i, j) + 1;
+	        	 Biome biome = this.biomeProvider.generateBiome(x1, z1, false);
+	        	 Biome biome2 = setBiomebyHeight(biome, chunkIn, x1, z1, y);
+	        	 if (!biome.equals(biome2))
+	        	 {
+	        		 changeBiomes = true;
+	        		 biome = biome2;
+	        		 abiome[j * 16 + i] = biome2;
+	        	 }
+	        	 double d1 = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.25;
+	        	 biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
+	         }
+	      }
+	      if (changeBiomes)
+	    	  chunkIn.setBiomes(abiome);
+	      this.makeBedrock(chunkIn, sharedseedrandom);
+	}
+
+	@Override
+	public void initStructureStarts(IChunk chunkIn, ChunkGenerator<?> generator, TemplateManager templateManagerIn) 
+	{
+		for(Structure<?> structure : Feature.STRUCTURES.values()) 
+		{
+			if (generator.getBiomeProvider().hasStructure(structure)) 
+			{
+				SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
+	            ChunkPos chunkpos = chunkIn.getPos();
+	            StructureStart structurestart = StructureStart.DUMMY;
+	            if (structure.hasStartAt(generator, sharedseedrandom, chunkpos.x, chunkpos.z)) 
+	            {
+	            	BlockPos pos = new BlockPos(chunkpos.getXStart() + 9, 0, chunkpos.getZStart() + 9);
+	            	Biome biome = this.biomeProvider.getBiome(pos);
+	            	biome = setBiomebyHeight(biome, chunkIn, pos.getX(), pos.getY(), chunkIn.getTopBlockY(Heightmap.Type.WORLD_SURFACE_WG, pos.getX(), pos.getZ()));
+	            	StructureStart structurestart1 = structure.getStartFactory().create(structure, chunkpos.x, chunkpos.z, biome, MutableBoundingBox.getNewBoundingBox(), 0, generator.getSeed());
+	            	structurestart1.init(this, templateManagerIn, chunkpos.x, chunkpos.z, biome);
+	            	structurestart = structurestart1.isValid() ? structurestart1 : StructureStart.DUMMY;
+	            }
+	            chunkIn.putStructureStart(structure.getStructureName(), structurestart);
+			}
+		}
+	}
+
+	@Override
+	protected Biome getBiome(WorldGenRegion worldRegionIn, BlockPos pos) 
     {
+		Biome biome = this.biomeProvider.getBiome(pos);
+		IChunk chunk = worldRegionIn.getChunk(pos);
+        int x = pos.getX();
+        int y = chunk.getTopBlockY(Heightmap.Type.WORLD_SURFACE_WG, pos.getX(), pos.getZ());
+        int z = pos.getZ();
+        biome = setBiomebyHeight(biome, chunk, x, z, y);
+        return biome;
+	}
+
+    //Sets biomes according to the conditions of the land
+    private Biome setBiomebyHeight(Biome biome, IChunk chunkPrimerIn, int x, int z, int y)
+    {
+        ResourceLocation biomeid = biome.getRegistryName();
+        boolean isBeach = biomeid.equals(Biomes.BEACH.getRegistryName()) | 
+        		 biomeid.equals(Biomes.SNOWY_BEACH.getRegistryName()) |
+        		 biomeid.equals(NewBiomes.GRAVEL_BEACH.getRegistryName()) |
+        		 biomeid.equals(NewBiomes.SNOWY_GRAVEL_BEACH.getRegistryName()) |
+        		 biomeid.equals(NewBiomes.DRY_BEACH.getRegistryName()) |
+        		 biomeid.equals(NewBiomes.DRY_GRAVEL_BEACH.getRegistryName()) |
+        		 biomeid.equals(NewBiomes.RED_BEACH.getRegistryName());
+        boolean isOcean = 
+         		biomeid.equals(Biomes.FROZEN_OCEAN.getRegistryName()) |
+         		biomeid.equals(Biomes.DEEP_FROZEN_OCEAN.getRegistryName()) |
+         		biomeid.equals(Biomes.COLD_OCEAN.getRegistryName()) |
+         		biomeid.equals(Biomes.DEEP_COLD_OCEAN.getRegistryName()) |
+         		biomeid.equals(Biomes.LUKEWARM_OCEAN.getRegistryName()) |
+         		biomeid.equals(Biomes.DEEP_LUKEWARM_OCEAN.getRegistryName()) |
+         		biomeid.equals(Biomes.WARM_OCEAN.getRegistryName()) |
+         		biomeid.equals(Biomes.DEEP_WARM_OCEAN.getRegistryName()) |
+         		biomeid.equals(Biomes.OCEAN.getRegistryName()) |
+         		biomeid.equals(Biomes.DEEP_OCEAN.getRegistryName());
+        if (isBeach || isOcean)
+        	return biome;
+        
         int seaLevel = this.settings.getSeaLevel();
-        int xInChunk = x & 15;
-        int zInChunk = z & 15;
         double swampChance = this.swampChance.getNoise((double)x * 0.0125, (double)z * 0.0125);
         swampChance = MathHelper.clamp(swampChance, 0.0, 1.0);
         double temperature = this.biomeProvider.getTemperature(x, z);
         double humidity = this.biomeProvider.getHumidity(x, z);
-
-        ResourceLocation biomeid = biome.getRegistryName();
-        
-        for (int i = 255; i >= 0; i--)
-        {
-            BlockState block = chunkPrimerIn.getBlockState(new BlockPos(xInChunk, i, zInChunk));
-        	if (block.getBlock() == Blocks.STONE)
-            {
-            	if (temperature > 0.5 && humidity > 0.675 && swampChance < 0.375 - 0.25 * ((MathHelper.clamp(temperature, 0.5, 1.0) - 0.5) * 2.0) && i <= seaLevel + 3)
-            	{
-                    double swampType = this.swampType.getNoise((double)x * 0.0125, (double)z * 0.0125) * 0.125 + 0.5;
-                    swampType = MathHelper.clamp(swampType, 0.0, 1.0);
-                    Biome swamp = null;
-                    if (temperature < EvoBiomeProvider.WARM_TEMP)
-                    	swamp = EvoBiomes.COLD_SWAMP.getBiome(swampType);
-                    else if (temperature < EvoBiomeProvider.HOT_TEMP)
-                      	swamp = EvoBiomes.WARM_SWAMP.getBiome(swampType);
-                    else
-                    	swamp = EvoBiomes.HOT_SWAMP.getBiome(swampType);
-                    
-                    if (swamp != null)
-                    	biome = swamp;
-                    double randVal = rand.nextDouble() * 0.25D;
-                    if (swampChance + randVal > 0.175 && swampChance + randVal < 0.275 && i == seaLevel - 1)
-                    	chunkPrimerIn.setBlockState(new BlockPos(xInChunk, i, zInChunk), WATER, false);
-            	}
-            	else if (biomeid.equals(Biomes.BADLANDS.getRegistryName()))
-            	{
-            		if (i >= seaLevel + 50)
-            		{
-                		biome = Biomes.WOODED_BADLANDS_PLATEAU;
-            		}
-            	}
-    			this.biomesForGeneration[xInChunk * 16 + zInChunk] = biome;
-        		return;
-            }
-        }
-    }
-
-    @Override
-    protected Biome getBiome(WorldGenRegion worldRegionIn, BlockPos pos) {
-    	return worldRegionIn.getBiome(pos);
-     }
-
-    @Override
-    public BiomeProvider getBiomeProvider() {
-       return this.biomeProvider;
+    	if (temperature > 0.5 && humidity > 0.675 && swampChance < 0.375 - 0.25 * ((MathHelper.clamp(temperature, 0.5, 1.0) - 0.5) * 2.0) && y <= seaLevel + 3)
+    	{
+            double swampType = this.swampType.getNoise((double)x * 0.0125, (double)z * 0.0125) * 0.125 + 0.5;
+            swampType = MathHelper.clamp(swampType, 0.0, 1.0);
+            Biome swamp = null;
+            if (temperature < EvoBiomeProvider.WARM_TEMP)
+            	swamp = EvoBiomes.COLD_SWAMP.getBiome(swampType);
+            else if (temperature < EvoBiomeProvider.HOT_TEMP)
+              	swamp = EvoBiomes.WARM_SWAMP.getBiome(swampType);
+            else
+            	swamp = EvoBiomes.HOT_SWAMP.getBiome(swampType);
+            
+            if (swamp != null)
+            	biome = swamp;
+    	}
+    	else if (biomeid.equals(Biomes.BADLANDS.getRegistryName()))
+    	{
+    		if (y >= seaLevel + 50)
+    		{
+        		biome = Biomes.WOODED_BADLANDS_PLATEAU;
+    		}
+    	}
+    	return biome;
     }
 	
 	/* 1.14 GENERATION METHODS */
@@ -258,8 +287,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
              float temperature =  (float) this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
              float humidity =  (float) this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
              ResourceLocation biomeid = biome.getRegistryName();
-             float f4 = 0.75F  + (0.025F - humidity * temperature * 0.025F) * this.settings.getBiomeDepthWeight();
-             float f5 = 1.115F + humidity * temperature * 0.025F * this.settings.getBiomeScaleWeight();
+             float f4 = 0.75F  + (0.0275F - humidity * temperature * 0.0275F) * this.settings.getBiomeDepthWeight();
+             float f5 = 0.95F + humidity * temperature * 0.3F * this.settings.getBiomeScaleWeight();
 
              float f6 = field_222576_h[j + 2 + (k + 2) * 5] / (f4 + 2.0F);
              
@@ -270,6 +299,13 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
                		 biomeid.equals(NewBiomes.DRY_BEACH.getRegistryName()) |
                		 biomeid.equals(NewBiomes.DRY_GRAVEL_BEACH.getRegistryName()) |
                		 biomeid.equals(NewBiomes.RED_BEACH.getRegistryName());
+             if (this.settings.isUseBOP())
+             {
+            	 isBeach = isBeach | 
+            	 biomeid.equals(BOPBiomes.white_beach.get().getRegistryName()) |
+            	 biomeid.equals(BOPBiomes.volcano_edge.get().getRegistryName()) |
+            	 biomeid.equals(BOPBiomes.origin_beach.get().getRegistryName());
+             }
              
              boolean isOcean = 
              		biomeid.equals(Biomes.FROZEN_OCEAN.getRegistryName()) |
@@ -289,6 +325,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
          	{
                 f4 = this.settings.getBiomeDepthOffset() + biome.getDepth() * this.settings.getBiomeDepthWeight();
                 f5 = this.settings.getBiomeScaleOffset() + biome.getScale() * 0.0125F * this.settings.getBiomeScaleWeight();
+                if (isBeach)
+                	f5 = 0.0F;
                 f6 = field_222576_h[j + 2 + (k + 2) * 5] / (f4 + 2.0F);
                  
                 if (biome.getDepth() > 0.125F)

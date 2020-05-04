@@ -2,57 +2,41 @@ package kos.evolutionterraingenerator.world;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.gen.OverworldGenSettings;
 
 public class EvoGenSettings extends OverworldGenSettings
 {
 	private final int seaLevel = 63;
-	private final float biomeScale = 1.0f;
-	private final float humidScale = 1.0f;
-	private final float tempScale = 1.0f;
-	private final float oceanScale = 1.0f;
 	
 	private static final BlockState oceanBlock = Blocks.WATER.getDefaultState();
 	
-	private final double mainNoiseCoordScale = 175.0;
-	private final double mainNoiseHeightScale = 75.0;
-	private final double depthNoiseScaleX = 200.0;
-	private final double depthNoiseScaleZ = 200.0;
-	private final double coordScale = 160.0;
-	private final double heightScale = 60.0;
-	private final double depthBaseSize = 8.5;
-	private final double heightStretch = 12.0;
-	private final double lowerLimitScale = 512.0;
-	private final double upperLimitScale = 512.0;
+	private double mainNoiseCoordScale = 175.0;
+	private double mainNoiseHeightScale = 75.0;
+	private double depthNoiseScaleX = 200.0;
+	private double depthNoiseScaleZ = 200.0;
+	private double coordScale = 160.0;
+	private double heightScale = 60.0;
+	private double depthBaseSize = 8.5;
+	private double heightStretch = 12.0;
+	private double lowerLimitScale = 512.0;
+	private double upperLimitScale = 512.0;
 	
-	private final float biomeScaleWeight = 1.0F;
-	private final float biomeScaleOffset = 0.0F;
-	private final float biomeDepthWeight = 1.0F;
-	private final float biomeDepthOffset = 0.0F;
+	private float biomeScaleWeight = 1.0F;
+	private float biomeScaleOffset = 0.0F;
+	private float biomeDepthWeight = 1.0F;
+	private float biomeDepthOffset = 0.0F;
+	
+	private boolean useBOP = false;
+	
+	public EvoGenSettings(CompoundNBT nbtSettings)
+	{
+		useBOP = nbtSettings.getBoolean(EvoType.USE_BOP_TAG);
+	}
 
 	public int getSeaLevel()
 	{
 		return seaLevel;
-	}
-
-	public float getBiomeScale()
-	{
-		return biomeScale;
-	}
-
-	public float getHumidityScale()
-	{
-		return humidScale;
-	}
-
-	public float getTemperatureScale()
-	{
-		return tempScale;
-	}
-
-	public float getOceanScale()
-	{
-		return oceanScale;
 	}
 	
 	public BlockState getOceanBlock()
@@ -66,11 +50,6 @@ public class EvoGenSettings extends OverworldGenSettings
 
 	public double getDepthNoiseScaleZ() {
 		return depthNoiseScaleZ;
-	}
-
-	public static EvoGenSettings createSettings()
-	{
-		return new EvoGenSettings();
 	}
 
 	public float getBiomeDepthWeight() {
@@ -119,5 +98,9 @@ public class EvoGenSettings extends OverworldGenSettings
 
 	public double getHeightScale() {
 		return heightScale;
+	}
+
+	public boolean isUseBOP() {
+		return useBOP;
 	}
 }
