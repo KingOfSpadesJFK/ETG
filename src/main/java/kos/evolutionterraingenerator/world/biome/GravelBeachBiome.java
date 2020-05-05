@@ -17,6 +17,7 @@ public class GravelBeachBiome extends Biome {
 		      this.addStructure(Feature.MINESHAFT, new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL));
 		      this.addStructure(Feature.BURIED_TREASURE, new BuriedTreasureConfig(0.01F));
 		      this.addStructure(Feature.SHIPWRECK, new ShipwreckConfig(true));
+		      DefaultBiomeFeatures.addTaigaRocks(this);
 		      DefaultBiomeFeatures.addCarvers(this);
 		      DefaultBiomeFeatures.addStructures(this);
 		      DefaultBiomeFeatures.addLakes(this);
