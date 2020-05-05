@@ -8,7 +8,6 @@ import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 import kos.evolutionterraingenerator.world.biome.NewBiomes;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
@@ -183,10 +182,10 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
           		 biome.equals(NewBiomes.RED_BEACH);
         if (this.settings.isUseBOP())
         {
-       	 isBeach = isBeach | 
-       	 biome.equals(BOPBiomes.white_beach.get()) |
-       	 biome.equals(BOPBiomes.volcano_edge.get()) |
-       	 biome.equals(BOPBiomes.origin_beach.get());
+        	isBeach = isBeach | 
+        			biome.equals(BOPBiomes.white_beach.get()) |
+        			biome.equals(BOPBiomes.volcano_edge.get()) |
+        			biome.equals(BOPBiomes.origin_beach.get());
         }
         
         boolean isOcean = 
@@ -205,8 +204,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         	return biome;
         
         int seaLevel = this.settings.getSeaLevel();
-        double swampChance = this.swampChance.getNoise((double)x * 0.0125, (double)z * 0.0125);
-        swampChance = MathHelper.clamp(swampChance, 0.0, 1.0);
         double temperature = this.biomeProvider.getTemperature(x, z);
         double humidity = this.biomeProvider.getHumidity(x, z);
         
@@ -219,6 +216,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         		biome = this.biomeProvider.getBeach(x, z);
         	return biome;
         }
+
+        double swampChance = this.swampChance.getNoise((double)x * 0.0125, (double)z * 0.0125);
+        swampChance = MathHelper.clamp(swampChance, 0.0, 1.0);
     	if (!isOcean && temperature > 0.5 && humidity > 0.675 && swampChance < 0.375 - 0.25 * ((MathHelper.clamp(temperature, 0.5, 1.0) - 0.5) * 2.0) && y <= seaLevel + 3)
     	{
             double swampType = this.swampType.getNoise((double)x * 0.0125, (double)z * 0.0125) * 0.125 + 0.5;
