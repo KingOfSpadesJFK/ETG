@@ -344,9 +344,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
             	 //
             	 double[] landmass = this.biomeProvider.getLandmass((x + j) * 4, (z + k) * 4);
             	 if (landmass[0] > landmass[1])
-            		 d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[0] - EvoBiomeProvider.oceanThreshold + EvoBiomeProvider.beachThreshold) * 4.0, -1.8125, 0.0);
+            		 d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[0] - EvoBiomeProvider.oceanThreshold + EvoBiomeProvider.beachThreshold) * 6.0, -1.8125, 0.0);
             	 else
-            		 d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[1] - EvoBiomeProvider.oceanThreshold + EvoBiomeProvider.beachThreshold) * 4.0, -1.8125, 0.0);
+            		 d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[1] - EvoBiomeProvider.oceanThreshold + EvoBiomeProvider.beachThreshold) * 6.0, -1.8125, 0.0);
             	 d5 = 0.0;
              }
              
