@@ -160,7 +160,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     public static final double biomeScale = 3.0;
     public static final double oceanScale = 0.0375;
     public static final double oceanThreshold = 0.5;
-    public static final double beachThreshold = 0.01;
+    public static final double beachThreshold = 0.015;
     public static final double deepThreshold = 0.05;
     
     public static final double riverThreshold = 0.025;
