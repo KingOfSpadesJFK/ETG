@@ -4,9 +4,9 @@ import java.util.Random;
 
 import kos.evolutionterraingenerator.util.noise.OpenSimplexNoise;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.gen.INoiseGenerator;
+import net.minecraft.world.gen.OctavesNoiseGenerator;
 
-public class NoiseGeneratorOpenSimplex
+public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
 {
     /** Collection of noise generation functions.  Output is combined to produce different octaves of noise. */
     private final OpenSimplexNoise[] generatorCollection;
@@ -15,6 +15,7 @@ public class NoiseGeneratorOpenSimplex
 
     public NoiseGeneratorOpenSimplex(Random seed, int octavesIn)
     {
+    	super(seed, octavesIn);
         this.octaves = octavesIn;
         this.generatorCollection = new OpenSimplexNoise[octavesIn];
         this.vertexCollection = new Point3D[octavesIn];
@@ -80,9 +81,10 @@ public class NoiseGeneratorOpenSimplex
             	double x = xOffset + (double)i * xScale + vertex.x;
         		for (int j = 0; j < zSize; j++)
         		{
+        			double y = yOffset * yScale + vertex.y;
         			double z = zOffset + (double)j * zScale + vertex.z;
 
-        			noiseArray[c] += noise.eval(x, z) * (1.0 / noiseScale);
+        			noiseArray[c] += noise.eval(x, y, z) / noiseScale;
         			c++;
         		}
         	}
@@ -99,7 +101,7 @@ public class NoiseGeneratorOpenSimplex
         			for (int k = 0; k < ySize; k++)
         			{
             			double y = yOffset + (double)k * yScale + vertex.y;
-            			noiseArray[c] += noise.eval(x, y, z) * (1.0 / noiseScale);
+            			noiseArray[c] += noise.eval(x, y, z) / noiseScale;
             			c++;
         			}
         		}
@@ -114,9 +116,44 @@ public class NoiseGeneratorOpenSimplex
     {
         return this.generateNoiseOctaves(noiseArray, xOffset, 10, zOffset, xSize, 1, zSize, xScale, 1.0D, zScale);
     }
+
+    public OpenSimplexNoise getOpenSimplexOctave(int i) {
+       return this.generatorCollection[i];
+    }
     
     private class Point3D
     {
     	public double x, y, z;
     }
+
+	public double func_215460_a(double x, double y, double z, double p_215462_7_, double p_215462_9_, boolean p_215462_11_) 
+	{
+        double d3 = 1.0D;
+        double d4 = 0.0D;
+
+        for(int i = 0; i < octaves; i++)
+        {
+            double d0 = maintainPrecision(x * d3 + vertexCollection[i].x);
+            double d1 = maintainPrecision(y * d3 + vertexCollection[i].y);
+            double d2 = maintainPrecision(z * d3 + vertexCollection[i].z);
+            
+            if (p_215462_11_)
+                d4 += this.generatorCollection[i].eval(d0, d2) / d3;
+            else
+            	d4 += this.generatorCollection[i].eval(d0, d1, d2) / d3;
+            d3 /= 2.0D;
+        }
+
+        return d4;
+	}
+	
+	public double getNoise(double x, double y, double z)
+	{
+        return func_215460_a(x, y, z, 0, 0, false);
+	}
+
+	public double getNoise(double x, double z) 
+	{
+        return func_215460_a(x, 0, z, 0, 0, true);
+	}
 }
