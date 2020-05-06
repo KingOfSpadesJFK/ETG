@@ -1,6 +1,7 @@
 package kos.evolutionterraingenerator.world;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
@@ -125,7 +126,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 	public EvoBiomeProvider(EvoBiomeProviderSettings settingsProvider) {
 		super(settingsProvider);
         
-        Random rand = new Random(settingsProvider.getWorldInfo().getSeed());
+        SharedSeedRandom rand = new SharedSeedRandom(settingsProvider.getWorldInfo().getSeed());
         this.landOctave = new NoiseGeneratorOpenSimplex(rand, oceanOctaves);
 		this.landOctave2 = new NoiseGeneratorOpenSimplex(rand, oceanOctaves);
 		this.riverOctave = new NoiseGeneratorOpenSimplex(rand, 8);
@@ -134,7 +135,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
         this.humidOctave = new NoiseGeneratorOpenSimplex(rand, 8);
 		this.biomeChanceOctave = new NoiseGeneratorOpenSimplex(rand, 4);
 		this.mushroomOctave = new NoiseGeneratorOpenSimplex(rand, 4);
-		this.islandOctave = new NoiseGeneratorOpenSimplex(new Random(rand.nextLong()), 4);
+		this.islandOctave = new NoiseGeneratorOpenSimplex(rand, 4);
 		this.noiseOctave = new NoiseGeneratorOpenSimplex(rand, 2);
 		this.providerSettings = settingsProvider;
 		this.landOffset = 0.0;

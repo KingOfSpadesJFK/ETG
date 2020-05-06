@@ -44,7 +44,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	
 	private EvoGenSettings settings;
 	private final EvoBiomeProvider biomeProvider;
-	private final Random rand;
+	private final SharedSeedRandom rand;
     private NoiseGeneratorOpenSimplex minLimitPerlinNoise;
     private NoiseGeneratorOpenSimplex maxLimitPerlinNoise;
     private NoiseGeneratorOpenSimplex mainPerlinNoise;
@@ -67,7 +67,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		this.world = worldIn;
 		this.settings = settingsIn;
 		this.biomeProvider = biomeProviderIn;
-		this.rand = new Random(world.getSeed());
+		this.rand = new SharedSeedRandom(world.getSeed());
 
         this.minLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
         this.maxLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
@@ -100,7 +100,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 
 	//This is just here for a less noisy surface between deserts/mesas and other biomes
 	@Override
-	public void generateSurface(IChunk chunkIn) 
+	public void func_225551_a_(WorldGenRegion regionIn, IChunk chunkIn)
 	{
 	      ChunkPos chunkpos = chunkIn.getPos();
 	      SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
@@ -158,7 +158,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		}
 	}
 
-	@Override
 	protected Biome getBiome(WorldGenRegion worldRegionIn, BlockPos pos) 
     {
 		Biome biome = this.biomeProvider.getBiome(pos);

@@ -3,6 +3,7 @@ package kos.evolutionterraingenerator.util;
 import java.util.Random;
 
 import kos.evolutionterraingenerator.util.noise.OpenSimplexNoise;
+import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.gen.OctavesNoiseGenerator;
 
@@ -13,9 +14,9 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
     private final Point3D[] vertexCollection;
     private final int octaves;
 
-    public NoiseGeneratorOpenSimplex(Random seed, int octavesIn)
+    public NoiseGeneratorOpenSimplex(SharedSeedRandom seed, int octavesIn)
     {
-    	super(seed, octavesIn);
+    	super(seed, octavesIn - 1, 0);
         this.octaves = octavesIn;
         this.generatorCollection = new OpenSimplexNoise[octavesIn];
         this.vertexCollection = new Point3D[octavesIn];
