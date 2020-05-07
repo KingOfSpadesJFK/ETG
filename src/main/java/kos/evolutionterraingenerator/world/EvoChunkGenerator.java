@@ -183,6 +183,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         
         if (isBeach)
         {
+        	if (y < seaLevel)
+        		return this.biomeProvider.getOcean(temperature, landmass[0] < EvoBiomeProvider.deepThreshold && landmass[1] < EvoBiomeProvider.deepThreshold);
         	if (y < seaLevel + 3)
         	{
 	    		if (biome.equals(Biomes.BADLANDS) || ( this.settings.isUseBOP() && biome.equals(BOPBiomes.outback.get() )))
@@ -190,8 +192,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	    		else
 	    			return this.biomeProvider.getBeach(x, z);
         	}
-        	if (y < seaLevel)
-        		return this.biomeProvider.getOcean(temperature, landmass[0] < EvoBiomeProvider.deepThreshold && landmass[1] < EvoBiomeProvider.deepThreshold);
         }
         
         if (isOcean)
