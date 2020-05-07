@@ -28,11 +28,9 @@ public class EvoGenSettings extends OverworldGenSettings
 	private float biomeDepthWeight = 1.0F;
 	private float biomeDepthOffset = 0.0F;
 	
-	private boolean useBOP = false;
-	
 	public EvoGenSettings(CompoundNBT nbtSettings)
 	{
-		useBOP = nbtSettings.getBoolean(EvoType.USE_BOP_TAG);
+		
 	}
 
 	public int getNoiseOctaves() 
@@ -104,9 +102,5 @@ public class EvoGenSettings extends OverworldGenSettings
 
 	public double getHeightScale() {
 		return heightScale;
-	}
-
-	public boolean isUseBOP() {
-		return useBOP;
 	}
 }

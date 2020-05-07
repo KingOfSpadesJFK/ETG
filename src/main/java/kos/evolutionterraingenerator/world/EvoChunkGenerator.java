@@ -178,33 +178,20 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
    	 	double[] landmass = this.biomeProvider.getLandmass(x, z);
    	 	boolean isOcean = landmass[0] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
    	 			landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
-   	 	boolean isBeach = !isOcean & (landmass[0] < EvoBiomeProvider.oceanThreshold &&
-   	 			landmass[1] < EvoBiomeProvider.oceanThreshold) & this.biomeProvider.canBeBeach(x, z);
+   	 	boolean isBeach = !isOcean && (landmass[0] < EvoBiomeProvider.oceanThreshold &&
+   	 			landmass[1] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach(x, z);
         
-        if (isBeach)
+        if (isBeach || isOcean)
         {
         	if (y < seaLevel)
         		return this.biomeProvider.getOcean(temperature, landmass[0] < EvoBiomeProvider.deepThreshold && landmass[1] < EvoBiomeProvider.deepThreshold);
         	if (y < seaLevel + 3)
         	{
-	    		if (biome.equals(Biomes.BADLANDS) || ( this.settings.isUseBOP() && biome.equals(BOPBiomes.outback.get() )))
+	    		if (biome.equals(Biomes.BADLANDS) || ( this.biomeProvider.getSettings().isUseBOPBiomes() && biome.equals(BOPBiomes.outback.get()) ))
 	    			return NewBiomes.RED_BEACH;
 	    		else
 	    			return this.biomeProvider.getBeach(x, z);
         	}
-        }
-        
-        if (isOcean)
-        {
-        	if (y >= seaLevel && y < seaLevel + 3)
-        	{
-        		if (biome.equals(Biomes.BADLANDS))
-        			return NewBiomes.RED_BEACH;
-        		else
-        			return this.biomeProvider.getBeach(x, z);
-        	}
-        	if (y < seaLevel)
-        		return this.biomeProvider.getOcean(temperature, landmass[0] < EvoBiomeProvider.deepThreshold && landmass[1] < EvoBiomeProvider.deepThreshold);
         }
 
         double swampChance = this.swampChance.getNoise((double)x * 0.0125, (double)z * 0.0125);
@@ -297,67 +284,68 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     }
 
     @Override
-    protected double[] func_222549_a(int x, int z) {
-       double[] adouble = new double[2];
-       double d = 0.0;
-       double d1 = 0.0;
-       double d2 = 0.0;
+    protected double[] func_222549_a(int x, int z) 
+    {
+    	double[] adouble = new double[2];
+    	double d = 0.0;
+    	double d1 = 0.0;
+    	double d2 = 0.0;
 
-       for(int j = -2; j <= 2; ++j)
-       {
-          for(int k = -2; k <= 2; ++k) 
-          {
-             double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
-             double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
-             double d4 = 0.75  + (0.0275 - humidity * temperature * 0.0275) * this.settings.getBiomeDepthWeight();
-             double d5 = 0.95 + humidity * temperature * 0.3 * this.settings.getBiomeScaleWeight();
+    	for(int j = -2; j <= 2; ++j)
+    	{
+    		for(int k = -2; k <= 2; ++k) 
+    		{
+    			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
+    			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
+    			double d4 = 0.75  + (0.0275 - humidity * temperature * 0.0275) * this.settings.getBiomeDepthWeight();
+    			double d5 = 0.95 + humidity * temperature * 0.3 * this.settings.getBiomeScaleWeight();
              
-             boolean isRiver = this.biomeProvider.getRiver((x + j) * 4, (z + k) * 4);
-        	 double[] landmass = this.biomeProvider.getLandmass((x + j) * 4, (z + k) * 4);
-        	 boolean isOcean = landmass[0] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
-        			 landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
-        	 boolean isBeach = this.biomeProvider.canBeBeach((x + j) * 4, (z + k) * 4) && !isOcean && landmass[0] < EvoBiomeProvider.oceanThreshold &&
-        			 landmass[1] < EvoBiomeProvider.oceanThreshold;
+    			boolean isRiver = this.biomeProvider.getRiver((x + j) * 4, (z + k) * 4);
+    			double[] landmass = this.biomeProvider.getLandmass((x + j) * 4, (z + k) * 4);
+    			boolean isOcean = landmass[0] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
+    					landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+    			boolean isBeach = !isOcean && (landmass[0] < EvoBiomeProvider.oceanThreshold &&
+    					landmass[1] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach((x + j) * 4, (z + k) * 4);
              
-             if (isBeach | isOcean)
-             {
-            	 if (landmass[0] > landmass[1])
-            		 d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[0] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
-            	 else
-            		 d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[1] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
-            	 d5 = 0.0;
-             }
+    			if (isBeach | isOcean)
+    			{
+    				if (landmass[0] > landmass[1])
+    					d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[0] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
+    				else
+    					d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[1] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
+    				d5 = 0.0;
+    			}
              
-             if (isRiver)
-             {
-            	 if (isBeach | isOcean)
-            	 {
-            		 d5 = 0.0;
-            		 if (d4 > this.settings.getBiomeDepthOffset() + Biomes.RIVER.getDepth() * this.settings.getBiomeDepthWeight())
-            			 d4 = this.settings.getBiomeDepthOffset() + Biomes.RIVER.getDepth() * this.settings.getBiomeDepthWeight();
-            	 }
-            	 else
-            	 {
-            		 d4 = this.settings.getBiomeDepthOffset() + Biomes.OCEAN.getDepth() * this.settings.getBiomeDepthWeight();
-                	 d5 = 0.0;
-            	 }
-             }
+    			if (isRiver)
+    			{
+    				if (isBeach | isOcean)
+    				{
+    					d5 = 0.0;
+    					if (d4 > this.settings.getBiomeDepthOffset() + Biomes.RIVER.getDepth() * this.settings.getBiomeDepthWeight())
+    						d4 = this.settings.getBiomeDepthOffset() + Biomes.RIVER.getDepth() * this.settings.getBiomeDepthWeight();
+    				}
+    				else
+    				{
+    					d4 = this.settings.getBiomeDepthOffset() + Biomes.OCEAN.getDepth() * this.settings.getBiomeDepthWeight();
+    					d5 = 0.0;
+    				}
+    			}
 
-             double d6 = field_222576_h[j + 2 + (k + 2) * 5] / (d4 + 2.0);
+    			double d6 = field_222576_h[j + 2 + (k + 2) * 5] / (d4 + 2.0);
 
-             d += d5 * d6;
-             d1 += d4 * d6;
-             d2 += d6;
-          }
-       }
+    			d += d5 * d6;
+    			d1 += d4 * d6;
+    			d2 += d6;
+    		}
+    	}
 
-       d = d / d2;
-       d1 = d1 / d2;
-       d = d * 0.9 + 0.1;
-       d1 = (d1 * 4.0 - 1.0) / 8.0;
-       adouble[0] = d1 + this.func_222574_c(x, z);
-       adouble[1] = d;
-       return adouble;
+    	d = d / d2;
+    	d1 = d1 / d2;
+    	d = d * 0.9 + 0.1;
+    	d1 = (d1 * 4.0 - 1.0) / 8.0;
+    	adouble[0] = d1 + this.func_222574_c(x, z);
+    	adouble[1] = d;
+    	return adouble;
     }
 
     private double func_222574_c(int x, int z) {

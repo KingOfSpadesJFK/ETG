@@ -28,8 +28,9 @@ public class EvoType extends WorldType
     {
 		CompoundNBT nbt = world.getWorldInfo().getGeneratorOptions();
 		boolean bopLoaded = ModList.get().isLoaded(BOPSupport.BOP_MODID);
-		if (!bopLoaded)
+		if (!bopLoaded || !nbt.contains(USE_BOP_TAG))
 			nbt.putBoolean(USE_BOP_TAG, false);
+		
 		EvoGenSettings settings = new EvoGenSettings(nbt);
 		if (world.dimension.getType() == DimensionType.OVERWORLD)
 		{

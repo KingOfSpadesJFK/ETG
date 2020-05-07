@@ -138,7 +138,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 		this.noiseOctave = new NoiseGeneratorOpenSimplex(rand, 2);
 		this.providerSettings = settingsProvider;
 		this.landOffset = 0.0;
-		while (landOctave.getNoise(0.0, landOffset, 0.0) < oceanThreshold)
+		while (landOctave.getNoise(0.0, landOffset, 0.0) * 0.125 / (double)oceanOctaves < oceanThreshold)
 		{
 			landOffset += 1.0;
 		}
@@ -536,4 +536,9 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 
 	      return this.topBlocksCache;
 	   }
+	
+	public EvoBiomeProviderSettings getSettings() 
+	{
+		return this.providerSettings;
+	}
 }
