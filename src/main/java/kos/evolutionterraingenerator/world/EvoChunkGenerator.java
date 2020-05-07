@@ -71,7 +71,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 
         this.minLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
         this.maxLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
-        this.mainPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 8);
+        this.mainPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, this.settings.getNoiseOctaves());
         
         this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
         this.surfaceDepthNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
@@ -94,7 +94,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		ChunkPos chunkpos = chunkIn.getPos();
 		int x = chunkpos.x;
 		int z = chunkpos.z;
-		Biome[] abiome = this.biomeProvider.getBiomes(x * 16, z * 16, 16, 16, true);
+		Biome[] abiome = this.biomeProvider.getBiomesForGeneration(null, x * 16, z * 16, 16, 16, 1, 1, true, true);
 		chunkIn.setBiomes(abiome);
 	}
 
@@ -117,8 +117,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	        	 int x1 = x + i;
 	        	 int z1 = z + j;
 	        	 int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, i, j) + 1;
-	        	 Biome biome = this.biomeProvider.generateBiome(x1, z1, false);
-	        	 Biome biome2 = setBiomebyHeight(biome, chunkIn, x1, z1, y);
+	        	 Biome biome = this.biomeProvider.generateLandBiome(x1, z1, false);
+	        	 Biome biome2 = setBiomebyHeight(biome, chunkIn, x1, z1, y, false);
 	        	 if (!biome.equals(biome2))
 	        	 {
 	        		 changeBiomes = true;
@@ -141,8 +141,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		{
             ChunkPos chunkpos = chunkIn.getPos();
         	BlockPos pos = new BlockPos(chunkpos.getXStart() + 9, 0, chunkpos.getZStart() + 9);
-        	Biome biome = this.biomeProvider.getBiome(pos);
-        	biome = setBiomebyHeight(biome, chunkIn, pos.getX(), pos.getY(), chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, pos.getX(), pos.getZ()));
+        	Biome biome = setBiomebyHeight(this.biomeProvider.generateLandBiome(pos.getX(), pos.getZ(), true), chunkIn, pos.getX(), pos.getZ(), chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, pos.getX(), pos.getZ()) + 1, true);
 			if (biome.hasStructure(structure)) 
 			{
 				SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
@@ -161,65 +160,57 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	@Override
 	protected Biome getBiome(WorldGenRegion worldRegionIn, BlockPos pos) 
     {
-		Biome biome = this.biomeProvider.getBiome(pos);
+		Biome biome = this.biomeProvider.generateLandBiome(pos.getX(), pos.getZ(), true);
 		IChunk chunk = worldRegionIn.getChunk(pos);
         int x = pos.getX();
-        int y = chunk.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, pos.getX(), pos.getZ());
+        int y = chunk.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, pos.getX(), pos.getZ()) + 1;
         int z = pos.getZ();
-        biome = setBiomebyHeight(biome, chunk, x, z, y);
+        biome = setBiomebyHeight(biome, chunk, x, z, y, true);
         return biome;
 	}
 
     //Sets biomes according to the conditions of the land
-    private Biome setBiomebyHeight(Biome biome, IChunk chunkPrimerIn, int x, int z, int y)
+    private Biome setBiomebyHeight(Biome biome, IChunk chunkPrimerIn, int x, int z, int y, boolean useNoise)
     {
-        boolean isBeach = biome.equals(Biomes.BEACH) | 
-          		 biome.equals(Biomes.SNOWY_BEACH) |
-          		 biome.equals(NewBiomes.GRAVEL_BEACH) |
-          		 biome.equals(NewBiomes.SNOWY_GRAVEL_BEACH) |
-          		 biome.equals(NewBiomes.DRY_BEACH) |
-          		 biome.equals(NewBiomes.DRY_GRAVEL_BEACH) |
-          		 biome.equals(NewBiomes.RED_BEACH);
-        if (this.settings.isUseBOP())
-        {
-        	isBeach = isBeach | 
-        			biome.equals(BOPBiomes.white_beach.get()) |
-        			biome.equals(BOPBiomes.volcano_edge.get()) |
-        			biome.equals(BOPBiomes.origin_beach.get());
-        }
-        
-        boolean isOcean = 
-        		biome.equals(Biomes.FROZEN_OCEAN) |
-        		biome.equals(Biomes.DEEP_FROZEN_OCEAN) |
-        		biome.equals(Biomes.COLD_OCEAN) |
-        		biome.equals(Biomes.DEEP_COLD_OCEAN) |
-        		biome.equals(Biomes.LUKEWARM_OCEAN) |
-        		biome.equals(Biomes.DEEP_LUKEWARM_OCEAN) |
-        		biome.equals(Biomes.WARM_OCEAN) |
-        		biome.equals(Biomes.DEEP_WARM_OCEAN) |
-        		biome.equals(Biomes.OCEAN) |
-        		biome.equals(Biomes.DEEP_OCEAN);
-        
-        if (isBeach)
-        	return biome;
-        
         int seaLevel = this.settings.getSeaLevel();
         double temperature = this.biomeProvider.getTemperature(x, z);
         double humidity = this.biomeProvider.getHumidity(x, z);
+   	 	double[] landmass = this.biomeProvider.getLandmass(x, z);
+   	 	boolean isOcean = landmass[0] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
+   	 			landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+   	 	boolean isBeach = !isOcean & (landmass[0] < EvoBiomeProvider.oceanThreshold &&
+   	 			landmass[1] < EvoBiomeProvider.oceanThreshold) & this.biomeProvider.canBeBeach(x, z);
         
-        if (isOcean && y >= seaLevel)
+        if (isBeach)
         {
-        	// /tp 2709 71 -1119
-        	if (this.biomeProvider.getLandBiome(temperature, humidity, this.biomeProvider.getBiomeChance(x, z, true)).equals(Biomes.BADLANDS))
-        		biome = NewBiomes.RED_BEACH;
-        	else
-        		biome = this.biomeProvider.getBeach(x, z);
-        	return biome;
+        	if (y >= seaLevel + 3)
+        		return biome;
+    		if (biome.equals(Biomes.BADLANDS) || ( this.settings.isUseBOP() && biome.equals(BOPBiomes.outback.get() )))
+    			biome = NewBiomes.RED_BEACH;
+    		else
+    			biome = this.biomeProvider.getBeach(x, z);
+        	if (y < seaLevel)
+        	{
+        		biome = this.biomeProvider.getOcean(temperature, landmass[0] < EvoBiomeProvider.deepThreshold && landmass[1] < EvoBiomeProvider.deepThreshold);
+        	}
+        }
+        
+        if (isOcean)
+        {
+        	if (y >= seaLevel && y < seaLevel + 3)
+        	{
+        		if (biome.equals(Biomes.BADLANDS))
+        			biome = NewBiomes.RED_BEACH;
+        		else
+        			biome = this.biomeProvider.getBeach(x, z);
+        	}
+        	if (y < seaLevel)
+        		return this.biomeProvider.getOcean(temperature, landmass[0] < EvoBiomeProvider.deepThreshold && landmass[1] < EvoBiomeProvider.deepThreshold);
         }
 
         double swampChance = this.swampChance.getNoise((double)x * 0.0125, (double)z * 0.0125);
         swampChance = MathHelper.clamp(swampChance, 0.0, 1.0);
-    	if (!isOcean && temperature > 0.5 && humidity > 0.675 && swampChance < 0.375 - 0.25 * ((MathHelper.clamp(temperature, 0.5, 1.0) - 0.5) * 2.0) && y <= seaLevel + 3)
+    	if (temperature > 0.5 && humidity > 0.675 && swampChance < 0.375 - 0.25 * ((MathHelper.clamp(temperature, 0.5, 1.0) - 0.5) * 2.0) && y <= seaLevel + 3)
     	{
             double swampType = this.swampType.getNoise((double)x * 0.0125, (double)z * 0.0125) * 0.125 + 0.5;
             swampType = MathHelper.clamp(swampType, 0.0, 1.0);
@@ -247,41 +238,55 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	/* 1.14 GENERATION METHODS */
 
     @Override
-    protected void func_222548_a(double[] p_222548_1_, int x, int z) {
-       double coordScale = this.settings.getCoordScale();
+    protected void func_222548_a(double[] arr, int x, int z) {
+       double coordScale = this.settings.getCoordScale() * (double) this.settings.getNoiseOctaves() / 8.0;
        double heightScale = this.settings.getHeightScale();
-       double depthBase = this.settings.getDepthBaseSize();
+       double d2 = 8.555149841308594D;
        double d3 = 4.277574920654297D;
        int i = -10;
        int j = 3;
-       this.func_222546_a(p_222548_1_, x, z, coordScale, heightScale, depthBase, d3, j, i);
+       this.func_222546_a(arr, x, z, coordScale, heightScale, d2, d3, j, i);
     }
 
     
     //The only reason it's here is because of func_222552_a() being private in NoiseChunkGenerator
     @Override
-    protected void func_222546_a(double[] p_222546_1_, int x, int z, double coordScale, double heightScale, double depthBase, double p_222546_10_, int p_222546_12_, int p_222546_13_) {
+    protected void func_222546_a(double[] arr, int x, int z, double coordScale, double heightScale, double d_1, double d_2, int p_222546_12_, int p_222546_13_) {
        double[] adouble = this.func_222549_a(x, z);
        double d0 = adouble[0];
        double d1 = adouble[1];
        double d2 = this.func_222551_g();
-       double d3 = 0.0;
 
-       for(int i = 0; i < this.noiseSizeY + 1; ++i) {
-          double d4 = this.func_222552_a(x, i, z, coordScale, heightScale, depthBase, p_222546_10_);
+       for(int i = 0; i < this.noiseSizeY + 1; ++i)
+       {
+          double d4 = this.func_222552_a(x, i, z, coordScale, heightScale);
           d4 = d4 - this.func_222545_a(d0, d1, i);
-          if ((double)i > d2) {
+          if ((double)i > d2) 
+          {
              d4 = MathHelper.clampedLerp(d4, (double)p_222546_13_, ((double)i - d2) / (double)p_222546_12_);
-          } else if ((double)i < d3) {
-             d4 = MathHelper.clampedLerp(d4, -30.0D, (d3 - (double)i) / (d3 - 1.0D));
+          } 
+          else if ((double)i < 0.0)
+          {
+             d4 = MathHelper.clampedLerp(d4, -30.0D, (0.0 - (double)i) / -1.0);
           }
 
-          p_222546_1_[i] = d4;
+          arr[i] = d4;
        }
 
     }
 
-    private double func_222552_a(int x, int y, int z, double coordScale, double heightScale, double depthBase, double p_222552_10_) {
+    @Override
+    protected double func_222545_a(double p_222545_1_, double p_222545_3_, int p_222545_5_) {
+       double depthBase = this.settings.getDepthBaseSize();
+       double d1 = ((double)p_222545_5_ - (depthBase + p_222545_1_ * depthBase / 8.0D * 4.0D)) * this.settings.getHeightStretch() * 128.0D / 256.0D / p_222545_3_;
+       if (d1 < 0.0D) {
+          d1 *= 4.0D;
+       }
+
+       return d1;
+    }
+
+    private double func_222552_a(double x, double y, double z, double coordScale, double heightScale) {
 
        double coord = this.settings.getMainNoiseCoordScale();
        double height = this.settings.getMainNoiseHeightScale();
@@ -303,59 +308,40 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
        {
           for(int k = -2; k <= 2; ++k) 
           {
-             Biome biome = this.biomeProvider.getBiome((x + j) * 4, (z + k) * 4);
              double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
              double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
              double d4 = 0.75  + (0.0275 - humidity * temperature * 0.0275) * this.settings.getBiomeDepthWeight();
              double d5 = 0.95 + humidity * temperature * 0.3 * this.settings.getBiomeScaleWeight();
              
-             boolean isBeach = biome.equals(Biomes.BEACH) | 
-               		 biome.equals(Biomes.SNOWY_BEACH) |
-               		 biome.equals(NewBiomes.GRAVEL_BEACH) |
-               		 biome.equals(NewBiomes.SNOWY_GRAVEL_BEACH) |
-               		 biome.equals(NewBiomes.DRY_BEACH) |
-               		 biome.equals(NewBiomes.DRY_GRAVEL_BEACH) |
-               		 biome.equals(NewBiomes.RED_BEACH);
-             if (this.settings.isUseBOP())
-             {
-            	 isBeach = isBeach | 
-            	 biome.equals(BOPBiomes.white_beach.get()) |
-            	 biome.equals(BOPBiomes.volcano_edge.get()) |
-            	 biome.equals(BOPBiomes.origin_beach.get());
-             }
-             
-             boolean isOcean = 
-             		biome.equals(Biomes.FROZEN_OCEAN) |
-             		biome.equals(Biomes.DEEP_FROZEN_OCEAN) |
-             		biome.equals(Biomes.COLD_OCEAN) |
-             		biome.equals(Biomes.DEEP_COLD_OCEAN) |
-             		biome.equals(Biomes.LUKEWARM_OCEAN) |
-             		biome.equals(Biomes.DEEP_LUKEWARM_OCEAN) |
-             		biome.equals(Biomes.WARM_OCEAN) |
-             		biome.equals(Biomes.DEEP_WARM_OCEAN) |
-             		biome.equals(Biomes.OCEAN) |
-             		biome.equals(Biomes.DEEP_OCEAN);
-             
              boolean isRiver = this.biomeProvider.getRiver((x + j) * 4, (z + k) * 4);
+        	 double[] landmass = this.biomeProvider.getLandmass((x + j) * 4, (z + k) * 4);
+        	 boolean isOcean = landmass[0] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
+        			 landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+        	 boolean isBeach = this.biomeProvider.canBeBeach((x + j) * 4, (z + k) * 4) && !isOcean && landmass[0] < EvoBiomeProvider.oceanThreshold &&
+        			 landmass[1] < EvoBiomeProvider.oceanThreshold;
              
              if (isBeach | isOcean)
              {
-            	 // /tp -423 66 -2038
-            	 //
-            	 double[] landmass = this.biomeProvider.getLandmass((x + j) * 4, (z + k) * 4);
             	 if (landmass[0] > landmass[1])
-            		 d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[0] - EvoBiomeProvider.oceanThreshold + EvoBiomeProvider.beachThreshold) * 6.0, -1.8125, 0.0);
+            		 d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[0] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
             	 else
-            		 d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[1] - EvoBiomeProvider.oceanThreshold + EvoBiomeProvider.beachThreshold) * 6.0, -1.8125, 0.0);
+            		 d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[1] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
             	 d5 = 0.0;
              }
              
-             // /tp -1062 70 -1908
              if (isRiver)
              {
-            	 if (d4 > this.settings.getBiomeDepthOffset() + Biomes.OCEAN.getDepth() * this.settings.getBiomeDepthWeight())
+            	 if (isBeach | isOcean)
+            	 {
+            		 d5 = 0.0;
+            		 if (d4 > this.settings.getBiomeDepthOffset() + Biomes.RIVER.getDepth() * this.settings.getBiomeDepthWeight())
+            			 d4 = this.settings.getBiomeDepthOffset() + Biomes.RIVER.getDepth() * this.settings.getBiomeDepthWeight();
+            	 }
+            	 else
+            	 {
             		 d4 = this.settings.getBiomeDepthOffset() + Biomes.OCEAN.getDepth() * this.settings.getBiomeDepthWeight();
-            	 d5 = 0.0;
+                	 d5 = 0.0;
+            	 }
              }
 
              double d6 = field_222576_h[j + 2 + (k + 2) * 5] / (d4 + 2.0);
@@ -376,7 +362,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     }
 
     private double func_222574_c(int x, int z) {
-       double d0 = this.depthNoise.getNoise((double)(x * 200), (double)(z * 200)) / 8000.0D;
+       double d0 = this.depthNoise.getNoise((double)(x * this.settings.getDepthNoiseScaleX()), (double)(z * this.settings.getDepthNoiseScaleZ())) / 8000.0D;
        if (d0 < 0.0D) {
           d0 = -d0 * 0.3D;
        }

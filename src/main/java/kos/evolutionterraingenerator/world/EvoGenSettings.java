@@ -10,13 +10,14 @@ public class EvoGenSettings extends OverworldGenSettings
 	private final int seaLevel = 63;
 	
 	private static final BlockState oceanBlock = Blocks.WATER.getDefaultState();
-	
-	private double mainNoiseCoordScale = 175.0;
-	private double mainNoiseHeightScale = 75.0;
+
+	private int noiseOctaves = 8;
+	private double mainNoiseCoordScale = 160.0;
+	private double mainNoiseHeightScale = 60.0;
 	private double depthNoiseScaleX = 200.0;
 	private double depthNoiseScaleZ = 200.0;
-	private double coordScale = 160.0;
-	private double heightScale = 60.0;
+	private double coordScale = 175.0;
+	private double heightScale = 75.0;
 	private double depthBaseSize = 8.5;
 	private double heightStretch = 12.0;
 	private double lowerLimitScale = 512.0;
@@ -32,6 +33,11 @@ public class EvoGenSettings extends OverworldGenSettings
 	public EvoGenSettings(CompoundNBT nbtSettings)
 	{
 		useBOP = nbtSettings.getBoolean(EvoType.USE_BOP_TAG);
+	}
+
+	public int getNoiseOctaves() 
+	{
+		return noiseOctaves;
 	}
 
 	public int getSeaLevel()

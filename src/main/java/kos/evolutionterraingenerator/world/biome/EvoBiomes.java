@@ -27,7 +27,7 @@ public class EvoBiomes
 	public static EvoBiome SAVANNA = new EvoBiome(Biomes.SAVANNA, new Biome[]
 			 {Biomes.SAVANNA, Biomes.SHATTERED_SAVANNA});
 	public static EvoBiome DESERT = new EvoBiome(Biomes.DESERT, new Biome[]
-			{Biomes.DESERT, Biomes.DESERT, Biomes.BADLANDS});
+			{Biomes.BADLANDS, Biomes.DESERT, Biomes.DESERT, Biomes.BADLANDS});
 	public static EvoBiome SONWY_GIANT_TREE_TAIGA = new EvoBiome(NewBiomes.SNOWY_GIANT_TREE_TAIGA, new Biome[]
 			{NewBiomes.SNOWY_GIANT_TREE_TAIGA, NewBiomes.SNOWY_GIANT_SPRUCE_TAIGA});
 	public static EvoBiome TUNDRA = new EvoBiome(NewBiomes.TUNDRA, new Biome[]
