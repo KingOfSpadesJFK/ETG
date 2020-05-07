@@ -199,9 +199,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         	if (y >= seaLevel && y < seaLevel + 3)
         	{
         		if (biome.equals(Biomes.BADLANDS))
-        			biome = NewBiomes.RED_BEACH;
+        			return NewBiomes.RED_BEACH;
         		else
-        			biome = this.biomeProvider.getBeach(x, z);
+        			return this.biomeProvider.getBeach(x, z);
         	}
         	if (y < seaLevel)
         		return this.biomeProvider.getOcean(temperature, landmass[0] < EvoBiomeProvider.deepThreshold && landmass[1] < EvoBiomeProvider.deepThreshold);
