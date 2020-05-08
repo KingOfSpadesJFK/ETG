@@ -212,9 +212,18 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     {
     	double landmass1 = landOctave.getNoise((double)x * (0.00125 / oceanScale), landOffset, (double)z * (0.00125 / oceanScale))  * 0.125 / (double)oceanOctaves;
     	double landmass2 = landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 / (double)oceanOctaves;
-    	double islandChance = islandOctave.getNoise(x * (0.02 / biomeScale), z * (0.02 / biomeScale));
-    	double mushroomChance = mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) * 0.0625 + 0.5;
-    	return new double[]{landmass1, landmass2, islandChance, mushroomChance};
+    	double mushroomChance = (mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) - 8.0) * 2.0 / (double)oceanOctaves;
+    	double islandChance = (islandOctave.getNoise(x * (0.02 / biomeScale), z * (0.02 / biomeScale)) - 3.25) / (double)oceanOctaves;
+
+		double domLand = landmass1;
+		if (domLand < landmass2)
+			domLand = landmass2;
+		if (domLand < islandChance)
+			domLand = islandChance;
+		if (domLand < mushroomChance)
+			domLand = mushroomChance;
+		
+    	return new double[]{landmass1, landmass2, islandChance, mushroomChance, domLand};
     }
     
     protected double getBiomeChance(double x, double z, boolean useNoise)
@@ -253,21 +262,16 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 		{
 			if (landmass1 < deepThreshold && landmass2 < deepThreshold)
 			{
-		    	double mushroomChance = mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) * 0.0625 + 0.5;
-		    	double islandChance = islandOctave.getNoise(x * (0.02 / biomeScale), z * (0.02 / biomeScale));
-				if (mushroomChance > 1.00)
+		    	double mushroomChance = (mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) - 8.0) * 2.0 / (double)oceanOctaves;
+		    	double islandChance = (islandOctave.getNoise(x * (0.02 / biomeScale), z * (0.02 / biomeScale)) - 3.25) / (double)oceanOctaves;
+				if (mushroomChance > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
 				{
-					if (mushroomChance >= 1.05)
-						biome = Biomes.MUSHROOM_FIELDS;
-					else
-						biome = getOcean(temperature, false);
+					biome = Biomes.MUSHROOM_FIELDS;
 				} 
-				else if (islandChance > 5.0)
+				else if (islandChance > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
 				{
 					biome = EvoBiomes.ISLAND_BIOMES.getBiome(biomeChance);
-					if (islandChance <= 8.5)
-						biome = getOcean(temperature, false);
-					else if (islandChance <= 8.75)
+					if (islandChance < oceanThreshold)
 					{
 						if (this.providerSettings.isUseBOPBiomes())
 						{
@@ -283,7 +287,10 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 					}
 				}
 				else
-					biome = getOcean(temperature, true);
+					biome = getOcean(temperature, landmass1 < deepThreshold && 
+							landmass2 < deepThreshold && 
+							mushroomChance < deepThreshold && 
+							islandChance < deepThreshold);
 			}
 			else
 			{
@@ -312,14 +319,14 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 					}
 				}
 				else
-					biome = getOcean(temperature, landmass1 < deepThreshold && landmass2 < deepThreshold);
+					biome = getOcean(temperature, false);
 			}
 		}
 		return biome;
     }
     
-	private static final int BEACH_SAMPLES = 8;
-	private static final double BEACH_SEARCH_SCALE = 1.0;
+	private static final int BEACH_SAMPLES = 4;
+	private static final double BEACH_SEARCH_SCALE = 2.0;
 	public boolean canBeBeach(double x, double z)
 	{
     	double landmass1 = 0;
@@ -338,7 +345,8 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     	    	landmass2 = landOctave2.getNoise(xO * (0.00125 / oceanScale), zO * (0.00125 / oceanScale)) 
     	    			* 0.125 / (double)oceanOctaves;
     	    	
-    	    	if (landmass1 < oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale && landmass2 < oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
+    	    	if (landmass1 < oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale && 
+    	    			landmass2 < oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
     	    		return true;
     		}
     	}

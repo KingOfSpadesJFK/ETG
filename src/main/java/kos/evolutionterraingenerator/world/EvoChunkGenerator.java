@@ -176,15 +176,19 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         double temperature = this.biomeProvider.getTemperature(x, z);
         double humidity = this.biomeProvider.getHumidity(x, z);
    	 	double[] landmass = this.biomeProvider.getLandmass(x, z);
-   	 	boolean isOcean = landmass[0] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
-   	 			landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
-   	 	boolean isBeach = !isOcean && (landmass[0] < EvoBiomeProvider.oceanThreshold &&
-   	 			landmass[1] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach(x, z);
+		boolean isOcean = landmass[0] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
+				landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
+				landmass[2] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
+				landmass[3] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+		boolean isBeach = !isOcean && (landmass[0] < EvoBiomeProvider.oceanThreshold &&
+				landmass[1] < EvoBiomeProvider.oceanThreshold &&
+				landmass[2] < EvoBiomeProvider.oceanThreshold &&
+				landmass[3] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach(x, z);
         
         if (isBeach || isOcean)
         {
         	if (y < seaLevel)
-        		return this.biomeProvider.getOcean(temperature, landmass[0] < EvoBiomeProvider.deepThreshold && landmass[1] < EvoBiomeProvider.deepThreshold);
+        		return this.biomeProvider.getOcean(temperature, y < 40);
         	if (y < seaLevel + 3)
         	{
 	    		if (biome.equals(Biomes.BADLANDS) || ( this.biomeProvider.getSettings().isUseBOPBiomes() && biome.equals(BOPBiomes.outback.get()) ))
@@ -303,16 +307,17 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     			boolean isRiver = this.biomeProvider.getRiver((x + j) * 4, (z + k) * 4);
     			double[] landmass = this.biomeProvider.getLandmass((x + j) * 4, (z + k) * 4);
     			boolean isOcean = landmass[0] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
-    					landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+    					landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
+    					landmass[2] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
+    					landmass[3] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
     			boolean isBeach = !isOcean && (landmass[0] < EvoBiomeProvider.oceanThreshold &&
-    					landmass[1] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach((x + j) * 4, (z + k) * 4);
+    					landmass[1] < EvoBiomeProvider.oceanThreshold &&
+    					landmass[2] < EvoBiomeProvider.oceanThreshold &&
+    					landmass[3] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach((x + j) * 4, (z + k) * 4);
              
     			if (isBeach | isOcean)
     			{
-    				if (landmass[0] > landmass[1])
-    					d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[0] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
-    				else
-    					d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[1] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
+    				d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[4] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
     				d5 = 0.0;
     			}
              
