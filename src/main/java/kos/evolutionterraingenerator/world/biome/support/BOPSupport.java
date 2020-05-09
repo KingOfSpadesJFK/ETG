@@ -1,5 +1,7 @@
 package kos.evolutionterraingenerator.world.biome.support;
 
+import java.util.Set;
+
 import biomesoplenty.api.biome.BOPBiomes;
 
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
@@ -11,10 +13,10 @@ public class BOPSupport
 {
 	public static final String BOP_MODID = "biomesoplenty";
 	
-	public static void setup()
+	public static void setup(Set<Biome> biomes)
 	{
 		//Snowy Biomes
-		EvoBiomes.SNOWY_BIOMES.remove(EvoBiomes.ICE_PLAINS);
+		EvoBiomes.SNOWY_BIOMES.remove(EvoBiomes.SNOWY_TUNDRA);
 		EvoBiomes.SNOWY_BIOMES.add(new EvoBiome(Biomes.SNOWY_TUNDRA, 0.125F, new Biome[]
 				{
 					Biomes.ICE_SPIKES, 
@@ -23,7 +25,7 @@ public class BOPSupport
 					Biomes.SNOWY_TUNDRA, 
 					BOPBiomes.cold_desert.get()
 				}));
-		EvoBiomes.SNOWY_BIOMES.add(new EvoBiome(BOPBiomes.fir_clearing.get(), 0.275F, null));
+		EvoBiomes.SNOWY_BIOMES.add(new EvoBiome(BOPBiomes.snowy_fir_clearing.get(), 0.275F));
 		EvoBiomes.SNOWY_BIOMES.remove(EvoBiomes.SNOWY_TAIGA);
 		EvoBiomes.SNOWY_BIOMES.add(new EvoBiome(Biomes.SNOWY_TAIGA, new Biome[]
 				{
@@ -34,22 +36,22 @@ public class BOPSupport
 		EvoBiomes.SNOWY_BIOMES.sort(null);
 		
 		//Cold Biomes
-		EvoBiomes.COLD_BIOMES.remove(EvoBiomes.TUNDRA);
-		EvoBiomes.COLD_BIOMES.remove(EvoBiomes.WOODED_TUNDRA);
-		EvoBiomes.COLD_BIOMES.add(new EvoBiome(BOPBiomes.tundra.get(), 0.03F, new Biome[]
+		EvoBiomes.COLD_BIOMES.remove(EvoBiomes.MOUNTAINS);
+		EvoBiomes.COLD_BIOMES.remove(EvoBiomes.WOODED_MOUNTAINS);
+		EvoBiomes.COLD_BIOMES.add(new EvoBiome(Biomes.MOUNTAINS, 0.03F, new Biome[]
 				{
+					Biomes.GRAVELLY_MOUNTAINS,
 					BOPBiomes.tundra.get(),
-					BOPBiomes.tundra.get(),
-					BOPBiomes.tundra.get(),
+					Biomes.MOUNTAINS,
 					BOPBiomes.tundra.get(), 
-					BOPBiomes.tundra.get(),
+					Biomes.MOUNTAINS,
 					BOPBiomes.cherry_blossom_grove.get()
 				}));
-		EvoBiomes.COLD_BIOMES.add(new EvoBiome(BOPBiomes.fir_clearing.get(), 0.45F, new Biome[]
+		EvoBiomes.COLD_BIOMES.add(new EvoBiome(Biomes.WOODED_MOUNTAINS, 0.45F, new Biome[]
 				{
 					BOPBiomes.dead_forest.get(),
 					BOPBiomes.fir_clearing.get(),
-					BOPBiomes.fir_clearing.get(),
+					Biomes.WOODED_MOUNTAINS,
 					BOPBiomes.fir_clearing.get(),
 					BOPBiomes.dead_forest.get(),
 				}));
@@ -189,7 +191,7 @@ public class BOPSupport
 					BOPBiomes.bayou.get()
 				});
 
-		//Hot Swamps
+		//Islands
 		EvoBiomes.ISLAND_BIOMES = new EvoBiome(BOPBiomes.lush_swamp.get(), new Biome[]
 				{
 					Biomes.PLAINS,
@@ -199,5 +201,59 @@ public class BOPSupport
 					Biomes.JUNGLE,
 					BOPBiomes.origin_hills.get(),
 				});
+		
+		biomes.add(BOPBiomes.cold_desert.get());
+		biomes.add(BOPBiomes.snowy_fir_clearing.get());
+		biomes.add(BOPBiomes.snowy_forest.get());
+		biomes.add(BOPBiomes.snowy_coniferous_forest.get());
+
+		biomes.add(BOPBiomes.tundra.get());
+		biomes.add(BOPBiomes.cherry_blossom_grove.get());
+		biomes.add(BOPBiomes.dead_forest.get());
+		biomes.add(BOPBiomes.fir_clearing.get());
+		biomes.add(BOPBiomes.shield.get());
+		biomes.add(BOPBiomes.boreal_forest.get());
+		biomes.add(BOPBiomes.maple_woods.get());
+		biomes.add(BOPBiomes.seasonal_forest.get());
+		biomes.add(BOPBiomes.coniferous_forest.get());
+		biomes.add(BOPBiomes.redwood_forest.get());
+		biomes.add(BOPBiomes.ominous_woods.get());
+
+		biomes.add(BOPBiomes.grassland.get());
+		biomes.add(BOPBiomes.highland.get());
+		biomes.add(BOPBiomes.highland_moor.get());
+		biomes.add(BOPBiomes.lavender_field.get());
+		biomes.add(BOPBiomes.meadow.get());
+		biomes.add(BOPBiomes.flower_meadow.get());
+		biomes.add(BOPBiomes.orchard.get());
+		biomes.add(BOPBiomes.grove.get());
+		biomes.add(BOPBiomes.temperate_rainforest.get());
+		biomes.add(BOPBiomes.mystic_grove.get());
+
+		biomes.add(BOPBiomes.shrubland.get());
+		biomes.add(BOPBiomes.chaparral.get());
+		biomes.add(BOPBiomes.prairie.get());
+		biomes.add(BOPBiomes.pasture.get());
+		biomes.add(BOPBiomes.overgrown_cliffs.get());
+		biomes.add(BOPBiomes.woodland.get());
+		biomes.add(BOPBiomes.rainforest.get());
+
+		biomes.add(BOPBiomes.outback.get());
+		biomes.add(BOPBiomes.xeric_shrubland.get());
+		biomes.add(BOPBiomes.wasteland.get());
+		biomes.add(BOPBiomes.brushland.get());
+		biomes.add(BOPBiomes.lush_grassland.get());
+		biomes.add(BOPBiomes.tropical_rainforest.get());
+
+		biomes.add(BOPBiomes.bog.get());
+		biomes.add(BOPBiomes.marsh.get());
+		biomes.add(BOPBiomes.mangrove.get());
+		biomes.add(BOPBiomes.bayou.get());
+		biomes.add(BOPBiomes.lush_swamp.get());
+		biomes.add(BOPBiomes.volcano.get());
+		biomes.add(BOPBiomes.tropics.get());
+		biomes.add(BOPBiomes.origin_hills.get());
+		biomes.add(BOPBiomes.white_beach.get());
+		biomes.add(BOPBiomes.origin_beach.get());
 	}
 }

@@ -7,39 +7,40 @@ import net.minecraft.world.biome.Biome;
 
 public class EvoBiomes 
 {
-	public static EvoBiome PLAINS = new EvoBiome(Biomes.PLAINS, new Biome[]
+	public static final EvoBiome PLAINS = new EvoBiome(Biomes.PLAINS, new Biome[]
 			{Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS});
-	public static EvoBiome FOREST = new EvoBiome(Biomes.FOREST, new Biome[]
+	public static final EvoBiome FOREST = new EvoBiome(Biomes.FOREST, new Biome[]
 			{Biomes.FOREST, Biomes.FLOWER_FOREST});
-	public static EvoBiome BIRCH_FOREST = new EvoBiome(Biomes.BIRCH_FOREST, new Biome[]
+	public static final EvoBiome BIRCH_FOREST = new EvoBiome(Biomes.BIRCH_FOREST, new Biome[]
 			{Biomes.BIRCH_FOREST, Biomes.TALL_BIRCH_FOREST});
-	public static EvoBiome ICE_PLAINS = new EvoBiome(Biomes.SNOWY_TUNDRA, 0.125F, new Biome[]
+	public static final EvoBiome SNOWY_TUNDRA = new EvoBiome(Biomes.SNOWY_TUNDRA, 0.125F, new Biome[]
 			{Biomes.SNOWY_TUNDRA, Biomes.SNOWY_TUNDRA, Biomes.SNOWY_TUNDRA, Biomes.ICE_SPIKES});
-	public static EvoBiome EXTREME_HILLS = new EvoBiome(Biomes.MOUNTAINS, new Biome[]
+	public static final EvoBiome MOUNTAINS = new EvoBiome(Biomes.MOUNTAINS, new Biome[]
 			{Biomes.MOUNTAINS, Biomes.GRAVELLY_MOUNTAINS});
-	public static EvoBiome TAIGA = new EvoBiome(Biomes.TAIGA);
-	public static EvoBiome SNOWY_TAIGA = new EvoBiome(Biomes.SNOWY_TAIGA);
-	public static EvoBiome GIANT_TREE_TAIGA = new EvoBiome(Biomes.DARK_FOREST, new Biome[]
+	public static final EvoBiome WOODED_MOUNTAINS = new EvoBiome(Biomes.WOODED_MOUNTAINS);
+	public static final EvoBiome TAIGA = new EvoBiome(Biomes.TAIGA);
+	public static final EvoBiome SNOWY_TAIGA = new EvoBiome(Biomes.SNOWY_TAIGA);
+	public static final EvoBiome GIANT_TREE_TAIGA = new EvoBiome(Biomes.DARK_FOREST, new Biome[]
 			{Biomes.GIANT_TREE_TAIGA, Biomes.GIANT_SPRUCE_TAIGA});
-	public static EvoBiome DARK_FOREST = new EvoBiome(Biomes.DARK_FOREST);
-	public static EvoBiome JUNGLE = new EvoBiome(Biomes.JUNGLE, new Biome[]
+	public static final EvoBiome DARK_FOREST = new EvoBiome(Biomes.DARK_FOREST);
+	public static final EvoBiome JUNGLE = new EvoBiome(Biomes.JUNGLE, new Biome[]
 			{Biomes.JUNGLE, Biomes.BAMBOO_JUNGLE});
-	public static EvoBiome SAVANNA = new EvoBiome(Biomes.SAVANNA, new Biome[]
+	public static final EvoBiome SAVANNA = new EvoBiome(Biomes.SAVANNA, new Biome[]
 			 {Biomes.SAVANNA, Biomes.SHATTERED_SAVANNA});
-	public static EvoBiome DESERT = new EvoBiome(Biomes.DESERT, new Biome[]
+	public static final EvoBiome DESERT = new EvoBiome(Biomes.DESERT, new Biome[]
 			{Biomes.BADLANDS, Biomes.DESERT, Biomes.DESERT, Biomes.BADLANDS});
-	public static EvoBiome SONWY_GIANT_TREE_TAIGA = new EvoBiome(NewBiomes.SNOWY_GIANT_TREE_TAIGA, new Biome[]
+	public static final EvoBiome SONWY_GIANT_TREE_TAIGA = new EvoBiome(NewBiomes.SNOWY_GIANT_TREE_TAIGA, new Biome[]
 			{NewBiomes.SNOWY_GIANT_TREE_TAIGA, NewBiomes.SNOWY_GIANT_SPRUCE_TAIGA});
-	public static EvoBiome TUNDRA = new EvoBiome(NewBiomes.TUNDRA, new Biome[]
+	public static final EvoBiome TUNDRA = new EvoBiome(NewBiomes.TUNDRA, new Biome[]
 			{NewBiomes.TUNDRA, NewBiomes.GRAVELLY_TUNDRA});
-	public static EvoBiome WOODED_TUNDRA = new EvoBiome(NewBiomes.TUNDRA_WOODED);
-	public static EvoBiome RAINFOREST_ROOFED = new EvoBiome(NewBiomes.RAINFOREST, new Biome[]
+	public static final EvoBiome WOODED_TUNDRA = new EvoBiome(NewBiomes.TUNDRA_WOODED);
+	public static final EvoBiome RAINFOREST_ROOFED = new EvoBiome(NewBiomes.RAINFOREST, new Biome[]
 			{	NewBiomes.RAINFOREST, Biomes.DARK_FOREST, 
 				NewBiomes.RAINFOREST, Biomes.DARK_FOREST, 
 				NewBiomes.RAINFOREST, Biomes.DARK_FOREST, 
 				NewBiomes.RAINFOREST, Biomes.DARK_FOREST	});
-	public static EvoBiome RAINFOREST = new EvoBiome(NewBiomes.RAINFOREST);
-	public static EvoBiome SAVANNA_PLAINS = new EvoBiome(Biomes.PLAINS, new Biome[]
+	public static final EvoBiome RAINFOREST = new EvoBiome(NewBiomes.RAINFOREST);
+	public static final EvoBiome SAVANNA_PLAINS = new EvoBiome(Biomes.PLAINS, new Biome[]
 			{	Biomes.SAVANNA, Biomes.PLAINS, 
 					Biomes.SAVANNA, Biomes.PLAINS, 
 					Biomes.SAVANNA, Biomes.PLAINS, 
@@ -60,23 +61,23 @@ public class EvoBiomes
 				Biomes.JUNGLE,
 			});
 
-	public static ArrayList<EvoBiome> SNOWY_BIOMES = new ArrayList<EvoBiome>();
-	public static ArrayList<EvoBiome> COLD_BIOMES = new ArrayList<EvoBiome>();
-	public static ArrayList<EvoBiome> WARM_BIOMES = new ArrayList<EvoBiome>();
-    public static ArrayList<EvoBiome> HOT_BIOMES = new ArrayList<EvoBiome>();
-    public static ArrayList<EvoBiome> ARID_BIOMES = new ArrayList<EvoBiome>();
+	public static final ArrayList<EvoBiome> SNOWY_BIOMES = new ArrayList<EvoBiome>();
+	public static final ArrayList<EvoBiome> COLD_BIOMES = new ArrayList<EvoBiome>();
+	public static final ArrayList<EvoBiome> WARM_BIOMES = new ArrayList<EvoBiome>();
+    public static final ArrayList<EvoBiome> HOT_BIOMES = new ArrayList<EvoBiome>();
+    public static final ArrayList<EvoBiome> ARID_BIOMES = new ArrayList<EvoBiome>();
     
 	public static void init()
 	{
 		SNOWY_BIOMES.clear();
-		SNOWY_BIOMES.add(ICE_PLAINS);
+		SNOWY_BIOMES.add(SNOWY_TUNDRA);
 		SNOWY_BIOMES.add(SNOWY_TAIGA);
 		SNOWY_BIOMES.add(SONWY_GIANT_TREE_TAIGA);
 		SNOWY_BIOMES.sort(null);
 
 		COLD_BIOMES.clear();;
-		COLD_BIOMES.add(TUNDRA);
-		COLD_BIOMES.add(WOODED_TUNDRA);
+		COLD_BIOMES.add(MOUNTAINS);
+		COLD_BIOMES.add(WOODED_MOUNTAINS);
 		COLD_BIOMES.add(TAIGA);
 		COLD_BIOMES.add(GIANT_TREE_TAIGA);
 		COLD_BIOMES.sort(null);

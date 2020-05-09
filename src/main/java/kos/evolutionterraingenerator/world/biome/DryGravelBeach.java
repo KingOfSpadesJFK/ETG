@@ -24,7 +24,7 @@ public class DryGravelBeach extends Biome
 	      this.addStructure(Feature.MINESHAFT, new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL));
 	      this.addStructure(Feature.BURIED_TREASURE, new BuriedTreasureConfig(0.01F));
 	      this.addStructure(Feature.SHIPWRECK, new ShipwreckConfig(true));
-	      this.addFeature(GenerationStage.Decoration.LOCAL_MODIFICATIONS, Biome.createDecoratedFeature(Feature.FOREST_ROCK, new BlockBlobConfig(Blocks.MOSSY_COBBLESTONE.getDefaultState(), 0), Placement.FOREST_ROCK, new FrequencyConfig(3)));
+	      addFeature(GenerationStage.Decoration.LOCAL_MODIFICATIONS, Biome.createDecoratedFeature(Feature.FOREST_ROCK, new BlockBlobConfig(Blocks.COBBLESTONE.getDefaultState(), 0), Placement.COUNT_TOP_SOLID, new FrequencyConfig(5)));
 	      DefaultBiomeFeatures.addCarvers(this);
 	      DefaultBiomeFeatures.addStructures(this);
 	      DefaultBiomeFeatures.addDesertLakes(this);

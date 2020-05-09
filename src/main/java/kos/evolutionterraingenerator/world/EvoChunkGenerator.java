@@ -5,7 +5,6 @@ import java.util.Random;
 import biomesoplenty.api.biome.BOPBiomes;
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
-import kos.evolutionterraingenerator.world.biome.NewBiomes;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.SharedSeedRandom;
@@ -139,33 +138,37 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	{
 		for(Structure<?> structure : Feature.STRUCTURES.values()) 
 		{
-            ChunkPos chunkpos = chunkIn.getPos();
-        	BlockPos pos = new BlockPos(chunkpos.getXStart() + 9, 0, chunkpos.getZStart() + 9);
-        	Biome biome = setBiomebyHeight(this.biomeProvider.generateLandBiome(pos.getX(), pos.getZ(), true), chunkIn, pos.getX(), pos.getZ(), chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, pos.getX(), pos.getZ()) + 1, true);
-			if (biome.hasStructure(structure)) 
-			{
-				SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
-	            StructureStart structurestart = StructureStart.DUMMY;
-	            if (structure.hasStartAt(generator, sharedseedrandom, chunkpos.x, chunkpos.z)) 
-	            {
-	            	StructureStart structurestart1 = structure.getStartFactory().create(structure, chunkpos.x, chunkpos.z, biome, MutableBoundingBox.getNewBoundingBox(), 0, generator.getSeed());
-	            	structurestart1.init(this, templateManagerIn, chunkpos.x, chunkpos.z, biome);
-	            	structurestart = structurestart1.isValid() ? structurestart1 : StructureStart.DUMMY;
-	            }
-	            chunkIn.putStructureStart(structure.getStructureName(), structurestart);
-			}
+	        if (generator.getBiomeProvider().hasStructure(structure))
+	        {
+	            ChunkPos chunkpos = chunkIn.getPos();
+	            int x = chunkpos.getXStart() + 9;
+	            int z = chunkpos.getZStart() + 9;
+	            int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x, z) + 1;
+	        	Biome biome = setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), chunkIn, x, z, y, true);
+				if (biome.hasStructure(structure)) 
+				{
+					SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
+		            StructureStart structurestart = StructureStart.DUMMY;
+		            if (structure.hasStartAt(generator, sharedseedrandom, chunkpos.x, chunkpos.z)) 
+		            {
+		            	StructureStart structurestart1 = structure.getStartFactory().create(structure, chunkpos.x, chunkpos.z, biome, MutableBoundingBox.getNewBoundingBox(), 0, generator.getSeed());
+		            	structurestart1.init(this, templateManagerIn, chunkpos.x, chunkpos.z, biome);
+		            	structurestart = structurestart1.isValid() ? structurestart1 : StructureStart.DUMMY;
+		            }
+		            chunkIn.putStructureStart(structure.getStructureName(), structurestart);
+				}
+	        }
 		}
 	}
 
 	@Override
 	protected Biome getBiome(WorldGenRegion worldRegionIn, BlockPos pos) 
     {
-		Biome biome = this.biomeProvider.generateLandBiome(pos.getX(), pos.getZ(), true);
 		IChunk chunk = worldRegionIn.getChunk(pos);
         int x = pos.getX();
         int y = chunk.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, pos.getX(), pos.getZ()) + 1;
         int z = pos.getZ();
-        biome = setBiomebyHeight(biome, chunk, x, z, y, true);
+        Biome biome = setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), chunk, x, z, y, true);
         return biome;
 	}
 
@@ -176,14 +179,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         double temperature = this.biomeProvider.getTemperature(x, z);
         double humidity = this.biomeProvider.getHumidity(x, z);
    	 	double[] landmass = this.biomeProvider.getLandmass(x, z);
-		boolean isOcean = landmass[0] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
-				landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
-				landmass[2] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
-				landmass[3] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
-		boolean isBeach = !isOcean && (landmass[0] < EvoBiomeProvider.oceanThreshold &&
-				landmass[1] < EvoBiomeProvider.oceanThreshold &&
-				landmass[2] < EvoBiomeProvider.oceanThreshold &&
-				landmass[3] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach(x, z);
+		boolean isOcean = landmass[4] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+		boolean isBeach = !isOcean && (landmass[4] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach(x, z);
         
         if (isBeach || isOcean)
         {
@@ -191,9 +188,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         		return this.biomeProvider.getOcean(temperature, y < 40);
         	if (y < seaLevel + 3)
         	{
-	    		if (biome.equals(Biomes.BADLANDS) || ( this.biomeProvider.getSettings().isUseBOPBiomes() && biome.equals(BOPBiomes.outback.get()) ))
-	    			return NewBiomes.RED_BEACH;
-	    		else
+	    		if (!biome.equals(Biomes.BADLANDS) && !( this.biomeProvider.getSettings().isUseBOPBiomes() && biome.equals(BOPBiomes.outback.get()) ))
 	    			return this.biomeProvider.getBeach(x, z);
         	}
         }
@@ -306,14 +301,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
              
     			boolean isRiver = this.biomeProvider.getRiver((x + j) * 4, (z + k) * 4);
     			double[] landmass = this.biomeProvider.getLandmass((x + j) * 4, (z + k) * 4);
-    			boolean isOcean = landmass[0] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
-    					landmass[1] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
-    					landmass[2] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale &&
-    					landmass[3] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
-    			boolean isBeach = !isOcean && (landmass[0] < EvoBiomeProvider.oceanThreshold &&
-    					landmass[1] < EvoBiomeProvider.oceanThreshold &&
-    					landmass[2] < EvoBiomeProvider.oceanThreshold &&
-    					landmass[3] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach((x + j) * 4, (z + k) * 4);
+    			boolean isOcean = landmass[4] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+    			boolean isBeach = !isOcean && (landmass[4] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach((x + j) * 4, (z + k) * 4);
              
     			if (isBeach | isOcean)
     			{

@@ -103,11 +103,10 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     		Biomes.ERODED_BADLANDS,
     		Biomes.MODIFIED_WOODED_BADLANDS_PLATEAU,
     		Biomes.MODIFIED_BADLANDS_PLATEAU,
-    		NewBiomes.TUNDRA,
-    		NewBiomes.GRAVELLY_TUNDRA,
-    		NewBiomes.TUNDRA_WOODED,
     		NewBiomes.GRAVEL_BEACH,
+    		NewBiomes.DRY_GRAVEL_BEACH,
     		NewBiomes.SNOWY_GRAVEL_BEACH,
+    		NewBiomes.DRY_BEACH,
     		NewBiomes.SNOWY_GIANT_TREE_TAIGA,
     		NewBiomes.SNOWY_GIANT_SPRUCE_TAIGA,
     		NewBiomes.RAINFOREST);
@@ -138,9 +137,10 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 		this.noiseOctave = new NoiseGeneratorOpenSimplex(rand, 2);
 		this.providerSettings = settingsProvider;
 		this.landOffset = 0.0;
-		while (landOctave.getNoise(0.0, landOffset, 0.0) * 0.125 / (double)oceanOctaves < oceanThreshold)
+		if (landOctave2.getNoise(0.0, 0.0) * 0.125 / (double)oceanOctaves < oceanThreshold)
 		{
-			landOffset += 1.0;
+			while (landOctave.getNoise(0.0, landOffset, 0.0) * 0.125 / (double)oceanOctaves < oceanThreshold)
+				landOffset += 1.0;
 		}
 		
 		EvoBiomes.init();
@@ -150,7 +150,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 			{
 				humidityScale = 2.0;
 				chanceScale = 2.0;
-				BOPSupport.setup();
+				BOPSupport.setup(biomes);
 			}
 		}
 		catch (Exception e)
@@ -299,20 +299,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 				{
 					if (canBeBeach(x, z))
 					{
-						if (biome.equals(Biomes.BADLANDS))
-							biome = NewBiomes.RED_BEACH;
-						else if (this.providerSettings.isUseBOPBiomes())
-						{
-							if (biome == BOPBiomes.outback.get())
-								biome = NewBiomes.RED_BEACH;
-							else
-								biome = getBeach(temperature, 
-										humidity, 
-										landmass1 <= oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale, 
-										biome.getDownfall() <= 0.0);
-						}
-						else
-							biome = getBeach(temperature, 
+						biome = getBeach(temperature, 
 									humidity, 
 									landmass1 <= oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale, 
 									biome.getDownfall() <= 0.0);
@@ -525,9 +512,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 			for(Biome biome : this.biomes)
 			{
 	            if (biome.hasStructure(p_205006_1_))
-	            {
 	               return true;
-	            }
 	        }
 
 	        return false;
