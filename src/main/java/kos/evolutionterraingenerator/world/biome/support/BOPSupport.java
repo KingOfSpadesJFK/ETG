@@ -185,14 +185,38 @@ public class BOPSupport
 				});
 
 		//Islands
-		EvoBiomes.ISLAND_BIOMES = new EvoBiome(BOPBiomes.lush_swamp.get(), new Biome[]
+		EvoBiomes.COLD_ISLANDS = new EvoBiome(Biomes.ICE_SPIKES, new Biome[]
 				{
-					Biomes.PLAINS,
 					BOPBiomes.volcano.get(),
+					Biomes.ICE_SPIKES,
+					Biomes.ICE_SPIKES,
+					Biomes.ICE_SPIKES,
+					Biomes.ICE_SPIKES,
+					Biomes.ICE_SPIKES,
+					Biomes.ICE_SPIKES,
+					BOPBiomes.volcano.get(),
+				});
+		EvoBiomes.ISLAND_BIOMES = new EvoBiome(Biomes.PLAINS, new Biome[]
+				{
+					BOPBiomes.volcano.get(),
+					BOPBiomes.origin_hills.get(),
+					Biomes.PLAINS,
 					Biomes.FOREST,
+					Biomes.PLAINS,
+					Biomes.FOREST,
+					BOPBiomes.origin_hills.get(),
+					BOPBiomes.volcano.get(),
+				});
+		EvoBiomes.HOT_ISLANDS = new EvoBiome(Biomes.JUNGLE, new Biome[]
+				{
+					BOPBiomes.volcano.get(),
 					BOPBiomes.tropics.get(),
 					Biomes.JUNGLE,
-					BOPBiomes.origin_hills.get(),
+					BOPBiomes.tropics.get(),
+					Biomes.JUNGLE,
+					BOPBiomes.tropics.get(),
+					Biomes.JUNGLE,
+					BOPBiomes.volcano.get(),
 				});
 		
 		biomes.add(BOPBiomes.cold_desert.get());

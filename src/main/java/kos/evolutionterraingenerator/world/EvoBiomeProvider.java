@@ -254,54 +254,51 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 		Biome biome = getLandBiome(temperature, humidity, biomeChance);
 		if (landmass1 < oceanThreshold && landmass2 < oceanThreshold)
 		{
-			if (landmass1 < deepThreshold && landmass2 < deepThreshold)
+	    	double mushroomChance = (mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) - 8.0) * 2.0 / (double)oceanOctaves;
+	    	double islandChance = (islandOctave.getNoise(x * (0.02 / biomeScale), z * (0.02 / biomeScale)) - 3.25) / (double)oceanOctaves;
+			if (mushroomChance > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
 			{
-		    	double mushroomChance = (mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) - 8.0) * 2.0 / (double)oceanOctaves;
-		    	double islandChance = (islandOctave.getNoise(x * (0.02 / biomeScale), z * (0.02 / biomeScale)) - 3.25) / (double)oceanOctaves;
-				if (mushroomChance > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
-				{
-					biome = Biomes.MUSHROOM_FIELDS;
-				} 
-				else if (islandChance > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
-				{
+				biome = Biomes.MUSHROOM_FIELDS;
+			} 
+			else if (islandChance > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
+			{
+				if (temperature < SNOW_TEMP)
+					biome = EvoBiomes.COLD_ISLANDS.getBiome(biomeChance);
+				else if (temperature < HOT_TEMP)
 					biome = EvoBiomes.ISLAND_BIOMES.getBiome(biomeChance);
-					if (islandChance < oceanThreshold)
-					{
-						if (this.providerSettings.isUseBOPBiomes())
-						{
-							if (biome == BOPBiomes.origin_hills.get())
-								biome = BOPBiomes.origin_beach.get();
-							if (biome == BOPBiomes.volcano.get())
-								biome = BOPBiomes.volcano_edge.get();
-							if (biome == BOPBiomes.tropics.get())
-								biome = BOPBiomes.white_beach.get();
-						}
-						else
-							biome = Biomes.BEACH;
-					}
-				}
 				else
-					biome = getOcean(temperature, landmass1 < deepThreshold && 
-							landmass2 < deepThreshold && 
-							mushroomChance < deepThreshold && 
-							islandChance < deepThreshold);
+					biome = EvoBiomes.HOT_ISLANDS.getBiome(biomeChance);
+				if (islandChance < oceanThreshold)
+				{
+					if (this.providerSettings.isUseBOPBiomes())
+					{
+						if (biome == BOPBiomes.origin_hills.get())
+							biome = BOPBiomes.origin_beach.get();
+						if (biome == BOPBiomes.volcano.get())
+							biome = BOPBiomes.volcano_edge.get();
+						if (biome == BOPBiomes.tropics.get())
+							biome = BOPBiomes.white_beach.get();
+					}
+					else
+						biome = Biomes.BEACH;
+				}
+			}
+			else if (landmass1 > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale || 
+					landmass2 > oceanThreshold - beachThreshold / (double)oceanOctaves  / oceanScale)
+			{
+				if (canBeBeach(x, z))
+				{
+					biome = getBeach(temperature, 
+								humidity, 
+								landmass1 <= oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale, 
+								biome.getDownfall() <= 0.0);
+				}
 			}
 			else
-			{
-				if (landmass1 > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale || 
-						landmass2 > oceanThreshold - beachThreshold / (double)oceanOctaves  / oceanScale)
-				{
-					if (canBeBeach(x, z))
-					{
-						biome = getBeach(temperature, 
-									humidity, 
-									landmass1 <= oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale, 
-									biome.getDownfall() <= 0.0);
-					}
-				}
-				else
-					biome = getOcean(temperature, false);
-			}
+				biome = getOcean(temperature, landmass1 < deepThreshold &&
+						landmass2 < deepThreshold &&
+						islandChance < deepThreshold &&
+						mushroomChance < deepThreshold);
 		}
 		return biome;
     }

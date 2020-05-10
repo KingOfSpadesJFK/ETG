@@ -51,15 +51,19 @@ public class EvoBiomes
 	public static EvoBiome WARM_SWAMP = new EvoBiome(Biomes.SWAMP);
 	public static EvoBiome COLD_SWAMP = new EvoBiome(Biomes.SWAMP);
 	
+	public static EvoBiome COLD_ISLANDS = new EvoBiome(Biomes.ICE_SPIKES);
+	
 	public static EvoBiome ISLAND_BIOMES = new EvoBiome(Biomes.PLAINS, new Biome[]
 			{
 				Biomes.PLAINS,
 				Biomes.FOREST,
-				Biomes.JUNGLE,
 				Biomes.PLAINS,
 				Biomes.FOREST,
-				Biomes.JUNGLE,
+				Biomes.PLAINS,
+				Biomes.FOREST,
 			});
+	
+	public static EvoBiome HOT_ISLANDS = new EvoBiome(Biomes.JUNGLE);
 
 	public static final ArrayList<EvoBiome> SNOWY_BIOMES = new ArrayList<EvoBiome>();
 	public static final ArrayList<EvoBiome> COLD_BIOMES = new ArrayList<EvoBiome>();
@@ -106,6 +110,18 @@ public class EvoBiomes
 		HOT_SWAMP = new EvoBiome(Biomes.SWAMP);
 		WARM_SWAMP = new EvoBiome(Biomes.SWAMP);
 		COLD_SWAMP = new EvoBiome(Biomes.SWAMP);
+		
+		COLD_ISLANDS = new EvoBiome(Biomes.ICE_SPIKES);
+		HOT_ISLANDS = new EvoBiome(Biomes.JUNGLE);
+		ISLAND_BIOMES = new EvoBiome(Biomes.PLAINS, new Biome[]
+				{
+					Biomes.PLAINS,
+					Biomes.FOREST,
+					Biomes.PLAINS,
+					Biomes.FOREST,
+					Biomes.PLAINS,
+					Biomes.FOREST,
+				});
 	}
 	
 	public static EvoBiome[] toArray(ArrayList<EvoBiome> list)

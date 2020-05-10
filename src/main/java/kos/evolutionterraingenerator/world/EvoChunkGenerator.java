@@ -179,8 +179,22 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         double temperature = this.biomeProvider.getTemperature(x, z);
         double humidity = this.biomeProvider.getHumidity(x, z);
    	 	double[] landmass = this.biomeProvider.getLandmass(x, z);
-		boolean isOcean = landmass[4] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+   	 	double beachThreshold = EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+		boolean isOcean = landmass[4] < beachThreshold;
 		boolean isBeach = !isOcean && (landmass[4] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach(x, z);
+		
+    	if (landmass[2] == landmass[4])
+    	{
+    		double biomeChance = this.biomeProvider.getBiomeChance(x, z, useNoise);
+			if (temperature < EvoBiomeProvider.SNOW_TEMP)
+				biome = EvoBiomes.COLD_ISLANDS.getBiome(biomeChance);
+			else if (temperature < EvoBiomeProvider.HOT_TEMP)
+				biome = EvoBiomes.ISLAND_BIOMES.getBiome(biomeChance);
+			else
+				biome = EvoBiomes.HOT_ISLANDS.getBiome(biomeChance);
+    	}
+    	if (landmass[3] == landmass[4])
+			biome = Biomes.MUSHROOM_FIELDS;
         
         if (isBeach || isOcean)
         {
@@ -188,10 +202,34 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         		return this.biomeProvider.getOcean(temperature, y < 40);
         	if (y < seaLevel + 3)
         	{
-	    		if (!biome.equals(Biomes.BADLANDS) && !( this.biomeProvider.getSettings().isUseBOPBiomes() && biome.equals(BOPBiomes.outback.get()) ))
+        		if (this.biomeProvider.getSettings().isUseBOPBiomes() && 
+        				(landmass[0] == landmass[4] || landmass[2] == landmass[4]) && 
+        				(biome.equals(Biomes.JUNGLE) ||
+        						biome.equals(Biomes.BAMBOO_JUNGLE) ||
+        						biome.equals(BOPBiomes.tropics.get()) ||
+        						biome.equals(BOPBiomes.tropical_rainforest.get()) )
+        				)
+        			return BOPBiomes.white_beach.get();
+        		if (this.biomeProvider.getSettings().isUseBOPBiomes() && biome.equals(BOPBiomes.volcano.get()))
+        			return BOPBiomes.volcano_edge.get();
+        		if (this.biomeProvider.getSettings().isUseBOPBiomes() && biome.equals(BOPBiomes.origin_hills.get()))
+        			return BOPBiomes.origin_beach.get();
+	    		if (!biome.equals(Biomes.BADLANDS) && 
+	    				!biome.equals(Biomes.MUSHROOM_FIELDS) && 
+	    				!biome.equals(Biomes.DESERT) && 
+	    				!(this.biomeProvider.getSettings().isUseBOPBiomes() && 
+	    						(biome.equals(BOPBiomes.outback.get()) || 
+	    								biome.equals(BOPBiomes.xeric_shrubland.get()) || 
+	    								biome.equals(BOPBiomes.wasteland.get()) || 
+	    								biome.equals(BOPBiomes.cold_desert.get()) )
+	    						)
+	    				)
 	    			return this.biomeProvider.getBeach(x, z);
         	}
         }
+        
+        if (landmass[2] == landmass[4] || landmass[3] == landmass[4])
+        	return biome;
 
         double swampChance = this.swampChance.getNoise((double)x * 0.0125, (double)z * 0.0125);
         swampChance = MathHelper.clamp(swampChance, 0.0, 1.0);
@@ -303,7 +341,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     			double[] landmass = this.biomeProvider.getLandmass((x + j) * 4, (z + k) * 4);
     			boolean isOcean = landmass[4] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
     			boolean isBeach = !isOcean && (landmass[4] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach((x + j) * 4, (z + k) * 4);
-             
+    			
     			if (isBeach | isOcean)
     			{
     				d4 = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[4] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
