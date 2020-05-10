@@ -231,31 +231,25 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     	double noise = 1.0;
     	if (useNoise)
     		noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
-    	return MathHelper.clamp((biomeChanceOctave.getNoise((double)x * 0.01 / chanceScale, (double)z * 0.01 / chanceScale) * 0.05 + 0.5) * 0.99 + noise * 0.01, 0.0, 1.0);
+    	return MathHelper.clamp((biomeChanceOctave.getNoise((double)x * 0.005 / chanceScale, (double)z * 0.005 / chanceScale) * 0.05 + 0.5) * 0.99 + noise * 0.01, 0.0, 1.0);
     }
     
     public Biome generateLandBiome(double x, double z, boolean useNoise)
     {
-    	double noise = 1.0;
-    	if (useNoise)
-    		noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
     	double temperature = getTemperature(x, z, useNoise);
     	double humidity = getHumidity(x, z, useNoise);
-    	double biomeChance = MathHelper.clamp((biomeChanceOctave.getNoise((double)x * 0.01 / chanceScale, (double)z * 0.01 / chanceScale) * 0.05 + 0.5) * 0.99 + noise * 0.01, 0.0, 1.0);
+    	double biomeChance = getBiomeChance(x, z, useNoise);
 
 		return getLandBiome(temperature, humidity, biomeChance);
     }
     
     public Biome generateBiome(double x, double z, boolean useNoise)
     {
-    	double noise = 1.0;
-    	if (useNoise)
-    		noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
     	double temperature = getTemperature(x, z, useNoise);
     	double humidity = getHumidity(x, z, useNoise);
     	double landmass1 = landOctave.getNoise((double)x * (0.00125 / oceanScale), landOffset, (double)z * (0.00125 / oceanScale))  * 0.125 / (double)oceanOctaves;
     	double landmass2 = landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 / (double)oceanOctaves;
-    	double biomeChance = MathHelper.clamp((biomeChanceOctave.getNoise((double)x * 0.01 / chanceScale, (double)z * 0.01 / chanceScale) * 0.05 + 0.5) * 0.99 + noise * 0.01, 0.0, 1.0);
+    	double biomeChance = getBiomeChance(x, z, useNoise);
 
 		Biome biome = getLandBiome(temperature, humidity, biomeChance);
 		if (landmass1 < oceanThreshold && landmass2 < oceanThreshold)

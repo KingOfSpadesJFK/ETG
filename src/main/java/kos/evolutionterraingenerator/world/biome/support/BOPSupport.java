@@ -144,14 +144,7 @@ public class BOPSupport
 					BOPBiomes.brushland.get(),
 					Biomes.SHATTERED_SAVANNA,
 				}));
-		EvoBiomes.ARID_BIOMES.remove(EvoBiomes.PLAINS);
-		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.shrubland.get(), 0.3F, new Biome[] 
-				{
-					BOPBiomes.shrubland.get(),
-					Biomes.PLAINS,
-					BOPBiomes.shrubland.get(),
-					Biomes.PLAINS,
-				}));
+		EvoBiomes.HOT_BIOMES.add(new EvoBiome(BOPBiomes.shrubland.get(), 0.35F));
 		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.chaparral.get(), 0.4F));
 		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.lush_grassland.get(), 0.5F, new Biome[]
 				{
