@@ -316,11 +316,11 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 
     private double func_222552_a(double x, double y, double z, double coordScale, double heightScale) {
 
-       double coord = this.settings.getMainNoiseCoordScale();
-       double height = this.settings.getMainNoiseHeightScale();
-       double d0 = this.minLimitPerlinNoise.getNoise(x * coord, y * height, z * coord);
-       double d1 = this.maxLimitPerlinNoise.getNoise(x * coord, y * height, z * coord);
-       double d2 = this.mainPerlinNoise.getNoise(x * coord / coordScale, y * height / heightScale, z * coord / coordScale);
+       double mainCoord = this.settings.getMainNoiseCoordScale();
+       double mainHeight = this.settings.getMainNoiseHeightScale();
+       double d0 = this.minLimitPerlinNoise.getNoise(x * coordScale, y * heightScale, z * coordScale);
+       double d1 = this.maxLimitPerlinNoise.getNoise(x * coordScale, y * heightScale, z * coordScale);
+       double d2 = this.mainPerlinNoise.getNoise(x * coordScale / mainCoord, y * heightScale / mainHeight, z * coordScale / mainCoord);
 
        return MathHelper.clampedLerp(d0 / this.settings.getLowerLimitScale(), d1 / this.settings.getUpperLimitScale(), (d2 / 10.0D + 1.0D) / 2.0D);
     }
