@@ -117,7 +117,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	        	 int z1 = z + j;
 	        	 int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, i, j) + 1;
 	        	 Biome biome = this.biomeProvider.generateLandBiome(x1, z1, false);
-	        	 Biome biome2 = setBiomebyHeight(biome, chunkIn, x1, z1, y, false);
+	        	 Biome biome2 = setBiomebyHeight(biome, x1, z1, y, false);
 	        	 if (!biome.equals(biome2))
 	        	 {
 	        		 changeBiomes = true;
@@ -144,7 +144,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	            int x = chunkpos.getXStart() + 9;
 	            int z = chunkpos.getZStart() + 9;
 	            int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x, z) + 1;
-	        	Biome biome = setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), chunkIn, x, z, y, true);
+	        	Biome biome = setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), x, z, y, true);
 				if (biome.hasStructure(structure)) 
 				{
 					SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
@@ -168,12 +168,12 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         int x = pos.getX();
         int y = chunk.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, pos.getX(), pos.getZ()) + 1;
         int z = pos.getZ();
-        Biome biome = setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), chunk, x, z, y, true);
+        Biome biome = setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), x, z, y, true);
         return biome;
 	}
 
     //Sets biomes according to the conditions of the land
-    private Biome setBiomebyHeight(Biome biome, IChunk chunkPrimerIn, int x, int z, int y, boolean useNoise)
+    private Biome setBiomebyHeight(Biome biome, int x, int z, int y, boolean useNoise)
     {
         int seaLevel = this.settings.getSeaLevel();
         double temperature = this.biomeProvider.getTemperature(x, z);
@@ -182,8 +182,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
    	 	double beachThreshold = EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
 		boolean isOcean = landmass[4] < beachThreshold;
 		boolean isBeach = !isOcean && (landmass[4] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach(x, z);
+		boolean isSpecialIsland = landmass[0] < EvoBiomeProvider.oceanThreshold && landmass[1] < EvoBiomeProvider.oceanThreshold;
 		
-    	if (landmass[2] == landmass[4])
+    	if (landmass[2] == landmass[4] && isSpecialIsland)
     	{
     		double biomeChance = this.biomeProvider.getBiomeChance(x, z, useNoise);
 			if (temperature < EvoBiomeProvider.SNOW_TEMP)
@@ -193,7 +194,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 			else
 				biome = EvoBiomes.HOT_ISLANDS.getBiome(biomeChance);
     	}
-    	if (landmass[3] == landmass[4])
+    	if (landmass[3] == landmass[4] && isSpecialIsland)
 			biome = Biomes.MUSHROOM_FIELDS;
         
         if (isBeach || isOcean)
@@ -248,18 +249,22 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
             if (swamp != null)
             	biome = swamp;
     	}
-    	else if (biome.equals(Biomes.BADLANDS))
+    	if (biome.equals(Biomes.BADLANDS))
     	{
     		if (y >= seaLevel + 50)
-    		{
         		biome = Biomes.WOODED_BADLANDS_PLATEAU;
-    		}
+    	}
+    	if (this.biomeProvider.getSettings().isUseBOPBiomes() && temperature < EvoBiomeProvider.SNOW_TEMP)
+    	{
+    		if (y >= seaLevel + 50)
+    			biome = BOPBiomes.alps.get();
+    		else if (y >= seaLevel + 35)
+    			biome = BOPBiomes.alps_foothills.get();
     	}
     	return biome;
     }
 	
 	/* 1.14 GENERATION METHODS */
-
     @Override
     protected void func_222548_a(double[] arr, int x, int z) {
        double coordScale = this.settings.getCoordScale() * (double) this.settings.getNoiseOctaves() / 8.0;

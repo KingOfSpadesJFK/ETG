@@ -276,7 +276,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 							biome = BOPBiomes.origin_beach.get();
 						if (biome == BOPBiomes.volcano.get())
 							biome = BOPBiomes.volcano_edge.get();
-						if (biome == BOPBiomes.tropics.get())
+						if (biome == BOPBiomes.tropics.get() || biome == Biomes.JUNGLE)
 							biome = BOPBiomes.white_beach.get();
 					}
 					else
