@@ -149,7 +149,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 			if (providerSettings.isUseBOPBiomes())
 			{
 				humidityScale = 2.0;
-				chanceScale = 2.0;
+				chanceScale = 1.0;
 				BOPSupport.setup(biomes);
 			}
 		}

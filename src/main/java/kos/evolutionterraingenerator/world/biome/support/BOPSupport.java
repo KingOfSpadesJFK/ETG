@@ -95,13 +95,8 @@ public class BOPSupport
 				}));
 		EvoBiomes.WARM_BIOMES.add(new EvoBiome(BOPBiomes.orchard.get(), 0.55F));
 		EvoBiomes.WARM_BIOMES.add(new EvoBiome(BOPBiomes.grove.get(), 0.575F));
-		EvoBiomes.WARM_BIOMES.add(new EvoBiome(BOPBiomes.temperate_rainforest.get(), new Biome[]
-				{
-					BOPBiomes.temperate_rainforest.get(),
-					BOPBiomes.temperate_rainforest.get(),
-					BOPBiomes.temperate_rainforest.get(),
-					BOPBiomes.mystic_grove.get()
-				}));
+		EvoBiomes.WARM_BIOMES.remove(EvoBiomes.DARK_FOREST);
+		EvoBiomes.WARM_BIOMES.add(new EvoBiome(BOPBiomes.temperate_rainforest.get()));
 		EvoBiomes.WARM_BIOMES.sort(null);
 		
 		//Hot Biomes
@@ -116,10 +111,16 @@ public class BOPSupport
 					BOPBiomes.prairie.get(),
 					BOPBiomes.pasture.get(),
 				}));
-		EvoBiomes.HOT_BIOMES.add(new EvoBiome(BOPBiomes.overgrown_cliffs.get(), 0.7F));
 		EvoBiomes.HOT_BIOMES.add(new EvoBiome(BOPBiomes.woodland.get(), 0.75F));
-		EvoBiomes.HOT_BIOMES.add(new EvoBiome(BOPBiomes.rainforest.get(), 0.9F));
-		EvoBiomes.HOT_BIOMES.remove(EvoBiomes.RAINFOREST);
+		EvoBiomes.HOT_BIOMES.add(new EvoBiome(BOPBiomes.rainforest.get(), 0.9F, new Biome[]
+				{
+					BOPBiomes.mystic_grove.get(),
+					Biomes.DARK_FOREST,
+					BOPBiomes.rainforest.get(),
+					Biomes.DARK_FOREST,
+					BOPBiomes.rainforest.get(),
+				}));
+		EvoBiomes.HOT_BIOMES.remove(EvoBiomes.RAINFOREST_ROOFED);
 		EvoBiomes.HOT_BIOMES.sort(null);
 		
 		//Arid Biomes
@@ -144,15 +145,9 @@ public class BOPSupport
 					BOPBiomes.brushland.get(),
 					Biomes.SHATTERED_SAVANNA,
 				}));
-		EvoBiomes.HOT_BIOMES.add(new EvoBiome(BOPBiomes.shrubland.get(), 0.35F));
-		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.chaparral.get(), 0.4F));
-		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.lush_grassland.get(), 0.5F, new Biome[]
-				{
-					BOPBiomes.overgrown_cliffs.get(),
-					BOPBiomes.lush_grassland.get(),
-					BOPBiomes.overgrown_cliffs.get(),
-					BOPBiomes.lush_grassland.get(),
-				}));
+		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.shrubland.get(), 0.35F));
+		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.lush_grassland.get(), 0.5F));
+		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.overgrown_cliffs.get(), 0.7F));
 		EvoBiomes.ARID_BIOMES.remove(EvoBiomes.RAINFOREST_ROOFED);
 		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.tropical_rainforest.get(), 0.8F));
 		EvoBiomes.ARID_BIOMES.sort(null);

@@ -267,7 +267,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	/* 1.14 GENERATION METHODS */
     @Override
     protected void func_222548_a(double[] arr, int x, int z) {
-       double coordScale = this.settings.getCoordScale() * (double) this.settings.getNoiseOctaves() / 8.0;
+       double coordScale = this.settings.getCoordScale();
        double heightScale = this.settings.getHeightScale();
        double d2 = 8.555149841308594D;
        double d3 = 4.277574920654297D;
