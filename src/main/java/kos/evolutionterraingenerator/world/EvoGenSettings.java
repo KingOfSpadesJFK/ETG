@@ -23,10 +23,15 @@ public class EvoGenSettings extends OverworldGenSettings
 	private double lowerLimitScale = 512.0;
 	private double upperLimitScale = 512.0;
 	
-	private float biomeScaleWeight = 1.0F;
-	private float biomeScaleOffset = 0.0F;
-	private float biomeDepthWeight = 1.0F;
-	private float biomeDepthOffset = 0.0F;
+	private double biomeDepth = 0.75;
+	private double biomeScale = 0.95;
+	private double biomeDepthFactor = 0.0275;
+	private double biomeScaleFactor = 0.3;
+	
+	private double biomeDepthWeight = 1.0;
+	private double biomeDepthOffset = 0.0;
+	private double biomeScaleWeight = 1.0;
+	private double biomeScaleOffset = 0.0;
 	
 	public EvoGenSettings(CompoundNBT nbtSettings)
 	{
@@ -56,19 +61,19 @@ public class EvoGenSettings extends OverworldGenSettings
 		return depthNoiseScaleZ;
 	}
 
-	public float getBiomeDepthWeight() {
+	public double getBiomeDepthWeight() {
 		return biomeDepthWeight;
 	}
 
-	public float getBiomeScaleWeight() {
+	public double getBiomeScaleWeight() {
 		return biomeScaleWeight;
 	}
 
-	public float getBiomeDepthOffset() {
+	public double getBiomeDepthOffset() {
 		return biomeDepthOffset;
 	}
 
-	public float getBiomeScaleOffset() {
+	public double getBiomeScaleOffset() {
 		return biomeScaleOffset;
 	}
 
@@ -102,5 +107,21 @@ public class EvoGenSettings extends OverworldGenSettings
 
 	public double getHeightScale() {
 		return heightScale;
+	}
+
+	public double getBiomeScale() {
+		return biomeScale;
+	}
+
+	public double getBiomeDepth() {
+		return biomeDepth;
+	}
+
+	public double getBiomeScaleFactor() {
+		return biomeScaleFactor;
+	}
+
+	public double getBiomeDepthFactor() {
+		return biomeDepthFactor;
 	}
 }

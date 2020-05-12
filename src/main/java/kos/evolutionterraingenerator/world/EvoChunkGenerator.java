@@ -5,8 +5,6 @@ import java.util.Random;
 import biomesoplenty.api.biome.BOPBiomes;
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
 import kos.evolutionterraingenerator.world.biome.EvoBiomes;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
@@ -37,9 +35,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		      }
 
 		   });
-    protected static final BlockState STONE = Blocks.STONE.getDefaultState();
-    protected static final BlockState AIR = Blocks.AIR.getDefaultState();
-    protected static final BlockState WATER = Blocks.WATER.getDefaultState();
 	
 	private EvoGenSettings settings;
 	private final EvoBiomeProvider biomeProvider;
@@ -52,10 +47,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     public NoiseGeneratorOpenSimplex swampType;
 	private NoiseGeneratorOpenSimplex surfaceDepthNoise;
     private final IWorld world;
-    double[] mainNoiseRegion;
-    double[] minLimitRegion;
-    double[] maxLimitRegion;
-    double[] depthRegion;
     
 	private final int noiseSizeY;
 	private final int verticalNoiseGranularity;
@@ -86,9 +77,15 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	{
 		return this.settings;
 	}
+	
+	@Override
+	public int getSeaLevel()
+	{
+		return this.settings.getSeaLevel();
+	}
 
 	@Override
-	public void generateBiomes(IChunk chunkIn) 
+	public void generateBiomes(IChunk chunkIn)
 	{
 		ChunkPos chunkpos = chunkIn.getPos();
 		int x = chunkpos.x;
@@ -229,7 +226,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         	}
         }
         
-        if (landmass[2] == landmass[4] || landmass[3] == landmass[4])
+        if (isSpecialIsland && landmass[2] == landmass[4] || landmass[3] == landmass[4])
         	return biome;
 
         double swampChance = this.swampChance.getNoise((double)x * 0.0125, (double)z * 0.0125);
@@ -339,8 +336,10 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     		{
     			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
     			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
-    			double d4 = 0.75  + (0.0275 - humidity * temperature * 0.0275) * this.settings.getBiomeDepthWeight();
-    			double d5 = 0.95 + humidity * temperature * 0.3 * this.settings.getBiomeScaleWeight();
+    			double d4 = (this.settings.getBiomeDepth() 
+    					+ (this.settings.getBiomeDepthFactor() - humidity * temperature * this.settings.getBiomeDepthFactor()) )
+    					* this.settings.getBiomeDepthWeight();
+    			double d5 = (this.settings.getBiomeScale() + humidity * temperature * this.settings.getBiomeScaleFactor()) * this.settings.getBiomeScaleWeight();
              
     			boolean isRiver = this.biomeProvider.getRiver((x + j) * 4, (z + k) * 4);
     			double[] landmass = this.biomeProvider.getLandmass((x + j) * 4, (z + k) * 4);
@@ -358,12 +357,12 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     				if (isBeach | isOcean)
     				{
     					d5 = 0.0;
-    					if (d4 > this.settings.getBiomeDepthOffset() + Biomes.RIVER.getDepth() * this.settings.getBiomeDepthWeight())
-    						d4 = this.settings.getBiomeDepthOffset() + Biomes.RIVER.getDepth() * this.settings.getBiomeDepthWeight();
+    					if (d4 > (this.settings.getBiomeDepthOffset() + Biomes.RIVER.getDepth()) * this.settings.getBiomeDepthWeight())
+    						d4 = (this.settings.getBiomeDepthOffset() + Biomes.RIVER.getDepth()) * this.settings.getBiomeDepthWeight();
     				}
     				else
     				{
-    					d4 = this.settings.getBiomeDepthOffset() + Biomes.OCEAN.getDepth() * this.settings.getBiomeDepthWeight();
+    					d4 = (this.settings.getBiomeDepthOffset() + Biomes.OCEAN.getDepth()) * this.settings.getBiomeDepthWeight();
     					d5 = 0.0;
     				}
     			}
