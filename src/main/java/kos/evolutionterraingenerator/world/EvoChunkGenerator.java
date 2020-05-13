@@ -46,6 +46,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     public NoiseGeneratorOpenSimplex swampChance;
     public NoiseGeneratorOpenSimplex swampType;
 	private NoiseGeneratorOpenSimplex surfaceDepthNoise;
+	private NoiseGeneratorOpenSimplex variationNoise;
     private final IWorld world;
     
 	private final int noiseSizeY;
@@ -67,6 +68,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         this.surfaceDepthNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
         this.swampChance = new NoiseGeneratorOpenSimplex(this.rand, 4);
         this.swampType = new NoiseGeneratorOpenSimplex(this.rand, 4);
+        this.variationNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
         
     	this.verticalNoiseGranularity = 8;
         this.noiseSizeY = 256 / this.verticalNoiseGranularity;		
@@ -121,7 +123,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	        		 biome = biome2;
 	        		 abiome[j * 16 + i] = biome2;
 	        	 }
-	        	 double d1 = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.25;
+	        	 double d1 = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.5;
 	        	 biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
 	         }
 	      }
@@ -336,10 +338,11 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     		{
     			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
     			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
+    			double variation = MathHelper.clamp(this.variationNoise.getNoise((x + j) * 0.0875, (z + k) * 0.0875) * 0.125 + 0.5, 0.0, 1.0);
     			double d4 = (this.settings.getBiomeDepth() 
-    					+ (this.settings.getBiomeDepthFactor() - humidity * temperature * this.settings.getBiomeDepthFactor()) )
+    					+ ( (1.0 - humidity * temperature) * this.settings.getBiomeDepthFactor()) )
     					* this.settings.getBiomeDepthWeight();
-    			double d5 = (this.settings.getBiomeScale() + humidity * temperature * this.settings.getBiomeScaleFactor()) * this.settings.getBiomeScaleWeight();
+    			double d5 = (this.settings.getBiomeScale() + (variation * variation * this.settings.getBiomeScaleFactor())) * this.settings.getBiomeScaleWeight();
              
     			boolean isRiver = this.biomeProvider.getRiver((x + j) * 4, (z + k) * 4);
     			double[] landmass = this.biomeProvider.getLandmass((x + j) * 4, (z + k) * 4);

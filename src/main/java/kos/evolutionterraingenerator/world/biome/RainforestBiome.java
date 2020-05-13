@@ -21,7 +21,7 @@ import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
 
 public class RainforestBiome extends Biome {
 	   public RainforestBiome() {
-		      super((new Biome.Builder()).surfaceBuilder(SurfaceBuilder.DEFAULT, SurfaceBuilder.GRASS_DIRT_GRAVEL_CONFIG).precipitation(Biome.RainType.RAIN).category(Biome.Category.FOREST).depth(0.1F).scale(0.2F).temperature(0.9F).downfall(0.85F).waterColor(0x2dbd46).waterFogColor(0x13531e).parent((String)null));
+		      super((new Biome.Builder()).surfaceBuilder(SurfaceBuilder.DEFAULT, SurfaceBuilder.GRASS_DIRT_GRAVEL_CONFIG).precipitation(Biome.RainType.RAIN).category(Biome.Category.FOREST).depth(0.1F).scale(0.2F).temperature(0.9F).downfall(0.85F).waterColor(0x00c677).waterFogColor(0x13531e).parent((String)null));
 		      this.addStructure(Feature.MINESHAFT, new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL));
 		      this.addStructure(Feature.STRONGHOLD, IFeatureConfig.NO_FEATURE_CONFIG);
 		      addFeature(GenerationStage.Decoration.VEGETAL_DECORATION, 
