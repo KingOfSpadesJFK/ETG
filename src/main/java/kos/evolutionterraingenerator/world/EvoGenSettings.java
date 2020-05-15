@@ -16,17 +16,17 @@ public class EvoGenSettings extends OverworldGenSettings
 	private double mainNoiseHeightScale = 60.0;
 	private double depthNoiseScaleX = 200.0;
 	private double depthNoiseScaleZ = 200.0;
-	private double coordScale = 175.0;
-	private double heightScale = 75.0;
+	private double coordScale = 350.0;
+	private double heightScale = 150.0;
 	private double depthBaseSize = 8.5;
 	private double heightStretch = 12.0;
 	private double lowerLimitScale = 512.0;
 	private double upperLimitScale = 512.0;
 	
-	private double biomeDepth = 0.5;
-	private double biomeScale = 0.2;
+	private double biomeDepth = 0.55;
+	private double biomeScale = 0.125;
 	private double biomeDepthFactor = 0.125;
-	private double biomeScaleFactor = 0.975;
+	private double biomeScaleFactor = 1.0;
 	
 	private double biomeDepthWeight = 1.0;
 	private double biomeDepthOffset = 0.0;

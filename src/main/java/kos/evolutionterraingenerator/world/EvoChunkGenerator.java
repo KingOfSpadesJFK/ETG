@@ -253,11 +253,11 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     		if (y >= seaLevel + 50)
         		biome = Biomes.WOODED_BADLANDS_PLATEAU;
     	}
-    	if (this.biomeProvider.getSettings().isUseBOPBiomes() && temperature < EvoBiomeProvider.SNOW_TEMP)
+    	if (this.biomeProvider.getSettings().isUseBOPBiomes() && temperature < EvoBiomeProvider.SNOW_TEMP && !biome.equals(Biomes.ICE_SPIKES))
     	{
-    		if (y >= seaLevel + 50)
+    		if (y >= seaLevel + 65)
     			biome = BOPBiomes.alps.get();
-    		else if (y >= seaLevel + 35)
+    		else if (y >= seaLevel + 50)
     			biome = BOPBiomes.alps_foothills.get();
     	}
     	return biome;
@@ -338,7 +338,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     		{
     			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
     			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
-    			double variation = MathHelper.clamp(this.variationNoise.getNoise((x + j) * 0.0875, (z + k) * 0.0875) * 0.125 + 0.5, 0.0, 1.0);
+    			double variation = MathHelper.clamp(this.variationNoise.getNoise((x + j) * 0.09, (z + k) * 0.09) * 0.2 + 0.5, 0.0, 1.0);
     			double d4 = (this.settings.getBiomeDepth() 
     					+ ( (1.0 - humidity * temperature) * this.settings.getBiomeDepthFactor()) )
     					* this.settings.getBiomeDepthWeight();
