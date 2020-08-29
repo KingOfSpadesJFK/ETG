@@ -1,7 +1,5 @@
 package kos.evolutionterraingenerator.util;
 
-import java.util.Random;
-
 import kos.evolutionterraingenerator.util.noise.OpenSimplexNoise;
 import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.math.MathHelper;

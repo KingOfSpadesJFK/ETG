@@ -18,7 +18,6 @@ import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 import kos.evolutionterraingenerator.world.biome.NewBiomes;
 import kos.evolutionterraingenerator.world.biome.support.BOPSupport;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
