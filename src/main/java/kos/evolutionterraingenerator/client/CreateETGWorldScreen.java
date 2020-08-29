@@ -19,9 +19,6 @@ public class CreateETGWorldScreen extends Screen
 	private CompoundNBT settings;
 	
 	private boolean bopLoaded;
-	
-	private Button doneButton;
-	private Button cancelButton;
 	private Button useBOPButton;
 	
 	private boolean useBOPBiomes;
@@ -44,13 +41,13 @@ public class CreateETGWorldScreen extends Screen
 	@Override
 	protected void init()
 	{
-		doneButton = this.addButton(new Button(this.width / 2 - 155, this.height - 28, 150, 20, I18n.format("gui.done"), savePress ->
+		addButton(new Button(this.width / 2 - 155, this.height - 28, 150, 20, I18n.format("gui.done"), savePress ->
 		{
 			this.parent.chunkProviderSettingsJson = this.serialize();
 			this.minecraft.displayGuiScreen(this.parent);
 		}
 		));
-		cancelButton = this.addButton(new Button(this.width / 2 + 5, this.height - 28, 150, 20, I18n.format("gui.cancel"), exitPress -> 
+		this.addButton(new Button(this.width / 2 + 5, this.height - 28, 150, 20, I18n.format("gui.cancel"), exitPress -> 
 		{
 			this.minecraft.displayGuiScreen(this.parent);
 		}));

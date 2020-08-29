@@ -10,28 +10,37 @@ public class EvoGenSettings extends OverworldGenSettings
 	private final int seaLevel = 63;
 	
 	private static final BlockState oceanBlock = Blocks.WATER.getDefaultState();
-	
-	private double mainNoiseCoordScale = 175.0;
-	private double mainNoiseHeightScale = 75.0;
+
+	private int noiseOctaves = 8;
+	private double mainNoiseCoordScale = 160.0;
+	private double mainNoiseHeightScale = 60.0;
 	private double depthNoiseScaleX = 200.0;
 	private double depthNoiseScaleZ = 200.0;
-	private double coordScale = 160.0;
-	private double heightScale = 60.0;
+	private double coordScale = 350.0;
+	private double heightScale = 150.0;
 	private double depthBaseSize = 8.5;
 	private double heightStretch = 12.0;
 	private double lowerLimitScale = 512.0;
 	private double upperLimitScale = 512.0;
 	
-	private float biomeScaleWeight = 1.0F;
-	private float biomeScaleOffset = 0.0F;
-	private float biomeDepthWeight = 1.0F;
-	private float biomeDepthOffset = 0.0F;
+	private double biomeDepth = 0.55;
+	private double biomeScale = 0.125;
+	private double biomeDepthFactor = 0.125;
+	private double biomeScaleFactor = 1.0;
 	
-	private boolean useBOP = false;
+	private double biomeDepthWeight = 1.0;
+	private double biomeDepthOffset = 0.0;
+	private double biomeScaleWeight = 1.0;
+	private double biomeScaleOffset = 0.0;
 	
 	public EvoGenSettings(CompoundNBT nbtSettings)
 	{
-		useBOP = nbtSettings.getBoolean(EvoType.USE_BOP_TAG);
+		
+	}
+
+	public int getNoiseOctaves() 
+	{
+		return noiseOctaves;
 	}
 
 	public int getSeaLevel()
@@ -52,19 +61,19 @@ public class EvoGenSettings extends OverworldGenSettings
 		return depthNoiseScaleZ;
 	}
 
-	public float getBiomeDepthWeight() {
+	public double getBiomeDepthWeight() {
 		return biomeDepthWeight;
 	}
 
-	public float getBiomeScaleWeight() {
+	public double getBiomeScaleWeight() {
 		return biomeScaleWeight;
 	}
 
-	public float getBiomeDepthOffset() {
+	public double getBiomeDepthOffset() {
 		return biomeDepthOffset;
 	}
 
-	public float getBiomeScaleOffset() {
+	public double getBiomeScaleOffset() {
 		return biomeScaleOffset;
 	}
 
@@ -100,7 +109,19 @@ public class EvoGenSettings extends OverworldGenSettings
 		return heightScale;
 	}
 
-	public boolean isUseBOP() {
-		return useBOP;
+	public double getBiomeScale() {
+		return biomeScale;
+	}
+
+	public double getBiomeDepth() {
+		return biomeDepth;
+	}
+
+	public double getBiomeScaleFactor() {
+		return biomeScaleFactor;
+	}
+
+	public double getBiomeDepthFactor() {
+		return biomeDepthFactor;
 	}
 }

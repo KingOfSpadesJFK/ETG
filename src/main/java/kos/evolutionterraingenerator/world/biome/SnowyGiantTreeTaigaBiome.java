@@ -14,9 +14,8 @@ public final class SnowyGiantTreeTaigaBiome extends Biome {
 
 	public SnowyGiantTreeTaigaBiome() {
 	      super((new Biome.Builder()).surfaceBuilder(SurfaceBuilder.GIANT_TREE_TAIGA, SurfaceBuilder.GRASS_DIRT_GRAVEL_CONFIG).precipitation(Biome.RainType.SNOW).category(Biome.Category.TAIGA).depth(0.2F).scale(0.2F).temperature(0.0F).downfall(0.8F).waterColor(4159204).waterFogColor(329011).parent("minecraft:giant_tree_taiga"));
-	      this.addStructure(Feature.MINESHAFT, new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL));
-	      this.addStructure(Feature.STRONGHOLD, IFeatureConfig.NO_FEATURE_CONFIG);
-	      this.addStructure(Feature.IGLOO, IFeatureConfig.NO_FEATURE_CONFIG);
+	      this.addStructure(Feature.MINESHAFT.withConfiguration(new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL)));
+	      this.addStructure(Feature.STRONGHOLD.withConfiguration(IFeatureConfig.NO_FEATURE_CONFIG));
 	      DefaultBiomeFeatures.addCarvers(this);
 	      DefaultBiomeFeatures.addStructures(this);
 	      DefaultBiomeFeatures.addLakes(this);
@@ -26,12 +25,13 @@ public final class SnowyGiantTreeTaigaBiome extends Biome {
 	      DefaultBiomeFeatures.addStoneVariants(this);
 	      DefaultBiomeFeatures.addOres(this);
 	      DefaultBiomeFeatures.addSedimentDisks(this);
-	      DefaultBiomeFeatures.func_222285_H(this);
+	      DefaultBiomeFeatures.addGiantTreeTaigaTrees(this);
 	      DefaultBiomeFeatures.addDefaultFlowers(this);
-	      DefaultBiomeFeatures.func_222303_T(this);
+	      DefaultBiomeFeatures.addTaigaGrassDeadBushesMushrooms(this);
 	      DefaultBiomeFeatures.addMushrooms(this);
 	      DefaultBiomeFeatures.addReedsAndPumpkins(this);
 	      DefaultBiomeFeatures.addSprings(this);
+	      DefaultBiomeFeatures.addBerryBushes(this);
 	      DefaultBiomeFeatures.addFreezeTopLayer(this);
 	      this.addSpawn(EntityClassification.CREATURE, new Biome.SpawnListEntry(EntityType.SHEEP, 12, 4, 4));
 	      this.addSpawn(EntityClassification.CREATURE, new Biome.SpawnListEntry(EntityType.PIG, 10, 4, 4));
@@ -39,6 +39,7 @@ public final class SnowyGiantTreeTaigaBiome extends Biome {
 	      this.addSpawn(EntityClassification.CREATURE, new Biome.SpawnListEntry(EntityType.COW, 8, 4, 4));
 	      this.addSpawn(EntityClassification.CREATURE, new Biome.SpawnListEntry(EntityType.WOLF, 8, 4, 4));
 	      this.addSpawn(EntityClassification.CREATURE, new Biome.SpawnListEntry(EntityType.RABBIT, 4, 2, 3));
+	      this.addSpawn(EntityClassification.CREATURE, new Biome.SpawnListEntry(EntityType.FOX, 8, 2, 4));
 	      this.addSpawn(EntityClassification.AMBIENT, new Biome.SpawnListEntry(EntityType.BAT, 10, 8, 8));
 	      this.addSpawn(EntityClassification.MONSTER, new Biome.SpawnListEntry(EntityType.SPIDER, 100, 4, 4));
 	      this.addSpawn(EntityClassification.MONSTER, new Biome.SpawnListEntry(EntityType.ZOMBIE, 100, 4, 4));

@@ -1,5 +1,5 @@
     modLoader="javafml"
-    loaderVersion="[31,)"
+    loaderVersion="[28,)"
     showAsResourcePack=false
 
     [[mods]]
@@ -23,7 +23,7 @@
       [[dependencies.evolutionterraingenerator]]
         modId="forge"
         mandatory=true
-        versionRange="[31,)"
+        versionRange="[28,)"
         ordering="NONE"
         side="BOTH"
 

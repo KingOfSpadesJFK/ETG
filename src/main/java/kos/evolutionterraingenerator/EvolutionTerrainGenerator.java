@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 public class EvolutionTerrainGenerator {
 	
 	public static final String MODID = "evolutionterraingenerator";
+	public static final String VERSION = "0.1.0";
 	
 	public static EvolutionTerrainGenerator instance;
 	public static EvoType worldType;

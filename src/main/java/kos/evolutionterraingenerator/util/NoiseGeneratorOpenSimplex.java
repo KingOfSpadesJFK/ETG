@@ -16,7 +16,7 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
 
     public NoiseGeneratorOpenSimplex(SharedSeedRandom seed, int octavesIn)
     {
-    	super(seed, octavesIn - 1, 0);
+    	super(seed, octavesIn, 0);
         this.octaves = octavesIn;
         this.generatorCollection = new OpenSimplexNoise[octavesIn];
         this.vertexCollection = new Point3D[octavesIn];

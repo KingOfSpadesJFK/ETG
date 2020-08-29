@@ -13,8 +13,8 @@ import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
 public class GravellyTundra extends Biome {
 	   public GravellyTundra() {
 		      super((new Biome.Builder()).surfaceBuilder(SurfaceBuilder.GRAVELLY_MOUNTAIN, SurfaceBuilder.GRASS_DIRT_GRAVEL_CONFIG).precipitation(Biome.RainType.RAIN).category(Biome.Category.EXTREME_HILLS).depth(1.0F).scale(0.5F).temperature(0.2375F).downfall(0.3F).waterColor(4159204).waterFogColor(329011).parent("mountains"));
-		      this.addStructure(Feature.MINESHAFT, new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL));
-		      this.addStructure(Feature.STRONGHOLD, IFeatureConfig.NO_FEATURE_CONFIG);
+		      this.addStructure(Feature.MINESHAFT.withConfiguration(new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL)));
+		      this.addStructure(Feature.STRONGHOLD.withConfiguration(IFeatureConfig.NO_FEATURE_CONFIG));
 		      DefaultBiomeFeatures.addCarvers(this);
 		      DefaultBiomeFeatures.addStructures(this);
 		      DefaultBiomeFeatures.addLakes(this);
@@ -22,9 +22,9 @@ public class GravellyTundra extends Biome {
 		      DefaultBiomeFeatures.addStoneVariants(this);
 		      DefaultBiomeFeatures.addOres(this);
 		      DefaultBiomeFeatures.addSedimentDisks(this);
-		      DefaultBiomeFeatures.func_222343_A(this);
+		      DefaultBiomeFeatures.addScatteredOakAndSpruceTrees(this);
 		      DefaultBiomeFeatures.addDefaultFlowers(this);
-		      DefaultBiomeFeatures.func_222348_W(this);
+		      DefaultBiomeFeatures.addSparseGrass(this);
 		      DefaultBiomeFeatures.addMushrooms(this);
 		      DefaultBiomeFeatures.addReedsAndPumpkins(this);
 		      DefaultBiomeFeatures.addSprings(this);
