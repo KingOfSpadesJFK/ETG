@@ -1,9 +1,5 @@
 package kos.evolutionterraingenerator.util;
 
-import java.util.stream.IntStream;
-
-import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
-import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import kos.evolutionterraingenerator.util.noise.OpenSimplexNoise;
 import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.math.MathHelper;
@@ -13,79 +9,34 @@ public class NoiseGeneratorOpenSimplex implements INoiseGenerator
 {
     /** Collection of noise generation functions.  Output is combined to produce different octaves of noise. */
     private final OpenSimplexNoise[] octaves;
-    private final double field_227460_b_;
-    private final double field_227461_c_;
 
-    public NoiseGeneratorOpenSimplex(SharedSeedRandom seed, int max, int min) {
-       this(seed, new IntRBTreeSet(IntStream.rangeClosed(-max, min).toArray()));
-    }
-
-    public NoiseGeneratorOpenSimplex(SharedSeedRandom seed, IntSortedSet octaves)
+    public NoiseGeneratorOpenSimplex(SharedSeedRandom seed, int octavesIn)
     {
-        if (octaves.isEmpty()) 
-        	throw new IllegalArgumentException("Need some octaves!");
-        else 
-        {
-        	int i = -octaves.firstInt();
-            int j = octaves.lastInt();
-            int k = i + j + 1;
-            if (k < 1)
-               throw new IllegalArgumentException("Total number of octaves needs to be >= 1");
-            else 
-            {
-            	OpenSimplexNoise improvednoisegenerator = new OpenSimplexNoise(seed);
-            	int l = j;
-            	this.octaves = new OpenSimplexNoise[k];
-            	if (j >= 0 && j < k && octaves.contains(0))
-            		this.octaves[j] = improvednoisegenerator;
-
-            	for(int i1 = j + 1; i1 < k; ++i1) {
-            		if (i1 >= 0 && octaves.contains(l - i1)) {
-            			this.octaves[i1] = new OpenSimplexNoise(seed);
-            		} else {
-            			seed.skip(262);
-            		}
-            	}
-
-            	if (j > 0) {
-            		long k1 = (long)(improvednoisegenerator.eval(0.0, 0.0, 0.0) * (double)9.223372E18F);
-            		SharedSeedRandom sharedseedrandom = new SharedSeedRandom(k1);
-
-            		for(int j1 = l - 1; j1 >= 0; --j1) {
-            			if (j1 < k && octaves.contains(l - j1)) {
-            				this.octaves[j1] = new OpenSimplexNoise(sharedseedrandom);
-            			} else {
-            				sharedseedrandom.skip(262);
-            			}
-            		}
-            	}
-
-            	this.field_227461_c_ = Math.pow(2.0, (double)j);
-            	this.field_227460_b_ = 1.0 / (Math.pow(2.0, (double)k) - 1.0);
-            }
-        }
+        this.octaves = new OpenSimplexNoise[octavesIn];
+        
+        for (int i = 0; i < octavesIn; ++i)
+            this.octaves[i] = new OpenSimplexNoise(seed);
     }
 
-    public OpenSimplexNoise getOpenSimplexOctave(int i) {
-       return this.octaves[i];
-    }
+    public OpenSimplexNoise getOpenSimplexOctave(int i)
+    { return this.octaves[i]; }
 
-	public double func_215460_a(double x, double y, double z, double unkown1, double unkown2, boolean two_dimensional) 
+	public double func_215460_a(double x, double y, double z, double p_215462_7_, double p_215462_9_, boolean two_dimensional) 
 	{
-		double d0 = 0.0D;
-		double d1 = this.field_227461_c_;
-		double d2 = this.field_227460_b_;
+        double d0 = 1.0D;
+        double d1 = 0.0D;
 
-		for(OpenSimplexNoise noise : this.octaves) 
-		{
-			if (noise != null)
-				d0 += noise.eval(maintainPrecision(x * d1), two_dimensional ? -noise.yCoord : maintainPrecision(y * d1), maintainPrecision(z * d1)) * d2;
+        for(OpenSimplexNoise noise : octaves)
+        {
+            double x1 = maintainPrecision(x * d0);
+            double y1 = maintainPrecision(y * d0);
+            double z1 = maintainPrecision(z * d0);
+            
+            d1 += noise.eval(x1, two_dimensional ? -noise.yCoord : y1, z1) / d0;
+            d0 /= 2.0D;
+        }
 
-			d1 /= 2.0D;
-			d2 *= 2.0D;
-		}
-
-	    return d0;
+        return d1;
 	}
 	
 	public double getNoise(double x, double y, double z)
