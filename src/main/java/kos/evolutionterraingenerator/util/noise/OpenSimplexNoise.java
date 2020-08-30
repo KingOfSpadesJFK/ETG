@@ -1,8 +1,11 @@
 package kos.evolutionterraingenerator.util.noise;
 
+import java.util.Random;
+
 /*
  * OpenSimplex Noise in Java.
  * by Kurt Spencer
+ * modified for use in this mod
  * 
  * v1.1 (October 5, 2014)
  * - Added 2D and 4D implementations.
@@ -35,35 +38,28 @@ public class OpenSimplexNoise
 	private short[] perm;
 	private short[] permGradIndex3D;
 	
-	public OpenSimplexNoise() {
-		this(DEFAULT_SEED);
-	}
-	
-	public OpenSimplexNoise(short[] perm) {
-		this.perm = perm;
-		permGradIndex3D = new short[256];
-		
-		for (int i = 0; i < 256; i++) {
-			//Since 3D has 24 gradients, simple bitmask won't work, so precompute modulo array.
-			permGradIndex3D[i] = (short)((perm[i] % (gradients3D.length / 3)) * 3);
-		}
-	}
+	public final double xCoord;
+	public final double yCoord;
+	public final double zCoord;
 	
 	//Initializes the class using a permutation array generated from a 64-bit seed.
 	//Generates a proper permutation (i.e. doesn't merely perform N successive pair swaps on a base array)
 	//Uses a simple 64-bit LCG.
-	public OpenSimplexNoise(long seed) {
+	public OpenSimplexNoise(Random seed)
+	{
+		this.xCoord = seed.nextDouble() * 256.0D;
+	    this.yCoord = seed.nextDouble() * 256.0D;
+	    this.zCoord = seed.nextDouble() * 256.0D;
+	    
 		perm = new short[256];
 		permGradIndex3D = new short[256];
 		short[] source = new short[256];
 		for (short i = 0; i < 256; i++)
 			source[i] = i;
-		seed = seed * 6364136223846793005l + 1442695040888963407l;
-		seed = seed * 6364136223846793005l + 1442695040888963407l;
-		seed = seed * 6364136223846793005l + 1442695040888963407l;
-		for (int i = 255; i >= 0; i--) {
-			seed = seed * 6364136223846793005l + 1442695040888963407l;
-			int r = (int)((seed + 31) % (i + 1));
+		
+		for (int i = 255; i >= 0; i--) 
+		{
+	        int r = seed.nextInt(256 - i);
 			if (r < 0)
 				r += (i + 1);
 			perm[i] = source[r];
@@ -74,6 +70,8 @@ public class OpenSimplexNoise
 	
 	//2D OpenSimplex Noise.
 	public double eval(double x, double y) {
+		x += this.xCoord;
+		y += this.xCoord;
 	
 		//Place input coordinates onto grid.
 		double stretchOffset = (x + y) * STRETCH_CONSTANT_2D;
@@ -189,6 +187,9 @@ public class OpenSimplexNoise
 	
 	//3D OpenSimplex Noise.
 	public double eval(double x, double y, double z) {
+		x += this.xCoord;
+		y += this.xCoord;
+		z += this.zCoord;
 	
 		//Place input coordinates on simplectic honeycomb.
 		double stretchOffset = (x + y + z) * STRETCH_CONSTANT_3D;
@@ -750,6 +751,9 @@ public class OpenSimplexNoise
 	
 	//4D OpenSimplex Noise.
 	public double eval(double x, double y, double z, double w) {
+		x += this.xCoord;
+		y += this.xCoord;
+		z += this.zCoord;
 	
 		//Place input coordinates on simplectic honeycomb.
 		double stretchOffset = (x + y + z + w) * STRETCH_CONSTANT_4D;

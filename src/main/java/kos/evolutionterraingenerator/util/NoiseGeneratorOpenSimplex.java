@@ -22,11 +22,7 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
 
         for (int i = 0; i < octavesIn; ++i)
         {
-            this.generatorCollection[i] = new OpenSimplexNoise(seed.nextLong());
-            this.vertexCollection[i] = new Point3D();
-            this.vertexCollection[i].x = seed.nextDouble() * 256.0D;
-            this.vertexCollection[i].y = seed.nextDouble() * 256.0D;
-            this.vertexCollection[i].z = seed.nextDouble() * 256.0D;
+            this.generatorCollection[i] = new OpenSimplexNoise(seed);
         }
     }
 
@@ -133,9 +129,9 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
 
         for(int i = 0; i < octaves; i++)
         {
-            double d0 = maintainPrecision(x * d3 + vertexCollection[i].x);
-            double d1 = maintainPrecision(y * d3 + vertexCollection[i].y);
-            double d2 = maintainPrecision(z * d3 + vertexCollection[i].z);
+            double d0 = maintainPrecision(x * d3);
+            double d1 = maintainPrecision(y * d3);
+            double d2 = maintainPrecision(z * d3);
             
             if (p_215462_11_)
                 d4 += this.generatorCollection[i].eval(d0, d2) / d3;
