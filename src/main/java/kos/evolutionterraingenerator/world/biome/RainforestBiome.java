@@ -59,7 +59,7 @@ public class RainforestBiome extends Biome {
 		      DefaultBiomeFeatures.addOres(this);
 		      DefaultBiomeFeatures.addSedimentDisks(this);
 		      DefaultBiomeFeatures.addDefaultFlowers(this);
-		      //DefaultBiomeFeatures.func_222339_L(this);
+		      DefaultBiomeFeatures.addVeryDenseGrass(this);
 		      DefaultBiomeFeatures.addMushrooms(this);
 		      DefaultBiomeFeatures.addReedsAndPumpkins(this);
 		      DefaultBiomeFeatures.addSprings(this);
