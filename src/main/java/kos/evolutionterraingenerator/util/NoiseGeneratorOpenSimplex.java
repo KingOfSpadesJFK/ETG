@@ -52,10 +52,8 @@ public class NoiseGeneratorOpenSimplex implements INoiseGenerator
 	{
         return func_215460_a(x, 0.0, z, 0.0, 0.0, true);
 	}
-
-	@Override
-	public double func_215460_a(double p_215460_1_, double p_215460_3_, double p_215460_5_, double p_215460_7_) {
-		// TODO Auto-generated method stub
-		return 0;
+	
+	public double func_215460_a(double x, double y, double idk, double idk1) {
+        return func_215460_a(x, y, 0, idk, idk1, false);
 	}
 }
