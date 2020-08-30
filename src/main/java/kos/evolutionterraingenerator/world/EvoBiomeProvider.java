@@ -127,18 +127,18 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 		super(settingsProvider);
         
         SharedSeedRandom rand = new SharedSeedRandom(settingsProvider.getWorldInfo().getSeed());
-        this.landOctave = new NoiseGeneratorOpenSimplex(rand, oceanOctaves);
-		this.landOctave2 = new NoiseGeneratorOpenSimplex(rand, oceanOctaves);
-		this.riverOctave = new NoiseGeneratorOpenSimplex(rand, 8);
-		this.riverOctave2 = new NoiseGeneratorOpenSimplex(rand, 8);
-		this.tempOctave = new NoiseGeneratorOpenSimplex(rand, 8);
-        this.humidOctave = new NoiseGeneratorOpenSimplex(rand, 8);
-		this.biomeChanceOctave = new NoiseGeneratorOpenSimplex(rand, 4);
-		this.mushroomOctave = new NoiseGeneratorOpenSimplex(rand, 4);
-		this.islandOctave = new NoiseGeneratorOpenSimplex(rand, 4);
-		this.noiseOctave = new NoiseGeneratorOpenSimplex(rand, 2);
-        this.swampChance = new NoiseGeneratorOpenSimplex(rand, 4);
-        this.swampType = new NoiseGeneratorOpenSimplex(rand, 4);
+        this.landOctave = new NoiseGeneratorOpenSimplex(rand, oceanOctaves - 1, 0);
+		this.landOctave2 = new NoiseGeneratorOpenSimplex(rand, oceanOctaves - 1, 0);
+		this.riverOctave = new NoiseGeneratorOpenSimplex(rand, 7, 0);
+		this.riverOctave2 = new NoiseGeneratorOpenSimplex(rand, 7, 0);
+		this.tempOctave = new NoiseGeneratorOpenSimplex(rand, 7, 0);
+        this.humidOctave = new NoiseGeneratorOpenSimplex(rand, 7, 0);
+		this.biomeChanceOctave = new NoiseGeneratorOpenSimplex(rand, 3, 0);
+		this.mushroomOctave = new NoiseGeneratorOpenSimplex(rand, 3, 0);
+		this.islandOctave = new NoiseGeneratorOpenSimplex(rand, 3, 0);
+		this.noiseOctave = new NoiseGeneratorOpenSimplex(rand, 1, 0);
+        this.swampChance = new NoiseGeneratorOpenSimplex(rand, 3, 0);
+        this.swampType = new NoiseGeneratorOpenSimplex(rand, 3, 0);
 		this.providerSettings = settingsProvider;
 		this.landOffset = 0.0;
 		if (landOctave2.getNoise(0.0, 0.0) * 0.125 / (double)oceanOctaves < oceanThreshold)

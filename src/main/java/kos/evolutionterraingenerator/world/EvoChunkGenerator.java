@@ -60,13 +60,13 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		this.biomeProvider = biomeProviderIn;
 		this.rand = new SharedSeedRandom(world.getSeed());
 
-        this.minLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
-        this.maxLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
-        this.mainPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, this.settings.getNoiseOctaves());
+        this.minLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 15, 0);
+        this.maxLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 15, 0);
+        this.mainPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, this.settings.getNoiseOctaves() - 1, 0);
         
-        this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
-        this.surfaceDepthNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
-        this.variationNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
+        this.depthNoise = new NoiseGeneratorOpenSimplex(this.rand, 15, 0);
+        this.surfaceDepthNoise = new NoiseGeneratorOpenSimplex(this.rand, 3, 0);
+        this.variationNoise = new NoiseGeneratorOpenSimplex(this.rand, 3, 0);
         
     	this.verticalNoiseGranularity = 8;
         this.noiseSizeY = 256 / this.verticalNoiseGranularity;	
