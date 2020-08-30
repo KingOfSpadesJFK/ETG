@@ -12,6 +12,7 @@ import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeContainer;
 import net.minecraft.world.biome.BiomeManager;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.chunk.ChunkPrimer;
@@ -69,7 +70,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         this.variationNoise = new NoiseGeneratorOpenSimplex(this.rand, 4);
         
     	this.verticalNoiseGranularity = 8;
-        this.noiseSizeY = 256 / this.verticalNoiseGranularity;	
+        this.noiseSizeY = 256 / this.verticalNoiseGranularity;
 	}
 
 	@Override
@@ -87,13 +88,14 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	@Override
 	public void generateBiomes(IChunk chunkIn)
 	{
-		((ChunkPrimer)chunkIn).func_225548_a_(new EvoBiomeContainer(chunkIn, this.biomeProvider));
+		((ChunkPrimer)chunkIn).func_225548_a_(new BiomeContainer(chunkIn.getPos(), this.biomeProvider));
 	}
 
 	//This is just here for a less noisy surface between deserts/mesas and other biomes
 	@Override
 	public void generateSurface(WorldGenRegion worldRegion, IChunk chunkIn) 
 	{
+		((ChunkPrimer)chunkIn).func_225548_a_(new EvoBiomeContainer(chunkIn, this.biomeProvider));
 		ChunkPos chunkpos = chunkIn.getPos();
 		SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
 	    sharedseedrandom.setBaseChunkSeed(chunkpos.x, chunkpos.z);
@@ -119,7 +121,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	@Override
 	public void generateStructures(BiomeManager biomeManagerIn, IChunk chunkIn, ChunkGenerator<?> chunkGen, TemplateManager templetManager) 
 	{
-	    super.makeBase(this.world, chunkIn);
 		for(Structure<?> structure : Feature.STRUCTURES.values()) 
 		{
 			if (chunkGen.getBiomeProvider().hasStructure(structure)) 
@@ -130,7 +131,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 				ChunkPos chunkpos = chunkIn.getPos();
 				StructureStart structurestart1 = StructureStart.DUMMY;
 				
-				int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, chunkpos.getXStart() + 9, chunkpos.getZStart() + 9);
+				int x = chunkpos.getXStart() + 9;
+				int z = chunkpos.getZStart() + 9;
+				int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG);
 	            Biome biome = this.biomeProvider.getNoiseBiome(chunkpos.getXStart() + 9, y, chunkpos.getZStart() + 9, false);
 				if (structure.canBeGenerated(biomeManagerIn, chunkGen, sharedseedrandom, chunkpos.x, chunkpos.z, biome))
 				{
@@ -165,9 +168,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	      }
 
 	   }
-	   
-	   public void makeBase(IWorld world, IChunk chunkIn) 
-	   {	}
 	
 	/* 1.14 GENERATION METHODS */
     @Override

@@ -21,7 +21,7 @@ public class NoiseGeneratorOpenSimplex implements INoiseGenerator
     public OpenSimplexNoise getOpenSimplexOctave(int i)
     { return this.octaves[i]; }
 
-	public double func_215460_a(double x, double y, double z, double p_215462_7_, double p_215462_9_, boolean two_dimensional) 
+	public double eval(double x, double y, double z, double p_215462_7_, double p_215462_9_, boolean two_dimensional) 
 	{
         double d0 = 1.0D;
         double d1 = 0.0D;
@@ -41,12 +41,12 @@ public class NoiseGeneratorOpenSimplex implements INoiseGenerator
 	
 	public double getNoise(double x, double y, double z)
 	{
-        return func_215460_a(x, y, z, 0, 0, false);
+        return eval(x, y, z, 0, 0, false);
 	}
 
 	public double getNoise(double x, double z) 
 	{
-        return func_215460_a(x, 0, z, 0, 0, true);
+        return eval(x, 0, z, 0, 0, true);
 	}
 
 	public static double maintainPrecision(double p_215461_0_) 
@@ -55,8 +55,8 @@ public class NoiseGeneratorOpenSimplex implements INoiseGenerator
 	}
 
 	@Override
-	public double noiseAt(double x, double y, double z, double unkown) 
+	public double noiseAt(double x, double y, double idk, double idk1) 
 	{
-		return func_215460_a(x, y, z, unkown, 0.0, false);
+		return eval(x, y, 0.0, idk, idk1, false);
 	}
 }
