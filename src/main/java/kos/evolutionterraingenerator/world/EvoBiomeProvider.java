@@ -37,6 +37,8 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     private NoiseGeneratorOpenSimplex islandOctave;
     private NoiseGeneratorOpenSimplex riverOctave;
     private NoiseGeneratorOpenSimplex riverOctave2;
+    public NoiseGeneratorOpenSimplex swampChance;
+    public NoiseGeneratorOpenSimplex swampType;
     private double landOffset;
     private final Set<Biome> biomes = Sets.newHashSet(Biomes.OCEAN,
     		Biomes.PLAINS,
@@ -135,6 +137,9 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 		this.mushroomOctave = new NoiseGeneratorOpenSimplex(rand, 4);
 		this.islandOctave = new NoiseGeneratorOpenSimplex(rand, 4);
 		this.noiseOctave = new NoiseGeneratorOpenSimplex(rand, 2);
+        this.swampChance = new NoiseGeneratorOpenSimplex(rand, 4);
+        this.swampType = new NoiseGeneratorOpenSimplex(rand, 4);
+        
 		this.providerSettings = settingsProvider;
 		this.landOffset = 0.0;
 		if (landOctave2.getNoise(0.0, 0.0) * 0.125 / (double)oceanOctaves < oceanThreshold)
@@ -232,6 +237,99 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     	if (useNoise)
     		noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
     	return MathHelper.clamp((biomeChanceOctave.getNoise((double)x * 0.005 / chanceScale, (double)z * 0.005 / chanceScale) * 0.05 + 0.5) * 0.99 + noise * 0.01, 0.0, 1.0);
+    }
+    
+
+    //Sets biomes according to the conditions of the land
+    public Biome setBiomebyHeight(Biome biome, int x, int z, int y, boolean useNoise)
+    {
+        int seaLevel = this.providerSettings.getSeaLevel();
+        double temperature = getTemperature(x, z);
+        double humidity = getHumidity(x, z);
+   	 	double[] landmass = getLandmass(x, z);
+   	 	double beachThreshold = EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+		boolean isOcean = landmass[4] < beachThreshold;
+		boolean isBeach = !isOcean && (landmass[4] < EvoBiomeProvider.oceanThreshold) && canBeBeach(x, z);
+		boolean isSpecialIsland = landmass[0] < EvoBiomeProvider.oceanThreshold && landmass[1] < EvoBiomeProvider.oceanThreshold;
+		
+    	if (landmass[2] == landmass[4] && isSpecialIsland)
+    	{
+    		double biomeChance = getBiomeChance(x, z, useNoise);
+			if (temperature < EvoBiomeProvider.SNOW_TEMP)
+				biome = EvoBiomes.COLD_ISLANDS.getBiome(biomeChance);
+			else if (temperature < EvoBiomeProvider.HOT_TEMP)
+				biome = EvoBiomes.ISLAND_BIOMES.getBiome(biomeChance);
+			else
+				biome = EvoBiomes.HOT_ISLANDS.getBiome(biomeChance);
+    	}
+    	if (landmass[3] == landmass[4] && isSpecialIsland)
+			biome = Biomes.MUSHROOM_FIELDS;
+        
+        if (isBeach || isOcean)
+        {
+        	if (y < seaLevel - 2)
+        		return getOcean(temperature, y < 40);
+        	if (y < seaLevel + 3)
+        	{
+        		if (getSettings().isUseBOPBiomes() && 
+        				(landmass[0] == landmass[4] || landmass[2] == landmass[4]) && 
+        				(biome.equals(Biomes.JUNGLE) ||
+        						biome.equals(Biomes.BAMBOO_JUNGLE) ||
+        						biome.equals(BOPBiomes.tropics.get()) ||
+        						biome.equals(BOPBiomes.tropical_rainforest.get()) )
+        				)
+        			return BOPBiomes.white_beach.get();
+        		if (getSettings().isUseBOPBiomes() && biome.equals(BOPBiomes.volcano.get()))
+        			return BOPBiomes.volcano_edge.get();
+        		if (getSettings().isUseBOPBiomes() && biome.equals(BOPBiomes.origin_hills.get()))
+        			return BOPBiomes.origin_beach.get();
+	    		if (!biome.equals(Biomes.BADLANDS) && 
+	    				!biome.equals(Biomes.MUSHROOM_FIELDS) && 
+	    				!biome.equals(Biomes.DESERT) && 
+	    				!(getSettings().isUseBOPBiomes() && 
+	    						(biome.equals(BOPBiomes.outback.get()) || 
+	    								biome.equals(BOPBiomes.xeric_shrubland.get()) || 
+	    								biome.equals(BOPBiomes.wasteland.get()) || 
+	    								biome.equals(BOPBiomes.cold_desert.get()) )
+	    						)
+	    				)
+	    			return getBeach(x, z);
+        	}
+        }
+        
+        if (isSpecialIsland && landmass[2] == landmass[4] || landmass[3] == landmass[4])
+        	return biome;
+
+        double swampChance = this.swampChance.getNoise((double)x * 0.0125, (double)z * 0.0125);
+        swampChance = MathHelper.clamp(swampChance, 0.0, 1.0);
+    	if (temperature > 0.5 && humidity > 0.675 && swampChance < 0.375 - 0.25 * ((MathHelper.clamp(temperature, 0.5, 1.0) - 0.5) * 2.0) && y <= seaLevel + 3)
+    	{
+            double swampType = this.swampType.getNoise((double)x * 0.0125, (double)z * 0.0125) * 0.125 + 0.5;
+            swampType = MathHelper.clamp(swampType, 0.0, 1.0);
+            Biome swamp = null;
+            if (temperature < EvoBiomeProvider.WARM_TEMP)
+            	swamp = EvoBiomes.COLD_SWAMP.getBiome(swampType);
+            else if (temperature < EvoBiomeProvider.HOT_TEMP)
+              	swamp = EvoBiomes.WARM_SWAMP.getBiome(swampType);
+            else
+            	swamp = EvoBiomes.HOT_SWAMP.getBiome(swampType);
+            
+            if (swamp != null)
+            	biome = swamp;
+    	}
+    	if (biome.equals(Biomes.BADLANDS))
+    	{
+    		if (y >= seaLevel + 50)
+        		biome = Biomes.WOODED_BADLANDS_PLATEAU;
+    	}
+    	if (getSettings().isUseBOPBiomes() && temperature < EvoBiomeProvider.SNOW_TEMP && !biome.equals(Biomes.ICE_SPIKES))
+    	{
+    		if (y >= seaLevel + 65)
+    			biome = BOPBiomes.alps.get();
+    		else if (y >= seaLevel + 50)
+    			biome = BOPBiomes.alps_foothills.get();
+    	}
+    	return biome;
     }
     
     public Biome generateLandBiome(double x, double z, boolean useNoise)

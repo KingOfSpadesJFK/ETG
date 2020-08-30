@@ -13,6 +13,7 @@ public class EvoBiomeProviderSettings extends OverworldBiomeProviderSettings
 	private float humidScale = 1.0f;
 	private float tempScale = 1.0f;
 	private float oceanScale = 1.0f;
+	private int seaLevel = 63;
 	
 	public void setup()
 	{
@@ -69,5 +70,11 @@ public class EvoBiomeProviderSettings extends OverworldBiomeProviderSettings
 	public float getOceanScale()
 	{
 		return oceanScale;
+	}
+
+	public int getSeaLevel()
+	{
+		// TODO Auto-generated method stub
+		return seaLevel;
 	}
 }
