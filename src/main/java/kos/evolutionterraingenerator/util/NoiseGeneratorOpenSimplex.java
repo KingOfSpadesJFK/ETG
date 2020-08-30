@@ -122,7 +122,7 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
     	public double x, y, z;
     }
 
-	public double func_215460_a(double x, double y, double z, double p_215462_7_, double p_215462_9_, boolean p_215462_11_) 
+	public double func_215460_a(double x, double y, double z, double p_215462_7_, double p_215462_9_, boolean two_dimensional) 
 	{
         double d3 = 1.0D;
         double d4 = 0.0D;
@@ -133,10 +133,7 @@ public class NoiseGeneratorOpenSimplex extends OctavesNoiseGenerator
             double d1 = maintainPrecision(y * d3);
             double d2 = maintainPrecision(z * d3);
             
-            if (p_215462_11_)
-                d4 += this.generatorCollection[i].eval(d0, d2) / d3;
-            else
-            	d4 += this.generatorCollection[i].eval(d0, d1, d2) / d3;
+            d4 += this.generatorCollection[i].eval(d0, two_dimensional ? -this.generatorCollection[i].yCoord : d1, d2) / d3;
             d3 /= 2.0D;
         }
 
