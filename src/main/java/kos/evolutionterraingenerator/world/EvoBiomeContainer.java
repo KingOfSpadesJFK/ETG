@@ -1,10 +1,13 @@
 package kos.evolutionterraingenerator.world;
 
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeContainer;
+import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.Heightmap;
 
@@ -12,12 +15,18 @@ public class EvoBiomeContainer extends BiomeContainer
 {
 	private static final int WIDTH_BITS = (int)Math.round(Math.log(16.0D) / Math.log(2.0D)) - 2;
 	private final Biome[] biomes;
+	public static final Biome[] PLAINS_BIOMES = Util.make(new Biome[BIOMES_SIZE], (arr) -> 
+	{
+		for(int i = 0; i < arr.length; i++)
+			arr[i] = Biomes.PLAINS;
+	});
 
 	public EvoBiomeContainer(Biome[] biomesIn) 
 	{
 		   super(biomesIn);
 		   this.biomes = biomesIn;
 	}
+	
 	private EvoBiomeContainer() 
 	{
 		this(new Biome[BIOMES_SIZE]);

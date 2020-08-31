@@ -88,7 +88,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	@Override
 	public void generateBiomes(IChunk chunkIn)
 	{
-		((ChunkPrimer)chunkIn).func_225548_a_(new BiomeContainer(chunkIn.getPos(), this.biomeProvider));
+		((ChunkPrimer)chunkIn).func_225548_a_(new EvoBiomeContainer(EvoBiomeContainer.PLAINS_BIOMES));
 	}
 
 	//This is just here for a less noisy surface between deserts/mesas and other biomes
