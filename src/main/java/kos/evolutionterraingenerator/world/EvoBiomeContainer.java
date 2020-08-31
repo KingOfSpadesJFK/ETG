@@ -15,11 +15,6 @@ public class EvoBiomeContainer extends BiomeContainer
 {
 	private static final int WIDTH_BITS = (int)Math.round(Math.log(16.0D) / Math.log(2.0D)) - 2;
 	private final Biome[] biomes;
-	public static final Biome[] PLAINS_BIOMES = Util.make(new Biome[BIOMES_SIZE], (arr) -> 
-	{
-		for(int i = 0; i < arr.length; i++)
-			arr[i] = Biomes.PLAINS;
-	});
 
 	public EvoBiomeContainer(Biome[] biomesIn) 
 	{

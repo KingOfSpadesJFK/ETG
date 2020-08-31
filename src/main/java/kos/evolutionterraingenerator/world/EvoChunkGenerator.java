@@ -29,15 +29,20 @@ import net.minecraft.world.gen.feature.template.TemplateManager;
 
 public class EvoChunkGenerator extends OverworldChunkGenerator
 {
-	   private static final double[] field_222576_h = Util.make(new double[25], (p_222575_0_) -> {
-		      for(int i = -2; i <= 2; ++i) {
-		         for(int j = -2; j <= 2; ++j) {
-		            double f = 10.0F / MathHelper.sqrt((float)(i * i + j * j) + 0.2F);
-		            p_222575_0_[i + 2 + (j + 2) * 5] = f;
-		         }
-		      }
+	private static final double[] field_222576_h = Util.make(new double[25], (p_222575_0_) -> {
+		for(int i = -2; i <= 2; ++i) {
+			for(int j = -2; j <= 2; ++j) {
+				double f = 10.0F / MathHelper.sqrt((float)(i * i + j * j) + 0.2F);
+		        	p_222575_0_[i + 2 + (j + 2) * 5] = f;
+			}
+		}
 
-		   });
+	});
+	public static final Biome[] PLAINS_BIOMES = Util.make(new Biome[1024], (arr) -> 
+	{
+		for(int i = 0; i < arr.length; i++)
+			arr[i] = Biomes.PLAINS;
+	});
 	
 	private EvoGenSettings settings;
 	private final EvoBiomeProvider biomeProvider;
@@ -88,7 +93,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	@Override
 	public void generateBiomes(IChunk chunkIn)
 	{
-		((ChunkPrimer)chunkIn).func_225548_a_(new EvoBiomeContainer(EvoBiomeContainer.PLAINS_BIOMES));
+		((ChunkPrimer)chunkIn).func_225548_a_(new BiomeContainer(PLAINS_BIOMES));
 	}
 
 	//This is just here for a less noisy surface between deserts/mesas and other biomes
@@ -109,10 +114,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	    		int x1 = x + i;
 	        	int z1 = z + j;
 	        	int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, i, j) + 1;
-	        	Biome biome = this.biomeProvider.getNoiseBiome(x1, y, z1, false);
-	        	//Biome biome = worldRegion.getBiome(new BlockPos(x1, y, z1));
 	        	double d1 = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.5;
-	        	biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
+	        	Biome biome = this.biomeProvider.getNoiseBiome(x1, y, z1, false);
+        		biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
 	        }
 	    }
 	    this.makeBedrock(chunkIn, sharedseedrandom);
@@ -146,28 +150,32 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		}
 	}
 
-	   public void decorate(WorldGenRegion region) 
-	   {
-	      int x = region.getMainChunkX();
-	      int z = region.getMainChunkZ();
-	      int x1 = x * 16;
-	      int z1 = z * 16;
-	      BlockPos blockpos = new BlockPos(x1, region.getChunk(x, z).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x1, z1), z1);
-	      Biome biome = this.biomeProvider.getNoiseBiome(x1, region.getChunk(x, z).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x1, z1), z1, true);
-	      SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
-	      long i1 = sharedseedrandom.setDecorationSeed(region.getSeed(), x1, z1);
+	public void decorate(WorldGenRegion region) 
+	{
+		int i = region.getMainChunkX();
+		int j = region.getMainChunkZ();
+		int x= i * 16;
+		int z = j * 16;
+		BlockPos blockpos = new BlockPos(x, 0, z);
+		Biome biome = this.biomeProvider.getNoiseBiome(x, region.getChunk(blockpos).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x, z), z, true);
+		SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
+		long i1 = sharedseedrandom.setDecorationSeed(region.getSeed(), x, z);
 
-	      for(GenerationStage.Decoration generationstage$decoration : GenerationStage.Decoration.values()) {
-	         try {
-	            biome.decorate(generationstage$decoration, this, region, i1, sharedseedrandom, blockpos);
-	         } catch (Exception exception) {
-	            CrashReport crashreport = CrashReport.makeCrashReport(exception, "Biome decoration");
-	            crashreport.makeCategory("Generation").addDetail("CenterX", x).addDetail("CenterZ", z).addDetail("Step", generationstage$decoration).addDetail("Seed", i1).addDetail("Biome", Registry.BIOME.getKey(biome));
-	            throw new ReportedException(crashreport);
-	         }
-	      }
+		for(GenerationStage.Decoration generationstage$decoration : GenerationStage.Decoration.values()) 
+		{
+			try 
+			{
+				biome.decorate(generationstage$decoration, this, region, i1, sharedseedrandom, blockpos);
+			} 
+			catch (Exception exception) 
+			{
+				CrashReport crashreport = CrashReport.makeCrashReport(exception, "Biome decoration");
+				crashreport.makeCategory("Generation").addDetail("CenterX", i).addDetail("CenterZ", j).addDetail("Step", generationstage$decoration).addDetail("Seed", i1).addDetail("Biome", Registry.BIOME.getKey(biome));
+				throw new ReportedException(crashreport);
+			}
+		}
 
-	   }
+	}
 	
 	/* 1.14 GENERATION METHODS */
     @Override
