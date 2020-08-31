@@ -179,30 +179,40 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     public static final double riverMidPoint = 0.0;
     public static final double riverScale = 4.0;
     
-    public double getTemperature(double x, double z)
+    public double[] getTemperature(double x, double z)
     {
-    	return getTemperature(x, z, true);
+    	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
+    	double d0 = (tempOctave.getNoise(x * (0.0875 / biomeScale), z * (0.0875 / biomeScale)) * 0.00625 + 0.5) * 0.99;
+    	double[] arr =
+    		{
+    				MathHelper.clamp(d0 + 0.01, 0.0, 1.0),
+    				MathHelper.clamp(d0 + noise * 0.01, 0.0, 1.0),
+    		};
+    	return arr;
     }
     
-    public double getHumidity(double x, double z)
+    public double[] getHumidity(double x, double z)
     {
-    	return getHumidity(x, z, true);
+    	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
+    	double d0 = (humidOctave.getNoise((double)x * (0.3 / biomeScale / humidityScale), (double)z * (0.3 / biomeScale / humidityScale)) * 0.0075 + 0.5) * 0.95;
+    	double[] arr =
+    		{
+				MathHelper.clamp(d0 + 0.05, 0.0, 1.0),
+    			MathHelper.clamp(d0 + noise * 0.05, 0.0, 1.0),
+    		};
+    	return arr;
     }
     
-    public double getTemperature(double x, double z, boolean useNoise)
+    protected double[] getBiomeChance(double x, double z)
     {
-    	double noise = 1.0;
-    	if (useNoise)
-    		noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
-    	return MathHelper.clamp((tempOctave.getNoise(x * (0.0875 / biomeScale), z * (0.0875 / biomeScale)) * 0.00625 + 0.5) * 0.99 + noise * 0.01, 0.0, 1.0);
-    }
-    
-    public double getHumidity(double x, double z, boolean useNoise)
-    {
-    	double noise = 1.0;
-    	if (useNoise)
-    		noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
-    	return MathHelper.clamp((humidOctave.getNoise((double)x * (0.3 / biomeScale / humidityScale), (double)z * (0.3 / biomeScale / humidityScale)) * 0.0075 + 0.5) * 0.95 + noise * 0.05, 0.0, 1.0);
+    	double noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
+    	double d0 = (biomeChanceOctave.getNoise((double)x * 0.005 / chanceScale, (double)z * 0.005 / chanceScale) * 0.05 + 0.5) * 0.99;
+    	double[] arr =
+    		{
+    				MathHelper.clamp(d0 + 0.01, 0.0, 1.0),
+    				MathHelper.clamp(d0 + noise * 0.01, 0.0, 1.0),
+    		};
+    	return arr;
     }
     
     public boolean getRiver(int x, int z)
@@ -231,21 +241,32 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     	return new double[]{landmass1, landmass2, islandChance, mushroomChance, domLand};
     }
     
-    protected double getBiomeChance(double x, double z, boolean useNoise)
-    {
-    	double noise = 1.0;
-    	if (useNoise)
-    		noise = noiseOctave.getNoise((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
-    	return MathHelper.clamp((biomeChanceOctave.getNoise((double)x * 0.005 / chanceScale, (double)z * 0.005 / chanceScale) * 0.05 + 0.5) * 0.99 + noise * 0.01, 0.0, 1.0);
-    }
-    
 
     //Sets biomes according to the conditions of the land
     public Biome setBiomebyHeight(Biome biome, int x, int z, int y, boolean useNoise)
     {
+        double temperature = useNoise ? getTemperature(x, z)[1] : getTemperature(x, z)[0];
+        double humidity = useNoise ? getHumidity(x, z)[1] : getHumidity(x, z)[0];
+		double biomeChance = useNoise ? getBiomeChance(x, z)[1] : getBiomeChance(x, z)[0];
+		
+		return setBiomebyHeight(biome, x, z, y, temperature, humidity, biomeChance);
+    }
+    
+    public Biome[] setBiomebyHeight(Biome[] biome, int x, int z, int y)
+    {
+        double[] temperature = getTemperature(x, z);
+        double[] humidity = getHumidity(x, z);
+		double[] biomeChance = getBiomeChance(x, z);
+		
+		biome[0] = setBiomebyHeight(biome[0], x, z, y, temperature[0], humidity[0], biomeChance[0]);
+		biome[1] = setBiomebyHeight(biome[1], x, z, y, temperature[1], humidity[1], biomeChance[1]);
+		
+		return biome;
+    }
+    
+    private Biome setBiomebyHeight(Biome biome, int x, int z, int y, double temperature, double humidity, double biomeChance)
+    {
         int seaLevel = this.providerSettings.getSeaLevel();
-        double temperature = getTemperature(x, z);
-        double humidity = getHumidity(x, z);
    	 	double[] landmass = getLandmass(x, z);
    	 	double beachThreshold = EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
 		boolean isOcean = landmass[4] < beachThreshold;
@@ -254,7 +275,6 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 		
     	if (landmass[2] == landmass[4] && isSpecialIsland)
     	{
-    		double biomeChance = getBiomeChance(x, z, useNoise);
 			if (temperature < EvoBiomeProvider.SNOW_TEMP)
 				biome = EvoBiomes.COLD_ISLANDS.getBiome(biomeChance);
 			else if (temperature < EvoBiomeProvider.HOT_TEMP)
@@ -331,23 +351,36 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     	}
     	return biome;
     }
+        
+    public Biome[] generateLandBiome(double x, double z)
+    {
+        double[] temperature = getTemperature(x, z);
+        double[] humidity = getHumidity(x, z);
+		double[] biomeChance = getBiomeChance(x, z);
+
+		return new Biome[] 
+				{
+						getLandBiome(temperature[0], humidity[0], biomeChance[0]),
+						getLandBiome(temperature[1], humidity[1], biomeChance[1])
+				};
+    }
     
     public Biome generateLandBiome(double x, double z, boolean useNoise)
     {
-    	double temperature = getTemperature(x, z, useNoise);
-    	double humidity = getHumidity(x, z, useNoise);
-    	double biomeChance = getBiomeChance(x, z, useNoise);
+        double temperature = useNoise ? getTemperature(x, z)[1] : getTemperature(x, z)[0];
+        double humidity = useNoise ? getHumidity(x, z)[1] : getHumidity(x, z)[0];
+		double biomeChance = useNoise ? getBiomeChance(x, z)[1] : getBiomeChance(x, z)[0];
 
 		return getLandBiome(temperature, humidity, biomeChance);
     }
     
     public Biome generateBiome(double x, double z, boolean useNoise)
     {
-    	double temperature = getTemperature(x, z, useNoise);
-    	double humidity = getHumidity(x, z, useNoise);
+        double temperature = useNoise ? getTemperature(x, z)[1] : getTemperature(x, z)[0];
+        double humidity = useNoise ? getHumidity(x, z)[1] : getHumidity(x, z)[0];
     	double landmass1 = landOctave.getNoise((double)x * (0.00125 / oceanScale), landOffset, (double)z * (0.00125 / oceanScale))  * 0.125 / (double)oceanOctaves;
     	double landmass2 = landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 / (double)oceanOctaves;
-    	double biomeChance = getBiomeChance(x, z, useNoise);
+		double biomeChance = useNoise ? getBiomeChance(x, z)[1] : getBiomeChance(x, z)[0];
 
 		Biome biome = getLandBiome(temperature, humidity, biomeChance);
 		if (landmass1 < oceanThreshold && landmass2 < oceanThreshold)
@@ -495,9 +528,9 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 
 	public Biome getBeach(double x, double z)
 	{
-		double temp = getTemperature(x, z);
-		double humid = getHumidity(x, z);
-		double chance = getBiomeChance(x, z, true);
+		double temp = getTemperature(x, z)[1];
+		double humid = getHumidity(x, z)[1];
+		double chance = getBiomeChance(x, z)[1];
 		double[] landmass = getLandmass(x, z);
 		return getBeach(temp, humid, 
 				landmass[0] < landmass[1], 

@@ -16,15 +16,12 @@ import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.chunk.ChunkPrimer;
-import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.OverworldChunkGenerator;
 import net.minecraft.world.gen.WorldGenRegion;
 import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.jigsaw.JigsawJunction;
-import net.minecraft.world.gen.feature.structure.AbstractVillagePiece;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.gen.feature.template.TemplateManager;
@@ -40,6 +37,11 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		      }
 
 		   });
+		public static final Biome[] PLAINS_BIOMES = Util.make(new Biome[256], (arr) -> 
+		{
+			for(int i = 0; i < arr.length; i++)
+				arr[i] = Biomes.PLAINS;
+		});
 	
 	private EvoGenSettings settings;
 	private final EvoBiomeProvider biomeProvider;
@@ -87,27 +89,14 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		return this.settings.getSeaLevel();
 	}
 
+	//Just temporarily use an array of plains biomes
 	@Override
 	public void generateBiomes(IChunk chunkIn)
 	{
-		ChunkPos chunkpos = chunkIn.getPos();
-		int x = chunkpos.getXStart();
-		int z = chunkpos.getZStart();
-		Biome[] abiome = new Biome[256];
-		for (int i = 0; i < 16; i++)
-		{
-			for (int j = 0; j < 16; j++)
-			{
-	        	 int x1 = x + i;
-	        	 int z1 = z + j;
-	        	 Biome biome = this.biomeProvider.generateLandBiome(x1, z1, true);
-        		 abiome[j * 16 + i] = biome;
-			}
-		}
-		chunkIn.setBiomes(abiome);
+		chunkIn.setBiomes(PLAINS_BIOMES);
 	}
 
-	//This is just here for a less noisy surface between deserts/mesas and other biomes
+	//This is where the biomes are set
 	@Override
 	public void generateSurface(IChunk chunkIn) 
 	{
@@ -116,7 +105,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	    sharedseedrandom.setBaseChunkSeed(chunkpos.x, chunkpos.z);
 	    int x = chunkpos.getXStart();
 	    int z = chunkpos.getZStart();
-	    Biome[] abiome = chunkIn.getBiomes();
+	    Biome[] abiome = new Biome[256];
 
 	    for(int i = 0; i < 16; ++i) 
 	    {
@@ -125,13 +114,11 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	    		int x1 = x + i;
 	        	int z1 = z + j;
 	        	int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, i, j) + 1;
-        		Biome biome = abiome[j * 16 + i];
-	        	Biome biome2 = this.biomeProvider.generateLandBiome(x1, z1, false);
-	        	biome = this.biomeProvider.setBiomebyHeight(biome, x1, z1, y, true);
-	        	biome2 = this.biomeProvider.setBiomebyHeight(biome2, x1, z1, y, false);
+        		Biome[] biome = this.biomeProvider.generateLandBiome(x1, z1);
+	        	biome = this.biomeProvider.setBiomebyHeight(biome, x1, z1, y);
 	        	double d1 = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.5;
-	        	biome2.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
-        		abiome[j * 16 + i] = biome;
+	        	biome[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
+        		abiome[j * 16 + i] = biome[1];
 	        }
 	    }
 	    chunkIn.setBiomes(abiome);
@@ -258,8 +245,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     	{
     		for(int k = -2; k <= 2; ++k) 
     		{
-    			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
-    			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
+    			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4)[1];
+    			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4)[1];
     			double variation = MathHelper.clamp(this.variationNoise.getNoise((x + j) * 0.09, (z + k) * 0.09) * 0.2 + 0.5, 0.0, 1.0);
     			double d4 = (this.settings.getBiomeDepth() 
     					+ ( (1.0 - humidity * temperature) * this.settings.getBiomeDepthFactor()) )
