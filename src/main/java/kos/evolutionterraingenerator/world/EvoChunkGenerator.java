@@ -247,7 +247,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     		{
     			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4)[1];
     			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4)[1];
-    			double variation = MathHelper.clamp(this.variationNoise.getNoise((x + j) * 0.09, (z + k) * 0.09) * 0.2 + 0.5, 0.0, 1.0);
+    			double variation = MathHelper.clamp(this.variationNoise.getNoise((x + j) * 0.0825, (z + k) * 0.0825) * 0.2 + 0.5, 0.0, 1.0);
     			double d4 = (this.settings.getBiomeDepth() 
     					+ ( (1.0 - humidity * temperature) * this.settings.getBiomeDepthFactor()) )
     					* this.settings.getBiomeDepthWeight();

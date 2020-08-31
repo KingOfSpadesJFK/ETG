@@ -24,9 +24,9 @@ public class EvoGenSettings extends OverworldGenSettings
 	private double upperLimitScale = 512.0;
 	
 	private double biomeDepth = 0.55;
-	private double biomeScale = 0.125;
+	private double biomeScale = 0.110;
 	private double biomeDepthFactor = 0.125;
-	private double biomeScaleFactor = 1.0;
+	private double biomeScaleFactor = 1.015;
 	
 	private double biomeDepthWeight = 1.0;
 	private double biomeDepthOffset = 0.0;
