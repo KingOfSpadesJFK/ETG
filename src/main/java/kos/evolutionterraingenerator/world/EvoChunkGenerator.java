@@ -2,10 +2,7 @@ package kos.evolutionterraingenerator.world;
 
 import java.util.Random;
 
-import biomesoplenty.api.biome.BOPBiomes;
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
-import kos.evolutionterraingenerator.world.biome.EvoBiomes;
-import net.minecraft.block.BlockState;
 import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;

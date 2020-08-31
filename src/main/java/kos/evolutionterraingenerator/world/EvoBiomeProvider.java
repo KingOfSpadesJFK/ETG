@@ -4,6 +4,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.provider.BiomeProvider;
 import net.minecraft.world.biome.provider.OverworldBiomeProvider;
 import net.minecraft.world.gen.feature.structure.Structure;
 
@@ -25,7 +26,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.util.math.MathHelper;
 
-public class EvoBiomeProvider extends OverworldBiomeProvider
+public class EvoBiomeProvider extends BiomeProvider
 {
     private NoiseGeneratorOpenSimplex tempOctave;
     private NoiseGeneratorOpenSimplex humidOctave;
@@ -40,7 +41,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     public NoiseGeneratorOpenSimplex swampChance;
     public NoiseGeneratorOpenSimplex swampType;
     private double landOffset;
-    private final Set<Biome> biomes = Sets.newHashSet(Biomes.OCEAN,
+    private final static Set<Biome> biomes = Sets.newHashSet(Biomes.OCEAN,
     		Biomes.PLAINS,
     		Biomes.DESERT,
     		Biomes.FOREST,
@@ -124,7 +125,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 	private EvoBiomeProviderSettings providerSettings;
 
 	public EvoBiomeProvider(EvoBiomeProviderSettings settingsProvider) {
-		super(settingsProvider);
+		super();
         
         Random rand = new Random(settingsProvider.getWorldInfo().getSeed());
         this.landOctave = new NoiseGeneratorOpenSimplex(rand, oceanOctaves);
@@ -631,7 +632,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 	{
 		return this.hasStructureCache.computeIfAbsent(structureIn, (p_205006_1_) -> 
 		{
-			for(Biome biome : this.biomes)
+			for(Biome biome : biomes)
 			{
 	            if (biome.hasStructure(p_205006_1_))
 	               return true;
@@ -644,7 +645,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 	@Override
 	   public Set<BlockState> getSurfaceBlocks() {
 	      if (this.topBlocksCache.isEmpty()) {
-	         for(Biome biome : this.biomes) {
+	         for(Biome biome : biomes) {
 	            this.topBlocksCache.add(biome.getSurfaceBuilderConfig().getTop());
 	         }
 	      }
