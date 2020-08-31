@@ -1,12 +1,9 @@
 package kos.evolutionterraingenerator.world;
 
-import net.minecraft.block.BlockState;
 import net.minecraft.util.SharedSeedRandom;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
-import net.minecraft.world.biome.provider.OverworldBiomeProvider;
-import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraft.world.biome.provider.BiomeProvider;
 
 import com.google.common.collect.Sets;
 
@@ -18,14 +15,11 @@ import kos.evolutionterraingenerator.world.biome.EvoBiomes;
 import kos.evolutionterraingenerator.world.biome.NewBiomes;
 import kos.evolutionterraingenerator.world.biome.support.BOPSupport;
 
-import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 import net.minecraft.util.math.MathHelper;
 
-public class EvoBiomeProvider extends OverworldBiomeProvider
+public class EvoBiomeProvider extends BiomeProvider
 {
     private NoiseGeneratorOpenSimplex tempOctave;
     private NoiseGeneratorOpenSimplex humidOctave;
@@ -40,7 +34,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     private NoiseGeneratorOpenSimplex swampChance;
     private NoiseGeneratorOpenSimplex swampType;
     private double landOffset;
-    private final Set<Biome> biomes = Sets.newHashSet(Biomes.OCEAN,
+    private final static Set<Biome> biomes = Sets.newHashSet(Biomes.OCEAN,
     		Biomes.PLAINS,
     		Biomes.DESERT,
     		Biomes.FOREST,
@@ -124,7 +118,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
 	private EvoBiomeProviderSettings providerSettings;
 
 	public EvoBiomeProvider(EvoBiomeProviderSettings settingsProvider) {
-		super(settingsProvider);
+		super(biomes);
         
         SharedSeedRandom rand = new SharedSeedRandom(settingsProvider.getWorldInfo().getSeed());
         this.landOctave = new NoiseGeneratorOpenSimplex(rand, oceanOctaves);
@@ -538,97 +532,7 @@ public class EvoBiomeProvider extends OverworldBiomeProvider
     	}
     	return biome;
     }
-
-	public Biome[] getBiomes(int x, int z, int width, int length, boolean cacheFlag) {
-		return getBiomesForGeneration(null, x, z, width, length);
-	}
-	
-
-
-	   /**
-	    * Returns the set of biomes contained in cube of side length 2 * radius + 1 centered at (xIn, yIn, zIn)
-	    */
-	   public Set<Biome> getBiomes(int xIn, int yIn, int zIn, int radius) {
-	      int i = xIn - radius;
-	      int j = yIn - radius;
-	      int k = zIn - radius;
-	      int l = xIn + radius;
-	      int i1 = yIn + radius;
-	      int j1 = zIn + radius;
-	      int k1 = l - i + 1;
-	      int l1 = i1 - j + 1;
-	      int i2 = j1 - k + 1;
-	      Set<Biome> set = Sets.newHashSet();
-
-	      for(int j2 = 0; j2 < i2; ++j2) {
-	         for(int k2 = 0; k2 < k1; ++k2) {
-	            for(int l2 = 0; l2 < l1; ++l2) {
-	               int i3 = i + k2;
-	               int j3 = j + l2;
-	               int k3 = k + j2;
-	               set.add(this.getNoiseBiome(i3, j3, k3, false));
-	            }
-	         }
-	      }
-
-	      return set;
-	   }
-
-	   @Nullable
-	   public BlockPos func_225531_a_(int xIn, int yIn, int zIn, int radiusIn, List<Biome> biomesIn, Random randIn) {
-	      int i = xIn - radiusIn;
-	      int j = zIn - radiusIn;
-	      int k = xIn + radiusIn;
-	      int l = zIn + radiusIn;
-	      int i1 = k - i + 1;
-	      int j1 = l - j + 1;
-	      int k1 = yIn;
-	      BlockPos blockpos = null;
-	      int l1 = 0;
-
-	      for(int i2 = 0; i2 < j1; ++i2) {
-	         for(int j2 = 0; j2 < i1; ++j2) {
-	            int k2 = i + j2;
-	            int l2 = j + i2;
-	            if (biomesIn.contains(this.getNoiseBiome(k2, k1, l2, false))) {
-	               if (blockpos == null || randIn.nextInt(l1 + 1) == 0) {
-	                  blockpos = new BlockPos(k2, yIn, l2);
-	               }
-
-	               ++l1;
-	            }
-	         }
-	      }
-
-	      return blockpos;
-	   }
-
-	@Override
-	public boolean hasStructure(Structure<?> structureIn) 
-	{
-		return this.hasStructureCache.computeIfAbsent(structureIn, (p_205006_1_) -> 
-		{
-			for(Biome biome : this.biomes)
-			{
-	            if (biome.hasStructure(p_205006_1_))
-	               return true;
-	        }
-
-	        return false;
-	   });
-	}
-
-	@Override
-	   public Set<BlockState> getSurfaceBlocks() {
-	      if (this.topBlocksCache.isEmpty()) {
-	         for(Biome biome : this.biomes) {
-	            this.topBlocksCache.add(biome.getSurfaceBuilderConfig().getTop());
-	         }
-	      }
-
-	      return this.topBlocksCache;
-	   }
-	
+    
 	public EvoBiomeProviderSettings getSettings() 
 	{
 		return this.providerSettings;
