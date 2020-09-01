@@ -124,16 +124,16 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 
 	@Override
 	public void initStructureStarts(IChunk chunkIn, ChunkGenerator<?> generator, TemplateManager templateManagerIn) 
-	{		
+	{
+		ChunkPos chunkpos = chunkIn.getPos();
+        int x = chunkpos.getXStart() + 9;
+        int z = chunkpos.getZStart() + 9;
+        int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG);
+		Biome biome = this.biomeProvider.setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), x, z, y, true);
 		for(Structure<?> structure : Feature.STRUCTURES.values()) 
 		{
 	        if (generator.getBiomeProvider().hasStructure(structure))
 	        {
-	            ChunkPos chunkpos = chunkIn.getPos();
-	            int x = chunkpos.getXStart() + 9;
-	            int z = chunkpos.getZStart() + 9;
-	            int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG);
-	        	Biome biome = this.biomeProvider.setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), x, z, y, true);
 				if (biome.hasStructure(structure)) 
 				{
 					SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
