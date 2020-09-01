@@ -160,14 +160,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         Biome biome = this.biomeProvider.setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), x, z, y, true);
         return biome;
 	}
-	
-	public int makeBaseSim(ChunkPrimer chunkprimer, int x, int z)
-	{
-	    double[] arr = new double[this.noiseSizeY + 1];
-	    func_222548_a(arr, x, z);
-	      
-		return 0;
-	}
 
 	/* 1.14 GENERATION METHODS */
     @Override
