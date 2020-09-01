@@ -95,12 +95,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	{
 		((ChunkPrimer)chunkIn).func_225548_a_(new BiomeContainer(PLAINS_BIOMES));
 	}
-	
-	private static final int WIDTH_BITS = (int)Math.round(Math.log(16.0D) / Math.log(2.0D)) - 2;
-	private static final int HEIGHT_BITS = (int)Math.round(Math.log(256.0D) / Math.log(2.0D)) - 2;
-	public static final int BIOMES_SIZE = 1 << WIDTH_BITS + WIDTH_BITS + HEIGHT_BITS;
-	public static final int HORIZONTAL_MASK = (1 << WIDTH_BITS) - 1;
-	public static final int VERTICAL_MASK = (1 << HEIGHT_BITS) - 1;
 
 	//The prime area for determining biomes
 	@Override
@@ -111,7 +105,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	    sharedseedrandom.setBaseChunkSeed(chunkpos.x, chunkpos.z);
 	    int x = chunkpos.getXStart();
 	    int z = chunkpos.getZStart();
-	    Biome[] abiome = new Biome[BIOMES_SIZE];
+	    Biome[] abiome = new Biome[BiomeContainer.BIOMES_SIZE];
 	    
 	    int k = 0;
 	    for(int i = 0; i < 16; ++i) 
@@ -131,7 +125,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
         		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
 	        }
 	    }
-	    while (k < BIOMES_SIZE)
+	    while (k < BiomeContainer.BIOMES_SIZE)
 	    {
     		abiome[k] = abiome[k % 16];
     		k++;
