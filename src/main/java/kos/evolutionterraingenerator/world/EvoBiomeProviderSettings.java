@@ -5,6 +5,7 @@ import net.minecraft.world.storage.WorldInfo;
 
 public class EvoBiomeProviderSettings extends OverworldBiomeProviderSettings
 {
+
 	private WorldInfo worldInfo;
 	private EvoGenSettings settings;
 	
@@ -14,6 +15,12 @@ public class EvoBiomeProviderSettings extends OverworldBiomeProviderSettings
 	private float tempScale = 1.0f;
 	private float oceanScale = 1.0f;
 	private int seaLevel = 63;
+
+	public EvoBiomeProviderSettings(WorldInfo worldInfo) 
+	{
+		super(worldInfo);
+		this.worldInfo = worldInfo;
+	}
 	
 	public void setup()
 	{
@@ -72,9 +79,8 @@ public class EvoBiomeProviderSettings extends OverworldBiomeProviderSettings
 		return oceanScale;
 	}
 
-	public int getSeaLevel()
+	public int getSeaLevel() 
 	{
-		// TODO Auto-generated method stub
 		return seaLevel;
 	}
 }

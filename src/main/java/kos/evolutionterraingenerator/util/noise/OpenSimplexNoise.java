@@ -1,6 +1,6 @@
 package kos.evolutionterraingenerator.util.noise;
 
-import java.util.Random;
+import net.minecraft.util.SharedSeedRandom;
 
 /*
  * OpenSimplex Noise in Java.
@@ -33,6 +33,8 @@ public class OpenSimplexNoise
 	private static final double NORM_CONSTANT_3D = 103;
 	private static final double NORM_CONSTANT_4D = 30;
 	
+	private static final long DEFAULT_SEED = 0;
+	
 	private short[] perm;
 	private short[] permGradIndex3D;
 	
@@ -43,7 +45,7 @@ public class OpenSimplexNoise
 	//Initializes the class using a permutation array generated from a 64-bit seed.
 	//Generates a proper permutation (i.e. doesn't merely perform N successive pair swaps on a base array)
 	//Uses a simple 64-bit LCG.
-	public OpenSimplexNoise(Random seed)
+	public OpenSimplexNoise(SharedSeedRandom seed)
 	{
 		this.xCoord = seed.nextDouble() * 256.0D;
 	    this.yCoord = seed.nextDouble() * 256.0D;

@@ -21,20 +21,33 @@ public class DryGravelBeach extends Biome
 {
 	public DryGravelBeach()
 	{
-	      super((new Biome.Builder()).surfaceBuilder(SurfaceBuilder.DEFAULT, SurfaceBuilder.GRAVEL_CONFIG).precipitation(Biome.RainType.NONE).category(Biome.Category.BEACH).depth(0.0F).scale(0.025F).temperature(2.0F).downfall(0.0F).waterColor(4159204).waterFogColor(329011).parent("minecraft:beach"));
-	      this.addStructure(Feature.MINESHAFT, new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL));
-	      this.addStructure(Feature.BURIED_TREASURE, new BuriedTreasureConfig(0.01F));
-	      this.addStructure(Feature.SHIPWRECK, new ShipwreckConfig(true));
-	      addFeature(GenerationStage.Decoration.LOCAL_MODIFICATIONS, Biome.createDecoratedFeature(Feature.FOREST_ROCK, new BlockBlobConfig(Blocks.COBBLESTONE.getDefaultState(), 0), Placement.TOP_SOLID_HEIGHTMAP_NOISE_BIASED, new TopSolidWithNoiseConfig(20, 80.0D, 0.0D, Heightmap.Type.OCEAN_FLOOR_WG)));
+	      super((new Biome.Builder())
+	    		  .surfaceBuilder(SurfaceBuilder.DEFAULT, SurfaceBuilder.GRAVEL_CONFIG)
+	    		  .precipitation(Biome.RainType.NONE)
+	    		  .category(Biome.Category.BEACH)
+	    		  .depth(0.0F).scale(0.025F)
+	    		  .temperature(2.0F).downfall(0.0F)
+	    		  .waterColor(4159204)
+	    		  .waterFogColor(329011)
+	    		  .parent("minecraft:beach"));
+	      this.addStructure(Feature.MINESHAFT.withConfiguration(new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL)));
+	      this.addStructure(Feature.BURIED_TREASURE.withConfiguration( new BuriedTreasureConfig(0.01F)));
+	      this.addStructure(Feature.SHIPWRECK.withConfiguration(new ShipwreckConfig(true)));
+	      this.addFeature(GenerationStage.Decoration.LOCAL_MODIFICATIONS, 
+	    		  Feature.FOREST_ROCK
+	    		  .withConfiguration(new BlockBlobConfig(Blocks.COBBLESTONE.getDefaultState(), 0))
+	    		  		.withPlacement(Placement.TOP_SOLID_HEIGHTMAP_NOISE_BIASED
+	    		  				.configure(new TopSolidWithNoiseConfig(20, 80.0D, 0.0D, Heightmap.Type.OCEAN_FLOOR_WG))));
 	      DefaultBiomeFeatures.addCarvers(this);
 	      DefaultBiomeFeatures.addStructures(this);
 	      DefaultBiomeFeatures.addDesertLakes(this);
 	      DefaultBiomeFeatures.addMonsterRooms(this);
 	      DefaultBiomeFeatures.addStoneVariants(this);
+	      DefaultBiomeFeatures.addTaigaRocks(this);
 	      DefaultBiomeFeatures.addOres(this);
 	      DefaultBiomeFeatures.addSedimentDisks(this);
 	      DefaultBiomeFeatures.addDefaultFlowers(this);
-	      DefaultBiomeFeatures.func_222348_W(this);
+	      DefaultBiomeFeatures.addSparseGrass(this);
 	      DefaultBiomeFeatures.addDeadBushes(this);
 	      DefaultBiomeFeatures.addMushrooms(this);
 	      DefaultBiomeFeatures.addExtraReedsPumpkinsCactus(this);

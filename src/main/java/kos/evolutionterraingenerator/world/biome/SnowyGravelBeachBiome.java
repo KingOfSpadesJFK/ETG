@@ -20,22 +20,29 @@ import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
 public class SnowyGravelBeachBiome extends Biome {
 	   public SnowyGravelBeachBiome() {
 		      super((new Biome.Builder()).surfaceBuilder(SurfaceBuilder.DEFAULT, SurfaceBuilder.GRAVEL_CONFIG).precipitation(Biome.RainType.SNOW).category(Biome.Category.BEACH).depth(0.0F).scale(0.025F).temperature(0.0F).downfall(0.4F).waterColor(4159204).waterFogColor(329011).parent("minecraft:beach"));
-		      this.addStructure(Feature.MINESHAFT, new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL));
-		      this.addStructure(Feature.BURIED_TREASURE, new BuriedTreasureConfig(0.01F));
-		      this.addStructure(Feature.SHIPWRECK, new ShipwreckConfig(true));
-		      addFeature(GenerationStage.Decoration.LOCAL_MODIFICATIONS, Biome.createDecoratedFeature(Feature.FOREST_ROCK, new BlockBlobConfig(Blocks.COBBLESTONE.getDefaultState(), 0), Placement.TOP_SOLID_HEIGHTMAP_NOISE_BIASED, new TopSolidWithNoiseConfig(20, 80.0D, 0.0D, Heightmap.Type.OCEAN_FLOOR_WG)));
+		      this.addStructure(Feature.MINESHAFT.withConfiguration(new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL)));
+		      this.addStructure(Feature.BURIED_TREASURE.withConfiguration( new BuriedTreasureConfig(0.01F)));
+		      this.addStructure(Feature.SHIPWRECK.withConfiguration(new ShipwreckConfig(true)));
+		      this.addFeature(GenerationStage.Decoration.LOCAL_MODIFICATIONS, 
+		    		  Feature.FOREST_ROCK
+		    		  .withConfiguration(new BlockBlobConfig(Blocks.COBBLESTONE.getDefaultState(), 0))
+		    		  		.withPlacement(Placement.TOP_SOLID_HEIGHTMAP_NOISE_BIASED
+		    		  				.configure(new TopSolidWithNoiseConfig(20, 80.0D, 0.0D, Heightmap.Type.OCEAN_FLOOR_WG))));
 		      DefaultBiomeFeatures.addCarvers(this);
 		      DefaultBiomeFeatures.addStructures(this);
-		      DefaultBiomeFeatures.addLakes(this);
+		      DefaultBiomeFeatures.addDesertLakes(this);
 		      DefaultBiomeFeatures.addMonsterRooms(this);
 		      DefaultBiomeFeatures.addStoneVariants(this);
+		      DefaultBiomeFeatures.addTaigaRocks(this);
 		      DefaultBiomeFeatures.addOres(this);
 		      DefaultBiomeFeatures.addSedimentDisks(this);
 		      DefaultBiomeFeatures.addDefaultFlowers(this);
-		      DefaultBiomeFeatures.func_222348_W(this);
+		      DefaultBiomeFeatures.addSparseGrass(this);
+		      DefaultBiomeFeatures.addDeadBushes(this);
 		      DefaultBiomeFeatures.addMushrooms(this);
-		      DefaultBiomeFeatures.addReedsAndPumpkins(this);
+		      DefaultBiomeFeatures.addExtraReedsPumpkinsCactus(this);
 		      DefaultBiomeFeatures.addSprings(this);
+		      DefaultBiomeFeatures.addDesertFeatures(this);
 		      DefaultBiomeFeatures.addFreezeTopLayer(this);
 		      this.addSpawn(EntityClassification.CREATURE, new Biome.SpawnListEntry(EntityType.TURTLE, 5, 2, 5));
 		      this.addSpawn(EntityClassification.AMBIENT, new Biome.SpawnListEntry(EntityType.BAT, 10, 8, 8));

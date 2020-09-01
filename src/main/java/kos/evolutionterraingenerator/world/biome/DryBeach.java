@@ -14,9 +14,9 @@ import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
 public class DryBeach extends Biome {
 	   public DryBeach() {
 		      super((new Biome.Builder()).surfaceBuilder(SurfaceBuilder.DEFAULT, SurfaceBuilder.SAND_SAND_GRAVEL_CONFIG).precipitation(Biome.RainType.NONE).category(Biome.Category.BEACH).depth(0.0F).scale(0.025F).temperature(2.0F).downfall(0.0F).waterColor(4159204).waterFogColor(329011).parent("minecraft:beach"));
-		      this.addStructure(Feature.MINESHAFT, new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL));
-		      this.addStructure(Feature.BURIED_TREASURE, new BuriedTreasureConfig(0.01F));
-		      this.addStructure(Feature.SHIPWRECK, new ShipwreckConfig(true));
+		      this.addStructure(Feature.MINESHAFT.withConfiguration(new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL)));
+		      this.addStructure(Feature.BURIED_TREASURE.withConfiguration(new BuriedTreasureConfig(0.01F)));
+		      this.addStructure(Feature.SHIPWRECK.withConfiguration(new ShipwreckConfig(true)));
 		      DefaultBiomeFeatures.addCarvers(this);
 		      DefaultBiomeFeatures.addStructures(this);
 		      DefaultBiomeFeatures.addLakes(this);
@@ -25,7 +25,7 @@ public class DryBeach extends Biome {
 		      DefaultBiomeFeatures.addOres(this);
 		      DefaultBiomeFeatures.addSedimentDisks(this);
 		      DefaultBiomeFeatures.addDefaultFlowers(this);
-		      DefaultBiomeFeatures.func_222348_W(this);
+		      DefaultBiomeFeatures.addSparseGrass(this);
 		      DefaultBiomeFeatures.addMushrooms(this);
 		      DefaultBiomeFeatures.addReedsAndPumpkins(this);
 		      DefaultBiomeFeatures.addSprings(this);

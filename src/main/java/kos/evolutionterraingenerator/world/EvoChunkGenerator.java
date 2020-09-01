@@ -1,20 +1,24 @@
 package kos.evolutionterraingenerator.world;
 
-import java.util.Random;
-
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.ReportedException;
 import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.MutableBoundingBox;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeContainer;
+import net.minecraft.world.biome.BiomeManager;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.gen.GenerationStage;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.OverworldChunkGenerator;
 import net.minecraft.world.gen.WorldGenRegion;
@@ -25,24 +29,24 @@ import net.minecraft.world.gen.feature.template.TemplateManager;
 
 public class EvoChunkGenerator extends OverworldChunkGenerator
 {
-	   private static final double[] field_222576_h = Util.make(new double[25], (p_222575_0_) -> {
-		      for(int i = -2; i <= 2; ++i) {
-		         for(int j = -2; j <= 2; ++j) {
-		            double f = 10.0F / MathHelper.sqrt((float)(i * i + j * j) + 0.2F);
-		            p_222575_0_[i + 2 + (j + 2) * 5] = f;
-		         }
-		      }
+	private static final double[] field_222576_h = Util.make(new double[25], (p_222575_0_) -> {
+		for(int i = -2; i <= 2; ++i) {
+			for(int j = -2; j <= 2; ++j) {
+				double f = 10.0F / MathHelper.sqrt((float)(i * i + j * j) + 0.2F);
+		        	p_222575_0_[i + 2 + (j + 2) * 5] = f;
+			}
+		}
 
-		   });
-		public static final Biome[] PLAINS_BIOMES = Util.make(new Biome[256], (arr) -> 
-		{
-			for(int i = 0; i < arr.length; i++)
-				arr[i] = Biomes.PLAINS;
-		});
+	});
+	public static final Biome[] PLAINS_BIOMES = Util.make(new Biome[1024], (arr) -> 
+	{
+		for(int i = 0; i < arr.length; i++)
+			arr[i] = Biomes.PLAINS;
+	});
 	
 	private EvoGenSettings settings;
 	private final EvoBiomeProvider biomeProvider;
-	private final Random rand;
+	private final SharedSeedRandom rand;
     private NoiseGeneratorOpenSimplex minLimitPerlinNoise;
     private NoiseGeneratorOpenSimplex maxLimitPerlinNoise;
     private NoiseGeneratorOpenSimplex mainPerlinNoise;
@@ -50,9 +54,9 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	private NoiseGeneratorOpenSimplex surfaceDepthNoise;
 	private NoiseGeneratorOpenSimplex variationNoise;
     private final IWorld world;
-    
-	private final int verticalNoiseGranularity;
+
 	private final int noiseSizeY;
+    private final int verticalNoiseGranularity;
 	
 	public EvoChunkGenerator(IWorld worldIn, EvoBiomeProvider biomeProviderIn, EvoGenSettings settingsIn) {
 		super(worldIn, biomeProviderIn, settingsIn);
@@ -60,7 +64,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		this.world = worldIn;
 		this.settings = settingsIn;
 		this.biomeProvider = biomeProviderIn;
-		this.rand = new Random(world.getSeed());
+		this.rand = new SharedSeedRandom(world.getSeed());
 
         this.minLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
         this.maxLimitPerlinNoise = new NoiseGeneratorOpenSimplex(this.rand, 16);
@@ -86,23 +90,22 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		return this.settings.getSeaLevel();
 	}
 
-	//Just temporarily use an array of plains biomes
 	@Override
 	public void generateBiomes(IChunk chunkIn)
 	{
-		chunkIn.setBiomes(PLAINS_BIOMES);
+		((ChunkPrimer)chunkIn).func_225548_a_(new BiomeContainer(PLAINS_BIOMES));
 	}
 
-	//This is where the biomes are set
+	//This is just here for a less noisy surface between deserts/mesas and other biomes
 	@Override
-	public void generateSurface(IChunk chunkIn) 
+	public void generateSurface(WorldGenRegion worldRegion, IChunk chunkIn) 
 	{
+		((ChunkPrimer)chunkIn).func_225548_a_(new EvoBiomeContainer(chunkIn, this.biomeProvider));
 		ChunkPos chunkpos = chunkIn.getPos();
-	    SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
+		SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
 	    sharedseedrandom.setBaseChunkSeed(chunkpos.x, chunkpos.z);
 	    int x = chunkpos.getXStart();
 	    int z = chunkpos.getZStart();
-	    Biome[] abiome = new Biome[256];
 
 	    for(int i = 0; i < 16; ++i) 
 	    {
@@ -111,73 +114,85 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	    		int x1 = x + i;
 	        	int z1 = z + j;
 	        	int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, i, j) + 1;
-        		Biome[] biome = this.biomeProvider.generateLandBiome(x1, z1);
-	        	biome = this.biomeProvider.setBiomebyHeight(biome, x1, z1, y);
 	        	double d1 = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.5;
-	        	biome[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
-        		abiome[j * 16 + i] = biome[1];
+	        	Biome biome = this.biomeProvider.getNoiseBiome(x1, y, z1, false);
+        		biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
 	        }
 	    }
-	    chunkIn.setBiomes(abiome);
 	    this.makeBedrock(chunkIn, sharedseedrandom);
 	}
 
 	@Override
-	public void initStructureStarts(IChunk chunkIn, ChunkGenerator<?> generator, TemplateManager templateManagerIn) 
+	public void generateStructures(BiomeManager biomeManagerIn, IChunk chunkIn, ChunkGenerator<?> chunkGen, TemplateManager templetManager) 
 	{
 		ChunkPos chunkpos = chunkIn.getPos();
-        int x = chunkpos.getXStart() + 9;
-        int z = chunkpos.getZStart() + 9;
-        int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG);
-		Biome biome = this.biomeProvider.setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), x, z, y, true);
+		int x = chunkpos.getXStart() + 9;
+		int z = chunkpos.getZStart() + 9;
+		int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG);
+        Biome biome = this.biomeProvider.getNoiseBiome(chunkpos.getXStart() + 9, y, chunkpos.getZStart() + 9, false);
 		for(Structure<?> structure : Feature.STRUCTURES.values()) 
 		{
-	        if (generator.getBiomeProvider().hasStructure(structure))
-	        {
-				if (biome.hasStructure(structure)) 
+			if (chunkGen.getBiomeProvider().hasStructure(structure)) 
+			{
+				StructureStart structurestart = chunkIn.getStructureStart(structure.getStructureName());
+				int i = structurestart != null ? structurestart.getRefCount() : 0;
+				SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
+				StructureStart structurestart1 = StructureStart.DUMMY;
+				if (structure.canBeGenerated(biomeManagerIn, chunkGen, sharedseedrandom, chunkpos.x, chunkpos.z, biome))
 				{
-					SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
-		            StructureStart structurestart = StructureStart.DUMMY;
-		            if (structure.hasStartAt(generator, sharedseedrandom, chunkpos.x, chunkpos.z)) 
-		            {
-		            	StructureStart structurestart1 = structure.getStartFactory().create(structure, chunkpos.x, chunkpos.z, biome, MutableBoundingBox.getNewBoundingBox(), 0, generator.getSeed());
-		            	structurestart1.init(this, templateManagerIn, chunkpos.x, chunkpos.z, biome);
-		            	structurestart = structurestart1.isValid() ? structurestart1 : StructureStart.DUMMY;
-		            }
-		            chunkIn.putStructureStart(structure.getStructureName(), structurestart);
+					StructureStart structurestart2 = structure.getStartFactory().create(structure, chunkpos.x, chunkpos.z, MutableBoundingBox.getNewBoundingBox(), i, chunkGen.getSeed());
+					structurestart2.init(this, templetManager, chunkpos.x, chunkpos.z, biome);
+					structurestart1 = structurestart2.isValid() ? structurestart2 : StructureStart.DUMMY;
 				}
-	        }
+				chunkIn.putStructureStart(structure.getStructureName(), structurestart1);
+			}
 		}
 	}
 
-	@Override
-	protected Biome getBiome(WorldGenRegion worldRegionIn, BlockPos pos) 
-    {
-		IChunk chunk = worldRegionIn.getChunk(pos);
-        int x = pos.getX();
-        int y = chunk.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, pos.getX(), pos.getZ()) + 1;
-        int z = pos.getZ();
-        Biome biome = this.biomeProvider.setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), x, z, y, true);
-        return biome;
-	}
+	public void decorate(WorldGenRegion region) 
+	{
+		int i = region.getMainChunkX();
+		int j = region.getMainChunkZ();
+		int x= i * 16;
+		int z = j * 16;
+		BlockPos blockpos = new BlockPos(x, 0, z);
+		Biome biome = this.biomeProvider.getNoiseBiome(x, region.getChunk(blockpos).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x, z), z, true);
+		SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
+		long i1 = sharedseedrandom.setDecorationSeed(region.getSeed(), x, z);
 
+		for(GenerationStage.Decoration generationstage$decoration : GenerationStage.Decoration.values()) 
+		{
+			try 
+			{
+				biome.decorate(generationstage$decoration, this, region, i1, sharedseedrandom, blockpos);
+			} 
+			catch (Exception exception) 
+			{
+				CrashReport crashreport = CrashReport.makeCrashReport(exception, "Biome decoration");
+				crashreport.makeCategory("Generation").addDetail("CenterX", i).addDetail("CenterZ", j).addDetail("Step", generationstage$decoration).addDetail("Seed", i1).addDetail("Biome", Registry.BIOME.getKey(biome));
+				throw new ReportedException(crashreport);
+			}
+		}
+
+	}
+	
 	/* 1.14 GENERATION METHODS */
     @Override
-    protected void func_222548_a(double[] arr, int x, int z) {
+    protected void fillNoiseColumn(double[] arr, int x, int z) {
        double coordScale = this.settings.getCoordScale();
        double heightScale = this.settings.getHeightScale();
        double d2 = 8.555149841308594D;
        double d3 = 4.277574920654297D;
        int i = -10;
        int j = 3;
-       this.func_222546_a(arr, x, z, coordScale, heightScale, d2, d3, j, i);
+       this.calcNoiseColumn(arr, x, z, coordScale, heightScale, d2, d3, j, i);
     }
 
     
-    //The only reason it's here is because of func_222552_a() being private in NoiseChunkGenerator
+    //The only reason it's here is because of calcNoiseColumn() being private in NoiseChunkGenerator
     @Override
-    protected void func_222546_a(double[] arr, int x, int z, double coordScale, double heightScale, double d_1, double d_2, int p_222546_12_, int p_222546_13_) {
-       double[] adouble = this.func_222549_a(x, z);
+    protected void calcNoiseColumn(double[] arr, int x, int z, double coordScale, double heightScale, double d_1, double d_2, int p_222546_12_, int p_222546_13_) {
+       double[] adouble = this.getBiomeNoiseColumn(x, z);
        double d0 = adouble[0];
        double d1 = adouble[1];
        double d2 = this.func_222551_g();
@@ -223,7 +238,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     }
 
     @Override
-    protected double[] func_222549_a(int x, int z) 
+    protected double[] getBiomeNoiseColumn(int x, int z) 
     {
     	double[] adouble = new double[2];
     	double d = 0.0;
@@ -234,8 +249,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     	{
     		for(int k = -2; k <= 2; ++k) 
     		{
-    			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4)[1];
-    			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4)[1];
+    			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
+    			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
     			double variation = MathHelper.clamp(this.variationNoise.getNoise((x + j) * 0.0825, (z + k) * 0.0825) * 0.2 + 0.5, 0.0, 1.0);
     			double d4 = (this.settings.getBiomeDepth() 
     					+ ( (1.0 - humidity * temperature) * this.settings.getBiomeDepthFactor()) )

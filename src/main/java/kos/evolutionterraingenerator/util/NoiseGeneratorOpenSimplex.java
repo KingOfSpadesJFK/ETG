@@ -1,8 +1,7 @@
 package kos.evolutionterraingenerator.util;
 
-import java.util.Random;
-
 import kos.evolutionterraingenerator.util.noise.OpenSimplexNoise;
+import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.gen.INoiseGenerator;
 
@@ -11,7 +10,7 @@ public class NoiseGeneratorOpenSimplex implements INoiseGenerator
     /** Collection of noise generation functions.  Output is combined to produce different octaves of noise. */
     private final OpenSimplexNoise[] octaves;
 
-    public NoiseGeneratorOpenSimplex(Random seed, int octavesIn)
+    public NoiseGeneratorOpenSimplex(SharedSeedRandom seed, int octavesIn)
     {
         this.octaves = new OpenSimplexNoise[octavesIn];
         
@@ -22,7 +21,7 @@ public class NoiseGeneratorOpenSimplex implements INoiseGenerator
     public OpenSimplexNoise getOpenSimplexOctave(int i)
     { return this.octaves[i]; }
 
-	public double func_215460_a(double x, double y, double z, double p_215462_7_, double p_215462_9_, boolean two_dimensional) 
+	public double eval(double x, double y, double z, double p_215462_7_, double p_215462_9_, boolean two_dimensional) 
 	{
         double d0 = 1.0D;
         double d1 = 0.0D;
@@ -39,21 +38,25 @@ public class NoiseGeneratorOpenSimplex implements INoiseGenerator
 
         return d1;
 	}
-
-	public static double maintainPrecision(double p_215461_0_)
-	{ return p_215461_0_ - (double)MathHelper.lfloor(p_215461_0_ / 3.3554432E7D + 0.5D) * 3.3554432E7D; }
 	
 	public double getNoise(double x, double y, double z)
 	{
-        return func_215460_a(x, y, z, 0, 0, false);
+        return eval(x, y, z, 0, 0, false);
 	}
 
 	public double getNoise(double x, double z) 
 	{
-        return func_215460_a(x, 0.0, z, 0.0, 0.0, true);
+        return eval(x, 0, z, 0, 0, true);
 	}
-	
-	public double func_215460_a(double x, double y, double idk, double idk1) {
-        return func_215460_a(x, y, 0, idk, idk1, false);
+
+	public static double maintainPrecision(double p_215461_0_) 
+	{
+		return p_215461_0_ - (double)MathHelper.lfloor(p_215461_0_ / 3.3554432E7D + 0.5D) * 3.3554432E7D;
+	}
+
+	@Override
+	public double noiseAt(double x, double y, double idk, double idk1) 
+	{
+		return eval(x, y, 0.0, idk, idk1, false);
 	}
 }
