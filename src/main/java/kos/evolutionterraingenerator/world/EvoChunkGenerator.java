@@ -12,7 +12,6 @@ import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
-import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.Heightmap;
@@ -128,7 +127,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		ChunkPos chunkpos = chunkIn.getPos();
         int x = chunkpos.getXStart() + 9;
         int z = chunkpos.getZStart() + 9;
-        int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG);
+        int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG) + 1;
 		Biome biome = this.biomeProvider.setBiomebyHeight(this.biomeProvider.generateLandBiome(x, z, true), x, z, y, true);
 		for(Structure<?> structure : Feature.STRUCTURES.values()) 
 		{
