@@ -13,6 +13,8 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
+buildDir = "build/1.14.4"
+
 version = '0.1.0'
 group = 'kos.evolutionterraingenerator' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'evolutionterraingenerator'
