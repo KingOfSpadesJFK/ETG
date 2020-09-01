@@ -125,6 +125,11 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	@Override
 	public void generateStructures(BiomeManager biomeManagerIn, IChunk chunkIn, ChunkGenerator<?> chunkGen, TemplateManager templetManager) 
 	{
+		ChunkPos chunkpos = chunkIn.getPos();
+		int x = chunkpos.getXStart() + 9;
+		int z = chunkpos.getZStart() + 9;
+		int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG);
+        Biome biome = this.biomeProvider.getNoiseBiome(chunkpos.getXStart() + 9, y, chunkpos.getZStart() + 9, false);
 		for(Structure<?> structure : Feature.STRUCTURES.values()) 
 		{
 			if (chunkGen.getBiomeProvider().hasStructure(structure)) 
@@ -132,13 +137,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 				StructureStart structurestart = chunkIn.getStructureStart(structure.getStructureName());
 				int i = structurestart != null ? structurestart.getRefCount() : 0;
 				SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
-				ChunkPos chunkpos = chunkIn.getPos();
 				StructureStart structurestart1 = StructureStart.DUMMY;
-				
-				int x = chunkpos.getXStart() + 9;
-				int z = chunkpos.getZStart() + 9;
-				int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG);
-	            Biome biome = this.biomeProvider.getNoiseBiome(chunkpos.getXStart() + 9, y, chunkpos.getZStart() + 9, false);
 				if (structure.canBeGenerated(biomeManagerIn, chunkGen, sharedseedrandom, chunkpos.x, chunkpos.z, biome))
 				{
 					StructureStart structurestart2 = structure.getStartFactory().create(structure, chunkpos.x, chunkpos.z, MutableBoundingBox.getNewBoundingBox(), i, chunkGen.getSeed());
