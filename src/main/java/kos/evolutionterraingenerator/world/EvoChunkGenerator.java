@@ -95,30 +95,48 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	{
 		((ChunkPrimer)chunkIn).func_225548_a_(new BiomeContainer(PLAINS_BIOMES));
 	}
+	
+	private static final int WIDTH_BITS = (int)Math.round(Math.log(16.0D) / Math.log(2.0D)) - 2;
+	private static final int HEIGHT_BITS = (int)Math.round(Math.log(256.0D) / Math.log(2.0D)) - 2;
+	public static final int BIOMES_SIZE = 1 << WIDTH_BITS + WIDTH_BITS + HEIGHT_BITS;
+	public static final int HORIZONTAL_MASK = (1 << WIDTH_BITS) - 1;
+	public static final int VERTICAL_MASK = (1 << HEIGHT_BITS) - 1;
 
-	//This is just here for a less noisy surface between deserts/mesas and other biomes
+	//The prime area for determining biomes
 	@Override
 	public void generateSurface(WorldGenRegion worldRegion, IChunk chunkIn) 
 	{
-		((ChunkPrimer)chunkIn).func_225548_a_(new EvoBiomeContainer(chunkIn, this.biomeProvider));
 		ChunkPos chunkpos = chunkIn.getPos();
 		SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
 	    sharedseedrandom.setBaseChunkSeed(chunkpos.x, chunkpos.z);
 	    int x = chunkpos.getXStart();
 	    int z = chunkpos.getZStart();
-
+	    Biome[] abiome = new Biome[BIOMES_SIZE];
+	    
+	    int k = 0;
 	    for(int i = 0; i < 16; ++i) 
 	    {
 	    	for(int j = 0; j < 16; ++j)
 	        {
-	    		int x1 = x + i;
-	        	int z1 = z + j;
-	        	int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, i, j) + 1;
+	    		int x1 = x + j;
+	        	int z1 = z + i;
+	        	int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, j, i) + 1;
+	        	Biome[] biomes = this.biomeProvider.getBiomesByHeight(x1, y, z1);
+	        	if (x1 % 4 == 0 && z1 % 4 == 0)
+	        	{
+	        		abiome[k] = biomes[1];
+	        		k++;
+	        	}
 	        	double d1 = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.5;
-	        	Biome biome = this.biomeProvider.getNoiseBiome(x1, y, z1, false);
-        		biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
+        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
 	        }
 	    }
+	    while (k < BIOMES_SIZE)
+	    {
+    		abiome[k] = abiome[k % 16];
+    		k++;
+	    }
+		((ChunkPrimer)chunkIn).func_225548_a_(new BiomeContainer(abiome));
 	    this.makeBedrock(chunkIn, sharedseedrandom);
 	}
 
@@ -249,8 +267,8 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
     	{
     		for(int k = -2; k <= 2; ++k) 
     		{
-    			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
-    			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4);
+    			double temperature = this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4)[1];
+    			double humidity =  this.biomeProvider.getTemperature((x + j) * 4, (z + k) * 4)[1];
     			double variation = MathHelper.clamp(this.variationNoise.getNoise((x + j) * 0.0825, (z + k) * 0.0825) * 0.2 + 0.5, 0.0, 1.0);
     			double d4 = (this.settings.getBiomeDepth() 
     					+ ( (1.0 - humidity * temperature) * this.settings.getBiomeDepthFactor()) )
