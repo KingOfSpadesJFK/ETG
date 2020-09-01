@@ -128,7 +128,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		ChunkPos chunkpos = chunkIn.getPos();
 		int x = chunkpos.getXStart() + 9;
 		int z = chunkpos.getZStart() + 9;
-		int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG);
+		int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG) + 1;
         Biome biome = this.biomeProvider.getNoiseBiome(chunkpos.getXStart() + 9, y, chunkpos.getZStart() + 9, false);
 		for(Structure<?> structure : Feature.STRUCTURES.values()) 
 		{
@@ -156,7 +156,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		int x= i * 16;
 		int z = j * 16;
 		BlockPos blockpos = new BlockPos(x, 0, z);
-		Biome biome = this.biomeProvider.getNoiseBiome(x, region.getChunk(blockpos).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x, z), z, true);
+		Biome biome = this.biomeProvider.getNoiseBiome(x, region.getChunk(blockpos).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x, z) + 1, z, true);
 		SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
 		long i1 = sharedseedrandom.setDecorationSeed(region.getSeed(), x, z);
 
