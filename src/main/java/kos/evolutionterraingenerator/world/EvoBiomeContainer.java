@@ -36,10 +36,9 @@ public class EvoBiomeContainer extends BiomeContainer
 		for(int k = 0; k < this.biomes.length; ++k) 
 		{
 			int l = k & HORIZONTAL_MASK;
-	        int i1 = k >> WIDTH_BITS + WIDTH_BITS & VERTICAL_MASK;
 	        int j1 = k >> WIDTH_BITS & HORIZONTAL_MASK;
-			int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, (x + l) * 4, (z + j1) * 4) >> 2;
-	        this.biomes[k] = biomeProviderIn.getNoiseBiome(x + l << 2, y << 2, z + j1 << 2, true);
+			int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x + l << 2, z + j1 << 2) + 1;
+	        this.biomes[k] = biomeProviderIn.getNoiseBiome(x + l << 2, y, z + j1 << 2, true);
 	    }
 	}
 	
