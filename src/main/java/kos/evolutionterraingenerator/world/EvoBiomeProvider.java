@@ -474,13 +474,13 @@ public class EvoBiomeProvider extends BiomeProvider
     		if (y >= seaLevel + 50)
         		biome = Biomes.WOODED_BADLANDS_PLATEAU;
     	}
-    	if (getSettings().isUseBOPBiomes() && temperature < EvoBiomeProvider.SNOW_TEMP && !biome.equals(Biomes.ICE_SPIKES))
+    	/*if (getSettings().isUseBOPBiomes() && temperature < EvoBiomeProvider.SNOW_TEMP && !biome.equals(Biomes.ICE_SPIKES))
     	{
     		if (y >= seaLevel + 65)
     			biome = BOPBiomes.alps.get();
     		else if (y >= seaLevel + 50)
     			biome = BOPBiomes.alps_foothills.get();
-    	}
+    	}*/
     	return biome;
     }
     

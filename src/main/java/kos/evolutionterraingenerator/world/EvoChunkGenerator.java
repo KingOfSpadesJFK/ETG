@@ -116,16 +116,17 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	        	int z1 = z + i;
 	        	int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, j, i) + 1;
 	        	Biome[] biomes = this.biomeProvider.getBiomesByHeight(x1, y, z1);
-	        	double noise = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.5;
+	        	double noise = this.surfaceDepthNoise.getNoise((double)x1 * 0.05, (double)z1 * 0.05) * 0.5;
 	        	if (x1 % 4 == 0 && z1 % 4 == 0)
 	        	{
 	        		abiome[k] = biomes[1];
 	        		k++;
 	        	}
 	    		double humidity = this.biomeProvider.getHumidity(x, z)[1];
+	        	double noise2 = this.surfaceDepthNoise.getNoise((double)x1 * 2.0, (double)z1 * 2.0);
 	    		if (biomes[0] == Biomes.BADLANDS || biomes[0] == Biomes.WOODED_BADLANDS_PLATEAU)
 	        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
-	    		else if ( y <= 150 + Math.rint(20.0 * humidity + MathHelper.clamp(noise * 2.0, -2, 2)) )
+	    		else if ( y <= 130 + Math.rint(40.0 * humidity + MathHelper.clamp(noise2 * 2.0, -5, 5)) )
 	        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
 	        }
 	    }
@@ -186,7 +187,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 			{
 				if (generationstage$decoration == GenerationStage.Decoration.VEGETAL_DECORATION)
 				{
-					if ( y <= 140 + Math.rint(10.0 * ((0.5 - Math.abs(temperature - 0.5)) * 2.0) * humidity + MathHelper.clamp(noise, -3.125, 3.125)) )
+					if ( y <= 115 + Math.rint(30.0 * ((0.5 - Math.abs(temperature - 0.5)) * 2.0) * humidity + MathHelper.clamp(noise, -3.125, 3.125)) )
 						biome.decorate(generationstage$decoration, this, region, i1, sharedseedrandom, blockpos);
 				}
 				else
