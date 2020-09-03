@@ -172,13 +172,13 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		int x= i * 16;
 		int z = j * 16;
 		BlockPos blockpos = new BlockPos(x, 0, z);
-		int y = region.getChunk(blockpos).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x, z) + 1;
-		Biome biome = this.biomeProvider.getNoiseBiome(x, y, z, true);
+		int y = region.getChunk(blockpos).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x + 8, z + 8) + 1;
+		Biome biome = this.biomeProvider.getNoiseBiome(x + 8, y, z + 8, true);
 		SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
 		long i1 = sharedseedrandom.setDecorationSeed(region.getSeed(), x, z);
-		double temperature = this.biomeProvider.getTemperature(x, z)[1];
-		double humidity = this.biomeProvider.getHumidity(x, z)[1];
-    	double noise = this.surfaceDepthNoise.getNoise((double)x * 0.5, (double)z * 0.5);
+		double temperature = this.biomeProvider.getTemperature(x + 8, z + 8)[1];
+		double humidity = this.biomeProvider.getHumidity(x + 8, z + 8)[1];
+    	double noise = this.surfaceDepthNoise.getNoise((double)(x + 8) * 0.5, (double)(z + 8) * 0.5);
 
 		for(GenerationStage.Decoration generationstage$decoration : GenerationStage.Decoration.values()) 
 		{
