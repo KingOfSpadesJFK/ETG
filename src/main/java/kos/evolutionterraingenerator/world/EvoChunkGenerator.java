@@ -3,17 +3,21 @@ package kos.evolutionterraingenerator.world;
 import java.util.Random;
 
 import kos.evolutionterraingenerator.util.NoiseGeneratorOpenSimplex;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.ReportedException;
 import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.MutableBoundingBox;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.gen.GenerationStage;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.OverworldChunkGenerator;
 import net.minecraft.world.gen.WorldGenRegion;
@@ -110,11 +114,15 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	    		int x1 = x + i;
 	        	int z1 = z + j;
 	        	int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, i, j) + 1;
-        		Biome[] biome = this.biomeProvider.generateLandBiome(x1, z1);
-	        	biome = this.biomeProvider.setBiomebyHeight(biome, x1, z1, y);
-	        	double d1 = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.5;
-	        	biome[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
-        		abiome[j * 16 + i] = biome[1];
+        		Biome[] biomes = this.biomeProvider.generateLandBiome(x1, z1);
+	        	biomes = this.biomeProvider.setBiomebyHeight(biomes, x1, z1, y);
+	        	double noise = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.5;
+	    		double humidity = this.biomeProvider.getHumidity(x, z)[1];
+	    		if (biomes[0] == Biomes.BADLANDS || biomes[0] == Biomes.WOODED_BADLANDS_PLATEAU)
+	        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
+	    		else if ( y <= 150 + Math.rint(10.0 * humidity + MathHelper.clamp(noise * 2.0, -2, 2)) )
+	        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
+        		abiome[j * 16 + i] = biomes[1];
 	        }
 	    }
 	    chunkIn.setBiomes(abiome);
@@ -146,6 +154,43 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		            chunkIn.putStructureStart(structure.getStructureName(), structurestart);
 				}
 	        }
+		}
+	}
+	
+	@Override
+	public void decorate(WorldGenRegion region) 
+	{
+		int i = region.getMainChunkX();
+		int j = region.getMainChunkZ();
+		int x = i * 16;
+		int z = j * 16;
+		int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG) + 1;
+		BlockPos blockpos = new BlockPos(x, 0, z);
+		Biome biome = this.getBiome(region, blockpos.add(8, y + 8, 8));
+		SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
+		long i1 = sharedseedrandom.setDecorationSeed(region.getSeed(), x, z);
+		double temperature = this.biomeProvider.getTemperature(x, z)[1];
+		double humidity = this.biomeProvider.getHumidity(x, z)[1];
+    	double noise = this.surfaceDepthNoise.getNoise((double)x * 0.5, (double)z * 0.5);
+
+		for(GenerationStage.Decoration generationstage$decoration : GenerationStage.Decoration.values()) 
+		{
+			try 
+			{
+				if (generationstage$decoration == GenerationStage.Decoration.VEGETAL_DECORATION)
+				{
+					if ( y <= 140 + Math.rint(10.0 * ((0.5 - Math.abs(temperature - 0.5)) * 2.0) * humidity + MathHelper.clamp(noise, -3.125, 3.125)) )
+						biome.decorate(generationstage$decoration, this, region, i1, sharedseedrandom, blockpos);
+				}
+				else
+					biome.decorate(generationstage$decoration, this, region, i1, sharedseedrandom, blockpos);
+			} 
+			catch (Exception exception) 
+			{
+				CrashReport crashreport = CrashReport.makeCrashReport(exception, "Biome decoration");
+				crashreport.makeCategory("Generation").addDetail("CenterX", i).addDetail("CenterZ", j).addDetail("Step", generationstage$decoration).addDetail("Seed", i1).addDetail("Biome", Registry.BIOME.getKey(biome));
+		        throw new ReportedException(crashreport);
+			}
 		}
 	}
 
