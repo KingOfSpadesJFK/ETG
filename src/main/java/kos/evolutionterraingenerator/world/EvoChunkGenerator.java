@@ -120,7 +120,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	    		double humidity = this.biomeProvider.getHumidity(x, z)[1];
 	    		if (biomes[0] == Biomes.BADLANDS || biomes[0] == Biomes.WOODED_BADLANDS_PLATEAU)
 	        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
-	    		else if ( y <= 150 + Math.rint(10.0 * humidity + MathHelper.clamp(noise * 2.0, -2, 2)) )
+	    		else if ( y <= 150 + Math.rint(20.0 * humidity + MathHelper.clamp(noise * 2.0, -2, 2)) )
 	        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
         		abiome[j * 16 + i] = biomes[1];
 	        }

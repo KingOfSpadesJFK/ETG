@@ -288,7 +288,7 @@ public class EvoBiomeProvider extends BiomeProvider
         
         if (isBeach || isOcean)
         {
-        	if (y < seaLevel - 2)
+        	if (y < seaLevel)
         		return getOcean(temperature, y < 40);
         	if (y < seaLevel + 3)
         	{
