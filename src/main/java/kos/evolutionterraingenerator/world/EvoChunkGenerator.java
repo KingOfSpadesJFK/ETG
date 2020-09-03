@@ -116,13 +116,17 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	        	int z1 = z + i;
 	        	int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, j, i) + 1;
 	        	Biome[] biomes = this.biomeProvider.getBiomesByHeight(x1, y, z1);
+	        	double noise = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.5;
 	        	if (x1 % 4 == 0 && z1 % 4 == 0)
 	        	{
 	        		abiome[k] = biomes[1];
 	        		k++;
 	        	}
-	        	double d1 = this.surfaceDepthNoise.getNoise((double)x1 * 0.05D, (double)z1 * 0.05D) * 0.5;
-        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, d1, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
+	    		double humidity = this.biomeProvider.getHumidity(x, z)[1];
+	    		if (biomes[0] == Biomes.BADLANDS || biomes[0] == Biomes.WOODED_BADLANDS_PLATEAU)
+	        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
+	    		else if ( y <= 150 + Math.rint(10.0 * humidity + MathHelper.clamp(noise * 2.0, -2, 2)) )
+	        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
 	        }
 	    }
 	    while (k < BiomeContainer.BIOMES_SIZE)
@@ -168,15 +172,25 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		int x= i * 16;
 		int z = j * 16;
 		BlockPos blockpos = new BlockPos(x, 0, z);
-		Biome biome = this.biomeProvider.getNoiseBiome(x, region.getChunk(blockpos).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x, z) + 1, z, true);
+		int y = region.getChunk(blockpos).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x, z) + 1;
+		Biome biome = this.biomeProvider.getNoiseBiome(x, y, z, true);
 		SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
 		long i1 = sharedseedrandom.setDecorationSeed(region.getSeed(), x, z);
+		double temperature = this.biomeProvider.getTemperature(x, z)[1];
+		double humidity = this.biomeProvider.getHumidity(x, z)[1];
+    	double noise = this.surfaceDepthNoise.getNoise((double)x * 0.5, (double)z * 0.5);
 
 		for(GenerationStage.Decoration generationstage$decoration : GenerationStage.Decoration.values()) 
 		{
 			try 
 			{
-				biome.decorate(generationstage$decoration, this, region, i1, sharedseedrandom, blockpos);
+				if (generationstage$decoration == GenerationStage.Decoration.VEGETAL_DECORATION)
+				{
+					if ( y <= 140 + Math.rint(10.0 * ((0.5 - Math.abs(temperature - 0.5)) * 2.0) * humidity + MathHelper.clamp(noise, -3.125, 3.125)) )
+						biome.decorate(generationstage$decoration, this, region, i1, sharedseedrandom, blockpos);
+				}
+				else
+					biome.decorate(generationstage$decoration, this, region, i1, sharedseedrandom, blockpos);
 			} 
 			catch (Exception exception) 
 			{
