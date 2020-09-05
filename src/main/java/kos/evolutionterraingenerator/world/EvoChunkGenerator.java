@@ -146,7 +146,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		int x = chunkpos.getXStart() + 9;
 		int z = chunkpos.getZStart() + 9;
 		int y = func_222529_a(x, z, Heightmap.Type.OCEAN_FLOOR_WG) + 1;
-        Biome biome = this.biomeProvider.getNoiseBiome(chunkpos.getXStart() + 9, y, chunkpos.getZStart() + 9, false);
+        Biome biome = this.biomeProvider.getNoiseBiome(x, y, z, false);
 		for(Structure<?> structure : Feature.STRUCTURES.values()) 
 		{
 			if (chunkGen.getBiomeProvider().hasStructure(structure)) 
@@ -170,7 +170,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	{
 		int i = region.getMainChunkX();
 		int j = region.getMainChunkZ();
-		int x= i * 16;
+		int x = i * 16;
 		int z = j * 16;
 		BlockPos blockpos = new BlockPos(x, 0, z);
 		int y = region.getChunk(blockpos).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x + 8, z + 8) + 1;

@@ -256,66 +256,6 @@ public class EvoBiomeProvider extends BiomeProvider
 		return getLandBiome(temperature, humidity, biomeChance);
     }
     
-    public Biome generateBiome(double x, double z, boolean useNoise)
-    {
-        double temperature = useNoise ? getTemperature(x, z)[1] : getTemperature(x, z)[0];
-        double humidity = useNoise ? getHumidity(x, z)[1] : getHumidity(x, z)[0];
-    	double landmass1 = landOctave.getNoise((double)x * (0.00125 / oceanScale), landOffset, (double)z * (0.00125 / oceanScale))  * 0.125 / (double)oceanOctaves;
-    	double landmass2 = landOctave2.getNoise((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 / (double)oceanOctaves;
-		double biomeChance = useNoise ? getBiomeChance(x, z)[1] : getBiomeChance(x, z)[0];
-
-		Biome biome = getLandBiome(temperature, humidity, biomeChance);
-		if (landmass1 < oceanThreshold && landmass2 < oceanThreshold)
-		{
-	    	double mushroomChance = (mushroomOctave.getNoise(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) - 8.0) * 2.0 / (double)oceanOctaves;
-	    	double islandChance = (islandOctave.getNoise(x * (0.02 / biomeScale), z * (0.02 / biomeScale)) - 3.25) / (double)oceanOctaves;
-			if (mushroomChance > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
-			{
-				biome = Biomes.MUSHROOM_FIELDS;
-			} 
-			else if (islandChance > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale)
-			{
-				if (temperature < SNOW_TEMP)
-					biome = EvoBiomes.COLD_ISLANDS.getBiome(biomeChance);
-				else if (temperature < HOT_TEMP)
-					biome = EvoBiomes.ISLAND_BIOMES.getBiome(biomeChance);
-				else
-					biome = EvoBiomes.HOT_ISLANDS.getBiome(biomeChance);
-				if (islandChance < oceanThreshold)
-				{
-					if (this.providerSettings.isUseBOPBiomes())
-					{
-						if (biome == BOPBiomes.origin_hills.get())
-							biome = BOPBiomes.origin_beach.get();
-						if (biome == BOPBiomes.volcano.get())
-							biome = BOPBiomes.volcano_edge.get();
-						if (biome == BOPBiomes.tropics.get() || biome == Biomes.JUNGLE)
-							biome = BOPBiomes.white_beach.get();
-					}
-					else
-						biome = Biomes.BEACH;
-				}
-			}
-			else if (landmass1 > oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale || 
-					landmass2 > oceanThreshold - beachThreshold / (double)oceanOctaves  / oceanScale)
-			{
-				if (canBeBeach(x, z))
-				{
-					biome = getBeach(temperature, 
-								humidity, 
-								landmass1 <= oceanThreshold - beachThreshold / (double)oceanOctaves / oceanScale, 
-								biome.getDownfall() <= 0.0);
-				}
-			}
-			else
-				biome = getOcean(temperature, landmass1 < deepThreshold &&
-						landmass2 < deepThreshold &&
-						islandChance < deepThreshold &&
-						mushroomChance < deepThreshold);
-		}
-		return biome;
-    }
-    
 	private static final int BEACH_SAMPLES = 4;
 	private static final double BEACH_SEARCH_SCALE = 2.0;
 	public boolean canBeBeach(double x, double z)
@@ -344,11 +284,6 @@ public class EvoBiomeProvider extends BiomeProvider
     	
     	return false;
 	}
-
-    public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height)
-    {
-    	return getBiomesForGeneration(biomes, x, z, width, height, 1, 1, true);
-    }
 
     @Override
     public Biome getNoiseBiome(int x, int y, int z) 
@@ -400,7 +335,7 @@ public class EvoBiomeProvider extends BiomeProvider
     {
         int seaLevel = this.providerSettings.getSeaLevel();
    	 	double[] landmass = getLandmass(x, z);
-   	 	double beachThreshold = EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+   	 	double beachThreshold = oceanThreshold - EvoBiomeProvider.beachThreshold / (double)oceanOctaves / oceanScale;
 		boolean isOcean = landmass[4] < beachThreshold;
 		boolean isBeach = !isOcean && (landmass[4] < EvoBiomeProvider.oceanThreshold) && canBeBeach(x, z);
 		boolean isSpecialIsland = landmass[0] < EvoBiomeProvider.oceanThreshold && landmass[1] < EvoBiomeProvider.oceanThreshold;
@@ -482,30 +417,6 @@ public class EvoBiomeProvider extends BiomeProvider
     			biome = BOPBiomes.alps_foothills.get();
     	}*/
     	return biome;
-    }
-    
-    public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height, int xScale, int zScale, boolean useNoise)
-    {
-   		return getBiomesForGeneration(biomes, x, z, width, height, xScale, zScale, useNoise, false);
-    }
-    
-    public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height, int xScale, int zScale, boolean useNoise, boolean landOnly)
-    {
-        if (biomes == null || biomes.length < width * height)
-            biomes = new Biome[width * height];
-        
-    	for (int i = 0; i < width; i++)
-    	{
-   			for (int j = 0; j < height; j++)
-   			{
-   	    		int k = j * height + i;
-   	    		if (landOnly)
-   	   	    		biomes[k] = generateLandBiome((double)(x + i) * xScale, (double)(z + j) * zScale, useNoise);
-   	    		else
-   	    			biomes[k] = generateBiome((double)(x + i) * xScale, (double)(z + j) * zScale, useNoise);
-   			}
-   		}
-   		return biomes;
     }
 
     public Biome getLandBiome(double temp, double humid, double chance)
