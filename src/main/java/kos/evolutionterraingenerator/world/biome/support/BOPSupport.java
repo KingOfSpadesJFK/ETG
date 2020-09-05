@@ -150,6 +150,13 @@ public class BOPSupport
 		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.overgrown_cliffs.get(), 0.7F));
 		EvoBiomes.ARID_BIOMES.remove(EvoBiomes.RAINFOREST_ROOFED);
 		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.tropical_rainforest.get(), 0.8F));
+		EvoBiomes.ARID_BIOMES.remove(EvoBiomes.JUNGLE);
+		EvoBiomes.ARID_BIOMES.add(new EvoBiome(BOPBiomes.tropical_rainforest.get(), 0.85F, new Biome[] 
+				{
+						BOPBiomes.fungal_jungle.get(),
+						Biomes.JUNGLE,
+						Biomes.BAMBOO_JUNGLE
+				}));
 		EvoBiomes.ARID_BIOMES.sort(null);
 		
 		//Cold Swamps
@@ -164,6 +171,7 @@ public class BOPSupport
 		//Warm Swamps
 		EvoBiomes.WARM_SWAMP = new EvoBiome(Biomes.SWAMP, new Biome[]
 				{
+					BOPBiomes.silkglade.get(),
 					Biomes.SWAMP,
 					BOPBiomes.mangrove.get(),
 					Biomes.SWAMP,

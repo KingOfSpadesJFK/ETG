@@ -123,10 +123,10 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 	        		k++;
 	        	}
 	    		double humidity = this.biomeProvider.getHumidity(x, z)[1];
-	        	double noise2 = this.surfaceDepthNoise.getNoise((double)x1 * 2.0, (double)z1 * 2.0);
+	    		double temperature = this.biomeProvider.getTemperature(x, z)[1];
 	    		if (biomes[0] == Biomes.BADLANDS || biomes[0] == Biomes.WOODED_BADLANDS_PLATEAU)
 	        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
-	    		else if ( y <= 130 + Math.rint(40.0 * humidity + MathHelper.clamp(noise2 * 2.0, -5, 5)) )
+	    		else if ( y <= 130 + Math.rint(40.0 * humidity * temperature + (sharedseedrandom.nextInt() % 10 - 5)) )
 	        		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.getSettings().getDefaultBlock(), this.getSettings().getDefaultFluid(), this.getSeaLevel(), this.world.getSeed());
 	        }
 	    }
@@ -179,7 +179,6 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 		long i1 = sharedseedrandom.setDecorationSeed(region.getSeed(), x, z);
 		double temperature = this.biomeProvider.getTemperature(x + 8, z + 8)[1];
 		double humidity = this.biomeProvider.getHumidity(x + 8, z + 8)[1];
-    	double noise = this.surfaceDepthNoise.getNoise((double)(x + 8) * 0.5, (double)(z + 8) * 0.5);
 
 		for(GenerationStage.Decoration generationstage$decoration : GenerationStage.Decoration.values()) 
 		{
@@ -187,7 +186,7 @@ public class EvoChunkGenerator extends OverworldChunkGenerator
 			{
 				if (generationstage$decoration == GenerationStage.Decoration.VEGETAL_DECORATION)
 				{
-					if ( y <= 115 + Math.rint(30.0 * ((0.5 - Math.abs(temperature - 0.5)) * 2.0) * humidity + MathHelper.clamp(noise, -3.125, 3.125)) )
+					if ( y <= 115 + Math.rint(30.0 * humidity * temperature + sharedseedrandom.nextInt() % 10) )
 						biome.decorate(generationstage$decoration, this, region, i1, sharedseedrandom, blockpos);
 				}
 				else
