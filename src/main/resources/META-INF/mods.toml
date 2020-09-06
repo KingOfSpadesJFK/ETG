@@ -10,14 +10,7 @@
   Kurt \"KdotJPG\" Spencer for Open Simplex Noise generator"
       authors="12ofspades"
       description='''
-  A new world type that has a new take on the terrain generation of Minecraft featuring the beset of all of the vanilla Minecraft terarain generators in history. 
-  Includes features such as:
-  -Varied hills and mountains like in the Beta days!
-  -Biomes and generated structures seen in today's Minecraft!
-  -New smoother OpenSimplex noise generated terrain, allowing for smoother and more believable terrain with less directional artifacts!
-  -Humidity and temperature based biome generation, allowing for smoother biome transitions
-  -Bigger mountains that take advantage of the 256 height limit
-  -Bigger beaches, now with a chance that it comes in gravel
+  A new take on the terrain generation of Minecraft featuring the beset of all of the vanilla Minecraft terarain generators in history and more!
       '''
 
       [[dependencies.evolutionterraingenerator]]
