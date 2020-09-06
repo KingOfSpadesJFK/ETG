@@ -1,4 +1,4 @@
-package kos.evolutionterraingenerator.client;
+/*package kos.evolutionterraingenerator.client;
 
 import kos.evolutionterraingenerator.world.EvoType;
 import kos.evolutionterraingenerator.world.biome.support.BOPSupport;
@@ -100,3 +100,4 @@ public class CreateETGWorldScreen extends Screen
 	}
 
 }
+*/

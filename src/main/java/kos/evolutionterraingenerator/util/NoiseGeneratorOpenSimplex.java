@@ -1,16 +1,16 @@
 package kos.evolutionterraingenerator.util;
 
 import kos.evolutionterraingenerator.util.noise.OpenSimplexNoise;
-import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.gen.INoiseGenerator;
+import net.minecraft.util.math.noise.NoiseSampler;
+import net.minecraft.world.gen.ChunkRandom;
 
-public class NoiseGeneratorOpenSimplex implements INoiseGenerator
+public class NoiseGeneratorOpenSimplex implements NoiseSampler
 {
     /** Collection of noise generation functions.  Output is combined to produce different octaves of noise. */
     private final OpenSimplexNoise[] octaves;
 
-    public NoiseGeneratorOpenSimplex(SharedSeedRandom seed, int octavesIn)
+    public NoiseGeneratorOpenSimplex(ChunkRandom seed, int octavesIn)
     {
         this.octaves = new OpenSimplexNoise[octavesIn];
         
@@ -55,7 +55,7 @@ public class NoiseGeneratorOpenSimplex implements INoiseGenerator
 	}
 
 	@Override
-	public double noiseAt(double x, double y, double idk, double idk1) 
+	public double sample(double x, double y, double idk, double idk1) 
 	{
 		return eval(x, y, 0.0, idk, idk1, false);
 	}

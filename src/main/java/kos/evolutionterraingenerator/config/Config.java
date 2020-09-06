@@ -1,4 +1,4 @@
-package kos.evolutionterraingenerator.config;
+/*package kos.evolutionterraingenerator.config;
 
 import kos.evolutionterraingenerator.EvolutionTerrainGenerator;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -22,3 +22,4 @@ public class Config
 		}
 	}
 }
+*/
