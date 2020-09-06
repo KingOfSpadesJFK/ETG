@@ -1,12 +1,7 @@
 package kos.evolutionterraingenerator.world;
 
-import net.minecraft.world.biome.provider.OverworldBiomeProviderSettings;
-import net.minecraft.world.storage.WorldInfo;
-
-public class EvoBiomeProviderSettings extends OverworldBiomeProviderSettings
+public class EvoBiomeProviderSettings
 {
-
-	private WorldInfo worldInfo;
 	private EvoGenSettings settings;
 	
 	private boolean useBOPBiomes;
@@ -15,34 +10,6 @@ public class EvoBiomeProviderSettings extends OverworldBiomeProviderSettings
 	private float tempScale = 1.0f;
 	private float oceanScale = 1.0f;
 	private int seaLevel = 63;
-
-	public EvoBiomeProviderSettings(WorldInfo worldInfo) 
-	{
-		super(worldInfo);
-		this.worldInfo = worldInfo;
-	}
-	
-	public void setup()
-	{
-		useBOPBiomes = worldInfo.getGeneratorOptions().getBoolean(EvoType.USE_BOP_TAG);
-	}
-	
-	public OverworldBiomeProviderSettings setWorldInfo(WorldInfo worldInfo)
-	{
-		this.worldInfo = worldInfo;
-		return this;
-	}
-
-	public WorldInfo getWorldInfo()
-	{
-		return this.worldInfo;
-	}
-	
-	public OverworldBiomeProviderSettings setGeneratorSettings(EvoGenSettings settings) 
-	{
-		this.settings = settings;
-		return this;
-	}
 	
 	public void setUseBOPBiomes(boolean useBOPBiomes)
 	{

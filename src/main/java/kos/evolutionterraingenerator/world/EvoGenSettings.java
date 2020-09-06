@@ -2,10 +2,8 @@ package kos.evolutionterraingenerator.world;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.world.gen.OverworldGenSettings;
 
-public class EvoGenSettings extends OverworldGenSettings
+public class EvoGenSettings
 {
 	private final int seaLevel = 63;
 	

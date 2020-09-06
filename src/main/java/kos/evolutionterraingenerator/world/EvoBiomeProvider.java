@@ -8,7 +8,6 @@ import java.util.List;
 
 public class EvoBiomeProvider extends BiomeSource
 {
-
 	protected EvoBiomeProvider(List<Biome> biomes) {
 		super(biomes);
 		// TODO Auto-generated constructor stub
