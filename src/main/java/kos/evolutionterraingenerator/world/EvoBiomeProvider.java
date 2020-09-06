@@ -6,6 +6,8 @@ import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.provider.BiomeProvider;
 
 import com.google.common.collect.Sets;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import biomesoplenty.api.biome.BOPBiomes;
 import kos.evolutionterraingenerator.EvolutionTerrainGenerator;
@@ -21,6 +23,11 @@ import net.minecraft.util.math.MathHelper;
 
 public class EvoBiomeProvider extends BiomeProvider
 {
+    public static final Codec<EvoBiomeProvider> CODEC = RecordCodecBuilder.create((builder) ->
+    {
+        return builder.group(Codec.LONG.fieldOf("seed").stable().forGetter((biomeProvider) -> biomeProvider.seed)).apply(builder, builder.stable(EvoBiomeProvider::new));
+    });
+    
     private NoiseGeneratorOpenSimplex tempOctave;
     private NoiseGeneratorOpenSimplex humidOctave;
     private NoiseGeneratorOpenSimplex landOctave;
@@ -106,7 +113,8 @@ public class EvoBiomeProvider extends BiomeProvider
     		NewBiomes.SNOWY_GIANT_TREE_TAIGA,
     		NewBiomes.SNOWY_GIANT_SPRUCE_TAIGA,
     		NewBiomes.RAINFOREST);
-	
+
+    private final long seed;
 	public static final double SNOW_TEMP = 0.125;
 	public static final double COLD_TEMP = 0.375;
 	public static final double WARM_TEMP = 0.625;

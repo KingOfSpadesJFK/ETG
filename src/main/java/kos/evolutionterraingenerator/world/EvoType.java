@@ -1,4 +1,4 @@
-package kos.evolutionterraingenerator.world;
+/*package kos.evolutionterraingenerator.world;
 
 import kos.evolutionterraingenerator.client.CreateETGWorldScreen;
 import kos.evolutionterraingenerator.world.biome.support.BOPSupport;
@@ -59,4 +59,4 @@ public class EvoType extends WorldType
 	{
 		mc.displayGuiScreen(new CreateETGWorldScreen(gui, gui.chunkProviderSettingsJson));
 	}
-}
+}*/
