@@ -164,6 +164,7 @@ public class BOPSupport
 		//Warm Swamps
 		EvoBiomes.WARM_SWAMP = new EvoBiome(Biomes.SWAMP, new Biome[]
 				{
+					BOPBiomes.silkglade.get(),
 					Biomes.SWAMP,
 					BOPBiomes.mangrove.get(),
 					Biomes.SWAMP,
