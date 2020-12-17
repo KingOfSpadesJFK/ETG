@@ -1,6 +1,5 @@
 package kos.evolutionterraingenerator;
 
-import kos.evolutionterraingenerator.world.EvoType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -15,7 +14,6 @@ public class EvolutionTerrainGenerator {
 	public static final String VERSION = "0.1.0";
 	
 	public static EvolutionTerrainGenerator instance;
-	public static EvoType worldType;
 
     public static Logger logger = LogManager.getLogger(MODID);
 	
@@ -32,6 +30,5 @@ public class EvolutionTerrainGenerator {
 	//Event Loaders
 	private void setup(final FMLCommonSetupEvent event)
 	{
-		worldType = new EvoType("evolution");
 	}
 }
