@@ -83,7 +83,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class EvoChunkGenerator extends ChunkGenerator 
 {
 	public static final Codec<EvoChunkGenerator> CODEC = RecordCodecBuilder.create((p_236091_0_) -> {
-		return p_236091_0_.group(EvoBiomeProvider.CODEC.fieldOf("biome_source").forGetter((p_236096_0_) -> {
+		return p_236091_0_.group(EvoBiomeProvider.CODEC.fieldOf("environmental_noise").forGetter((p_236096_0_) -> {
 			return p_236096_0_.biomeProvider;
 		}), Codec.LONG.fieldOf("seed").stable().forGetter((p_236093_0_) -> {
 			return p_236093_0_.seed;
@@ -450,13 +450,11 @@ public class EvoChunkGenerator extends ChunkGenerator
        this.calcNoiseColumn(arr, x, z, coordScale, heightScale, d2, d3, j, i);
     }
 
-    
-    //The only reason it's here is because of calcNoiseColumn() being private in NoiseChunkGenerator
-    protected void calcNoiseColumn(double[] arr, int x, int z, double coordScale, double heightScale, double d_1, double d_2, int p_222546_12_, int p_222546_13_) {
+    private void calcNoiseColumn(double[] arr, int x, int z, double coordScale, double heightScale, double d_1, double d_2, int p_222546_12_, int p_222546_13_) {
        double[] adouble = this.getBiomeNoiseColumn(x, z);
        double d0 = adouble[0];
        double d1 = adouble[1];
-       double d2 = this.func_222551_g();
+       double d2 = (double)(this.noiseSizeY - 4);
 
        for(int i = 0; i < this.noiseSizeY + 1; ++i)
        {
@@ -476,7 +474,7 @@ public class EvoChunkGenerator extends ChunkGenerator
 
     }
 
-    protected double func_222545_a(double p_222545_1_, double p_222545_3_, int p_222545_5_) {
+    private double func_222545_a(double p_222545_1_, double p_222545_3_, int p_222545_5_) {
        double depthBase = this.genSettings.getDepthBaseSize();
        double d1 = ((double)p_222545_5_ - (depthBase + p_222545_1_ * depthBase / 8.0D * 4.0D)) * this.genSettings.getHeightStretch() * 128.0D / 256.0D / p_222545_3_;
        if (d1 < 0.0D) {
