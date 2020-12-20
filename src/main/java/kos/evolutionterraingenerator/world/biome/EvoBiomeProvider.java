@@ -529,9 +529,9 @@ public class EvoBiomeProvider extends BiomeProvider
 		return new EvoBiomeProvider(providerSettings, seed, lookupRegistry);
 	}
 
-	static {
-	    Registry.register(Registry.BIOME_PROVIDER_CODEC, new ResourceLocation(EvolutionTerrainGenerator.MODID, "biome_source"), CODEC);
-	}
-
 	public IObjectIntIterable<Biome> getRegistry() { return lookupRegistry; }
+
+	static {
+	    Registry.register(Registry.BIOME_PROVIDER_CODEC, new ResourceLocation(EvolutionTerrainGenerator.MODID, "environmental_noise"), CODEC);
+	}
 }

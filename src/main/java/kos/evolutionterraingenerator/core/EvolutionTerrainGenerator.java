@@ -31,7 +31,7 @@ public class EvolutionTerrainGenerator {
 		//FMLJavaModLoadingContext.get().getModEventBus().addListener(this::config);
         MinecraftForge.EVENT_BUS.register(this);
         
-        evoWorldType.setRegistryName(new ResourceLocation("evolution"));
+        evoWorldType.setRegistryName(new ResourceLocation(MODID, "evolution"));
         ForgeRegistries.WORLD_TYPES.register(evoWorldType);
 	}
 
