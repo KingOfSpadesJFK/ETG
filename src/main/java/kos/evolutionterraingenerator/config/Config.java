@@ -1,6 +1,6 @@
 package kos.evolutionterraingenerator.config;
 
-import kos.evolutionterraingenerator.EvolutionTerrainGenerator;
+import kos.evolutionterraingenerator.core.EvolutionTerrainGenerator;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public class Config

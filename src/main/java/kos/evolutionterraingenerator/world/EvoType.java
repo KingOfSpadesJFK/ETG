@@ -1,62 +1,39 @@
-/*package kos.evolutionterraingenerator.world;
+package kos.evolutionterraingenerator.world;
 
-import kos.evolutionterraingenerator.client.CreateETGWorldScreen;
-import kos.evolutionterraingenerator.world.biome.support.BOPSupport;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.CreateWorldScreen;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.world.World;
+import kos.evolutionterraingenerator.world.biome.EvoBiomeProvider;
+import kos.evolutionterraingenerator.world.biome.EvoBiomeProviderSettings;
+import kos.evolutionterraingenerator.world.gen.EvoChunkGenerator;
+import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.DimensionType;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.api.distmarker.Dist;
+import net.minecraft.world.gen.DimensionSettings;
+import net.minecraft.world.gen.settings.DimensionGeneratorSettings;
+import net.minecraftforge.common.world.ForgeWorldType;
 
-public class EvoType extends WorldType
-{
-	public EvoType(String name)
+public class EvoType extends ForgeWorldType
+{	
+	public EvoType()
 	{
-		super(name);
+		super(null);
 	}
 	
-	public static final String USE_BOP_TAG = "useBOPBiomes";
-	
 	@Override
-	@SuppressWarnings("deprecation")
-	public ChunkGenerator<?> createChunkGenerator(World world)
+	public ChunkGenerator createChunkGenerator(Registry<Biome> biomeRegistry, Registry<DimensionSettings> dimensionSettingsRegistry, long seed, String generatorSettings)
+	{
+        return new EvoChunkGenerator(new EvoBiomeProvider(new EvoBiomeProviderSettings(generatorSettings), seed, biomeRegistry), seed, () -> dimensionSettingsRegistry.getOrThrow(DimensionSettings.field_242734_c));
+	}
+
+    @Override
+    public DimensionGeneratorSettings createSettings(DynamicRegistries dynamicRegistries, long seed, boolean generateStructures, boolean bonusChest, String generatorSettings)
     {
-		CompoundNBT nbt = world.getWorldInfo().getGeneratorOptions();
-		boolean bopLoaded = ModList.get().isLoaded(BOPSupport.BOP_MODID);
-		if (!bopLoaded || !nbt.contains(USE_BOP_TAG))
-			nbt.putBoolean(USE_BOP_TAG, false);
-		
-		EvoGenSettings settings = new EvoGenSettings(nbt);
-		if (world.dimension.getType() == DimensionType.OVERWORLD)
-		{
-			EvoBiomeProviderSettings that = new EvoBiomeProviderSettings(world.getWorldInfo());
-			that.setGeneratorSettings(settings);
-			that.setup();
-			return new EvoChunkGenerator(world, new EvoBiomeProvider(that), settings);
-		}
-        return world.dimension.createChunkGenerator();
+        Registry<Biome> biomeRegistry = dynamicRegistries.getRegistry(Registry.BIOME_KEY);
+        Registry<DimensionType> dimensionTypeRegistry = dynamicRegistries.getRegistry(Registry.DIMENSION_TYPE_KEY);
+        Registry<DimensionSettings> dimensionSettingsRegistry = dynamicRegistries.getRegistry(Registry.NOISE_SETTINGS_KEY);
+        return new DimensionGeneratorSettings(seed, generateStructures, bonusChest,
+                DimensionGeneratorSettings.func_242749_a(dimensionTypeRegistry,
+                        DimensionType.getDefaultSimpleRegistry(dimensionTypeRegistry, biomeRegistry, dimensionSettingsRegistry, seed),
+                        createChunkGenerator(biomeRegistry, dimensionSettingsRegistry, seed, generatorSettings)));
     }
-
-	@Override
-	public boolean hasCustomOptions()
-	{
-		return true;
-	}
-
-	@Override
-	public boolean hasInfoNotice()
-	{
-		return true;
-	}
-
-	@Override
-	@OnlyIn(Dist.CLIENT)
-	public void onCustomizeButton(Minecraft mc, CreateWorldScreen gui)
-	{
-		mc.displayGuiScreen(new CreateETGWorldScreen(gui, gui.chunkProviderSettingsJson));
-	}
-}*/
+}

@@ -1,11 +1,10 @@
-package kos.evolutionterraingenerator.world;
+package kos.evolutionterraingenerator.world.gen;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.world.gen.OverworldGenSettings;
 
-public class EvoGenSettings extends OverworldGenSettings
+public class EvoGenSettings
 {
 	private final int seaLevel = 63;
 	
@@ -36,6 +35,9 @@ public class EvoGenSettings extends OverworldGenSettings
 	public EvoGenSettings(CompoundNBT nbtSettings)
 	{
 		
+	}
+
+	public EvoGenSettings() {
 	}
 
 	public int getNoiseOctaves() 

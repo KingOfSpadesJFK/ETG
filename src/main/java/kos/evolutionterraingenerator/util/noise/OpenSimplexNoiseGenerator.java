@@ -19,7 +19,7 @@ import net.minecraft.util.SharedSeedRandom;
  *   will be the same when ported to other languages.
  */
  
-public class OpenSimplexNoise
+public class OpenSimplexNoiseGenerator
 {
 
 	private static final double STRETCH_CONSTANT_2D = -0.211324865405187;    //(1/Math.sqrt(2+1)-1)/2;
@@ -45,7 +45,7 @@ public class OpenSimplexNoise
 	//Initializes the class using a permutation array generated from a 64-bit seed.
 	//Generates a proper permutation (i.e. doesn't merely perform N successive pair swaps on a base array)
 	//Uses a simple 64-bit LCG.
-	public OpenSimplexNoise(SharedSeedRandom seed)
+	public OpenSimplexNoiseGenerator(SharedSeedRandom seed)
 	{
 		this.xCoord = seed.nextDouble() * 256.0D;
 	    this.yCoord = seed.nextDouble() * 256.0D;

@@ -1,5 +1,6 @@
     modLoader="javafml"
-    loaderVersion="[33,)"
+    loaderVersion="[35,)"
+	license="MIT License"
     showAsResourcePack=false
 
     [[mods]]
@@ -10,18 +11,19 @@
   Kurt \"KdotJPG\" Spencer for Open Simplex Noise generator"
       authors="12ofspades"
       description='''
-  A new world take on the terrain generation featuring the best of all of the vanilla Minecraft terarain generators in history and more'''
+  A new world take on the terrain generation featuring the best of all of the vanilla Minecraft terarain generators in history and more
+  '''
 
       [[dependencies.evolutionterraingenerator]]
         modId="forge"
         mandatory=true
-        versionRange="[33,)"
+        versionRange="[35,)"
         ordering="NONE"
         side="BOTH"
 
       [[dependencies.evolutionterraingenerator]]
         modId="minecraft"
         mandatory=true
-        versionRange="[1.16.2]"
+        versionRange="[1.16.4]"
         ordering="NONE"
         side="BOTH"
