@@ -6,7 +6,6 @@ import java.util.ListIterator;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 
@@ -18,7 +17,6 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import kos.evolutionterraingenerator.core.EvolutionTerrainGenerator;
 import kos.evolutionterraingenerator.util.OpenSimplexNoiseOctaves;
-import kos.evolutionterraingenerator.util.noise.OpenSimplexNoiseGenerator;
 import kos.evolutionterraingenerator.world.biome.EvoBiomeProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -46,21 +44,13 @@ import net.minecraft.world.biome.BiomeManager;
 import net.minecraft.world.biome.BiomeRegistry;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.MobSpawnInfo;
-import net.minecraft.world.biome.provider.EndBiomeProvider;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.DebugChunkGenerator;
 import net.minecraft.world.gen.DimensionSettings;
-import net.minecraft.world.gen.FlatChunkGenerator;
 import net.minecraft.world.gen.GenerationStage;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.INoiseGenerator;
-import net.minecraft.world.gen.NoiseChunkGenerator;
-import net.minecraft.world.gen.OctavesNoiseGenerator;
-import net.minecraft.world.gen.PerlinNoiseGenerator;
-import net.minecraft.world.gen.SimplexNoiseGenerator;
 import net.minecraft.world.gen.WorldGenRegion;
 import net.minecraft.world.gen.carver.ConfiguredCarver;
 import net.minecraft.world.gen.feature.StructureFeature;
@@ -88,7 +78,7 @@ public class EvoChunkGenerator extends ChunkGenerator
 		}), Codec.LONG.fieldOf("seed").stable().forGetter((p_236093_0_) -> {
 			return p_236093_0_.seed;
 		}), DimensionSettings.field_236098_b_.fieldOf("settings").forGetter((p_236090_0_) -> {
-			return p_236090_0_.dimensionsettings;
+			return p_236090_0_.dimensionSettings;
 		})).apply(p_236091_0_, p_236091_0_.stable(EvoChunkGenerator::new));
 	});
 	private static final float[] field_222561_h = Util.make(new float[13824], (p_236094_0_) -> {
@@ -127,12 +117,10 @@ public class EvoChunkGenerator extends ChunkGenerator
 	private final OpenSimplexNoiseOctaves mainSimplexNoise;
 	private final OpenSimplexNoiseOctaves surfaceDepthNoise;
 	private final OpenSimplexNoiseOctaves depthNoise;
-	@Nullable
-	private final SimplexNoiseGenerator field_236083_v_;
 	protected final BlockState defaultBlock;
 	protected final BlockState defaultFluid;
 	private final long seed;
-	protected final Supplier<DimensionSettings> dimensionsettings;
+	protected final Supplier<DimensionSettings> dimensionSettings;
 	private final DimensionStructuresSettings structureSettings;
 	private final int maxBuildHeight;
 	private final EvoGenSettings genSettings;
@@ -147,16 +135,15 @@ public class EvoChunkGenerator extends ChunkGenerator
 		super(biomeProvider, biomeProvider, dimensionSettings.get().getStructures(), seed);
 		this.seed = seed;
 		this.genSettings = genSettings;
-		DimensionSettings dimensionsettings = dimensionSettings.get();
-		this.dimensionsettings = dimensionSettings;
+		this.dimensionSettings = dimensionSettings;
 	    this.structureSettings = dimensionSettings.get().getStructures();
-		NoiseSettings noisesettings = dimensionsettings.getNoise();
+		NoiseSettings noisesettings = dimensionSettings.get().getNoise();
 		this.biomeProvider = biomeProvider;
 		this.maxBuildHeight = noisesettings.func_236169_a_();
 		this.verticalNoiseGranularity = noisesettings.func_236175_f_() * 4;
 		this.horizontalNoiseGranularity = noisesettings.func_236174_e_() * 4;
-		this.defaultBlock = dimensionsettings.getDefaultBlock();
-		this.defaultFluid = dimensionsettings.getDefaultFluid();
+		this.defaultBlock = dimensionSettings.get().getDefaultBlock();
+		this.defaultFluid = dimensionSettings.get().getDefaultFluid();
 		this.noiseSizeX = 16 / this.horizontalNoiseGranularity;
 		this.noiseSizeY = noisesettings.func_236169_a_() / this.verticalNoiseGranularity;
 		this.noiseSizeZ = 16 / this.horizontalNoiseGranularity;
@@ -168,13 +155,6 @@ public class EvoChunkGenerator extends ChunkGenerator
 		this.surfaceDepthNoise = new OpenSimplexNoiseOctaves(this.randomSeed, 4);
 		this.variationNoise = new OpenSimplexNoiseOctaves(this.randomSeed, 4);
 		this.randomSeed.skip(2620);
-		if (noisesettings.func_236180_k_()) {
-			SharedSeedRandom sharedseedrandom = new SharedSeedRandom(seed);
-			sharedseedrandom.skip(17292);
-			this.field_236083_v_ = new SimplexNoiseGenerator(sharedseedrandom);
-		} else {
-			this.field_236083_v_ = null;
-		}
 	}
 
 	private static double func_222554_b(int p_222554_0_, int p_222554_1_, int p_222554_2_) {
@@ -186,35 +166,43 @@ public class EvoChunkGenerator extends ChunkGenerator
 	   return d4 * d3;
 	}
 
+	@Override
 	public int getMaxBuildHeight() 
 	{
 		return this.maxBuildHeight;
 	}
 
+	@Override
 	public int getSeaLevel() {
-	   return this.dimensionsettings.get().func_236119_g_();
+	   return this.dimensionSettings.get().func_236119_g_();
 	}
 
-	public List<MobSpawnInfo.Spawners> func_230353_a_(Biome p_230353_1_, StructureManager p_230353_2_, EntityClassification p_230353_3_, BlockPos p_230353_4_) {
-	   List<MobSpawnInfo.Spawners> spawns = net.minecraftforge.common.world.StructureSpawnManager.getStructureSpawns(p_230353_2_, p_230353_3_, p_230353_4_);
-	   if (spawns != null) return spawns;
-	   return super.func_230353_a_(p_230353_1_, p_230353_2_, p_230353_3_, p_230353_4_);
+	/*
+	 * ENTITY SPAWINNG
+	 */
+	public List<MobSpawnInfo.Spawners> func_230353_a_(Biome biome, StructureManager structManager, EntityClassification entityClassification, BlockPos blockPos) {
+	   List<MobSpawnInfo.Spawners> spawns = net.minecraftforge.common.world.StructureSpawnManager.getStructureSpawns(structManager, entityClassification, blockPos);
+	   if (spawns != null)
+		   return spawns;
+	   return super.func_230353_a_(biome, structManager, entityClassification, blockPos);
 	}
 
-	public void func_230354_a_(WorldGenRegion p_230354_1_) {
-	   if (!this.dimensionsettings.get().func_242744_a(null)) {
-	      int i = p_230354_1_.getMainChunkX();
-	      int j = p_230354_1_.getMainChunkZ();
-	      Biome biome = p_230354_1_.getBiome((new ChunkPos(i, j)).asBlockPos());
+	@Override
+	public void func_230354_a_(WorldGenRegion region) {
+	   if (!this.dimensionSettings.get().func_242744_a(null)) {
+	      int x = region.getMainChunkX();
+	      int z = region.getMainChunkZ();
+	      Biome biome = region.getBiome((new ChunkPos(x, z)).asBlockPos());
 	      SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
-	      sharedseedrandom.setDecorationSeed(p_230354_1_.getSeed(), i << 4, j << 4);
-	      WorldEntitySpawner.performWorldGenSpawning(p_230354_1_, biome, i, j, sharedseedrandom);
+	      sharedseedrandom.setDecorationSeed(region.getSeed(), x << 4, z << 4);
+	      WorldEntitySpawner.performWorldGenSpawning(region, biome, x, z, sharedseedrandom);
 	   }
 	}
 
 	/**
 	 * Sets the biomes in the chunk. I don't need this, so I use an array with plains biomes
 	 */
+	@Override
 	public void func_242706_a(Registry<Biome> lookupRegistry, IChunk chunkIn) 
 	{
 		((ChunkPrimer)chunkIn).setBiomes(new BiomeContainer(lookupRegistry, PLAINS_BIOMES));
@@ -223,6 +211,7 @@ public class EvoChunkGenerator extends ChunkGenerator
 	/**
 	 * Generates the biomes and surface of the chunk
 	 */
+	@Override
 	public void generateSurface(WorldGenRegion worldRegion, IChunk chunkIn) 
 	{
 		 ChunkPos chunkpos = chunkIn.getPos();
@@ -250,9 +239,9 @@ public class EvoChunkGenerator extends ChunkGenerator
 		 		double humidity = this.biomeProvider.getHumidity(x, z)[1];
 		 		double temperature = this.biomeProvider.getTemperature(x, z)[1];
 		 		if (biomes[0] == this.biomeProvider.getBiome(Biomes.BADLANDS) || biomes[0] == this.biomeProvider.getBiome(Biomes.WOODED_BADLANDS_PLATEAU))
-		     		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.dimensionsettings.get().getDefaultBlock(), this.dimensionsettings.get().getDefaultFluid(), this.getSeaLevel(), randomSeed.nextLong());
+		     		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.dimensionSettings.get().getDefaultBlock(), this.dimensionSettings.get().getDefaultFluid(), this.getSeaLevel(), randomSeed.nextLong());
 		 		else if ( y <= 130 + Math.rint(40.0 * humidity * temperature + (sharedseedrandom.nextInt() % 10 - 5)) )
-		     		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.dimensionsettings.get().getDefaultBlock(), this.dimensionsettings.get().getDefaultFluid(), this.getSeaLevel(), randomSeed.nextLong());
+		     		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.dimensionSettings.get().getDefaultBlock(), this.dimensionSettings.get().getDefaultFluid(), this.getSeaLevel(), randomSeed.nextLong());
 		     }
 		 }
 		 while (k < BiomeContainer.BIOMES_SIZE)
@@ -268,10 +257,9 @@ public class EvoChunkGenerator extends ChunkGenerator
 	   BlockPos.Mutable blockpos$mutable = new BlockPos.Mutable();
 	   int i = chunkIn.getPos().getXStart();
 	   int j = chunkIn.getPos().getZStart();
-	   DimensionSettings dimensionsettings = this.dimensionsettings.get();
-	   int k = dimensionsettings.func_236118_f_();
-	   int l = this.maxBuildHeight - 1 - dimensionsettings.func_236117_e_();
-	   int i1 = 5;
+	   DimensionSettings dimensionSettings = this.dimensionSettings.get();
+	   int k = dimensionSettings.func_236118_f_();
+	   int l = this.maxBuildHeight - 1 - dimensionSettings.func_236117_e_();
 	   boolean flag = l + 4 >= 0 && l < this.maxBuildHeight;
 	   boolean flag1 = k + 4 >= 0 && k < this.maxBuildHeight;
 	   if (flag || flag1) {
@@ -305,12 +293,12 @@ public class EvoChunkGenerator extends ChunkGenerator
 	@Override
 	@OnlyIn(Dist.CLIENT)
 	public ChunkGenerator func_230349_a_(long seed) {
-	   return new EvoChunkGenerator(this.biomeProvider.getBiomeProvider(seed), seed, this.dimensionsettings);
+	   return new EvoChunkGenerator(this.biomeProvider.getBiomeProvider(seed), seed, this.dimensionSettings);
 	}
 
 	public boolean func_236088_a_(long seed, RegistryKey<DimensionSettings> dimensionSettings) 
 	{
-	   return this.seed == seed && this.dimensionsettings.get().func_242744_a(dimensionSettings);
+	   return this.seed == seed && this.dimensionSettings.get().func_242744_a(dimensionSettings);
 	}
 	
 	/*
@@ -322,11 +310,11 @@ public class EvoChunkGenerator extends ChunkGenerator
 	{
 		BiomeManager biomemanager = biomeManager.copyWithProvider(this.biomeProvider);
 	    SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
-	    int i = 8;
 	    ChunkPos chunkpos = chunkIn.getPos();
 	    int j = chunkpos.x;
 	    int k = chunkpos.z;
-	    BiomeGenerationSettings biomegenerationsettings = this.biomeProvider.getNoiseBiome(chunkpos.x << 2, chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR, chunkpos.x << 2, chunkpos.z << 2), chunkpos.z << 2).getGenerationSettings();
+	    Biome b = this.biomeProvider.getNoiseBiome(chunkpos.x << 2, chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, chunkpos.x << 2, chunkpos.z << 2), chunkpos.z << 2);
+	    BiomeGenerationSettings biomegenerationsettings = b.getGenerationSettings();
 	    BitSet bitset = ((ChunkPrimer)chunkIn).getOrAddCarvingMask(genStage);
 
 	    for(int l = j - 8; l <= j + 8; ++l) {
@@ -351,7 +339,7 @@ public class EvoChunkGenerator extends ChunkGenerator
 	 *  Decorating the world with decore :D
 	 *  From 1.15
 	 */
-	
+	@Override
 	public void func_230351_a_(WorldGenRegion region, StructureManager structManager) 
 	{
 		int i = region.getMainChunkX();
@@ -393,11 +381,10 @@ public class EvoChunkGenerator extends ChunkGenerator
 	 *  Generates the structures
 	 *  Taken from ChunkGenerator.class
 	 */
-
 	public void func_242707_a(DynamicRegistries structureRegistry, StructureManager structureManager, IChunk chunkIn, TemplateManager template, long l) 
 	{
 		ChunkPos chunkpos = chunkIn.getPos();
-	    Biome biome = this.biomeProvider.getNoiseBiome((chunkpos.x << 2) + 2, getHeight((chunkpos.x << 2)+2, (chunkpos.z << 2)+2, Heightmap.Type.OCEAN_FLOOR), (chunkpos.z << 2) + 2);
+	    Biome biome = this.biomeProvider.getNoiseBiome((chunkpos.x << 2) + 2, getHeight((chunkpos.x << 2)+2, (chunkpos.z << 2)+2, Heightmap.Type.OCEAN_FLOOR_WG), (chunkpos.z << 2) + 2);
 	    this.placeStructure(StructureFeatures.STRONGHOLD, structureRegistry, structureManager, chunkIn, template, l, chunkpos, biome);
 	    for(Supplier<StructureFeature<?, ?>> supplier : biome.getGenerationSettings().getStructures()) {
 	    	this.placeStructure(supplier.get(), structureRegistry, structureManager, chunkIn, template, l, chunkpos, biome);
@@ -418,18 +405,17 @@ public class EvoChunkGenerator extends ChunkGenerator
 	/*
 	 * NOISE GENERATION SETTINGS
 	 *  Generates the land
-	 * 	Taken from NoiseChunkGenerator.class
+	 * 	Taken from NoiseChunkGenerator.class and the old methods of 1.15
 	 */
-
 	@Override
 	public int getHeight(int x, int z, Heightmap.Type heightmapType) {
 	   return this.func_236087_a_(x, z, (BlockState[])null, heightmapType.getHeightLimitPredicate());
 	}
 
 	@Override
-	public IBlockReader func_230348_a_(int p_230348_1_, int p_230348_2_) {
+	public IBlockReader func_230348_a_(int x, int z) {
 	   BlockState[] ablockstate = new BlockState[this.noiseSizeY * this.verticalNoiseGranularity];
-	   this.func_236087_a_(p_230348_1_, p_230348_2_, ablockstate, (Predicate<BlockState>)null);
+	   this.func_236087_a_(x, z, ablockstate, (Predicate<BlockState>)null);
 	   return new Blockreader(ablockstate);
 	}
 
@@ -440,7 +426,7 @@ public class EvoChunkGenerator extends ChunkGenerator
 	}
 
 
-    protected void fillNoiseColumn(double[] arr, int x, int z) {
+    private void fillNoiseColumn(double[] arr, int x, int z) {
        double coordScale = this.genSettings.getCoordScale();
        double heightScale = this.genSettings.getHeightScale();
        double d2 = 8.555149841308594D;
@@ -495,7 +481,7 @@ public class EvoChunkGenerator extends ChunkGenerator
        return MathHelper.clampedLerp(d0 / this.genSettings.getLowerLimitScale(), d1 / this.genSettings.getUpperLimitScale(), (d2 / 10.0D + 1.0D) / 2.0D);
     }
 
-    protected double[] getBiomeNoiseColumn(int x, int z) 
+    private double[] getBiomeNoiseColumn(int x, int z) 
     {
     	double[] adouble = new double[2];
     	double d = 0.0;
@@ -557,11 +543,11 @@ public class EvoChunkGenerator extends ChunkGenerator
     	return adouble;
     }
 
-	private int func_236087_a_(int p_236087_1_, int p_236087_2_, @Nullable BlockState[] p_236087_3_, @Nullable Predicate<BlockState> p_236087_4_) {
-	   int i = Math.floorDiv(p_236087_1_, this.horizontalNoiseGranularity);
-	   int j = Math.floorDiv(p_236087_2_, this.horizontalNoiseGranularity);
-	   int k = Math.floorMod(p_236087_1_, this.horizontalNoiseGranularity);
-	   int l = Math.floorMod(p_236087_2_, this.horizontalNoiseGranularity);
+	private int func_236087_a_(int x, int z, @Nullable BlockState[] arr_blockstate, @Nullable Predicate<BlockState> blockstate) {
+	   int i = Math.floorDiv(x, this.horizontalNoiseGranularity);
+	   int j = Math.floorDiv(z, this.horizontalNoiseGranularity);
+	   int k = Math.floorMod(x, this.horizontalNoiseGranularity);
+	   int l = Math.floorMod(z, this.horizontalNoiseGranularity);
 	   double d0 = (double)k / (double)this.horizontalNoiseGranularity;
 	   double d1 = (double)l / (double)this.horizontalNoiseGranularity;
 	   double[][] adouble = new double[][]{this.func_222547_b(i, j), this.func_222547_b(i, j + 1), this.func_222547_b(i + 1, j), this.func_222547_b(i + 1, j + 1)};
@@ -580,12 +566,12 @@ public class EvoChunkGenerator extends ChunkGenerator
 	         double d10 = (double)j1 / (double)this.verticalNoiseGranularity;
 	         double d11 = MathHelper.lerp3(d10, d0, d1, d2, d6, d4, d8, d3, d7, d5, d9);
 	         int k1 = i1 * this.verticalNoiseGranularity + j1;
-	         BlockState blockstate = this.func_236086_a_(d11, k1);
-	         if (p_236087_3_ != null) {
-	            p_236087_3_[k1] = blockstate;
+	         BlockState blockstate1 = this.func_236086_a_(d11, k1);
+	         if (arr_blockstate != null) {
+	            arr_blockstate[k1] = blockstate1;
 	         }
 
-	         if (p_236087_4_ != null && p_236087_4_.test(blockstate)) {
+	         if (blockstate != null && blockstate.test(blockstate1)) {
 	            return k1 + 1;
 	         }
 	      }
@@ -607,7 +593,7 @@ public class EvoChunkGenerator extends ChunkGenerator
 	   return d2 < 0.0D ? d2 * 0.009486607142857142D : Math.min(d2, 1.0D) * 0.006640625D;
 	}
 
-	protected BlockState func_236086_a_(double p_236086_1_, int p_236086_3_) {
+	private BlockState func_236086_a_(double p_236086_1_, int p_236086_3_) {
 	   BlockState blockstate;
 	   if (p_236086_1_ > 0.0D) {
 	      blockstate = this.defaultBlock;
@@ -620,10 +606,10 @@ public class EvoChunkGenerator extends ChunkGenerator
 	   return blockstate;
 	}
 
-	private static double func_222556_a(int p_222556_0_, int p_222556_1_, int p_222556_2_) {
-		int i = p_222556_0_ + 12;
-		int j = p_222556_1_ + 12;
-		int k = p_222556_2_ + 12;
+	private static double func_222556_a(int x, int y, int z) {
+		int i = x + 12;
+		int j = y + 12;
+		int k = z + 12;
 		if (i >= 0 && i < 24) {
 			if (j >= 0 && j < 24) {
 				return k >= 0 && k < 24 ? (double)field_222561_h[k * 24 * 24 + i * 24 + j] : 0.0D;
@@ -636,17 +622,17 @@ public class EvoChunkGenerator extends ChunkGenerator
 	}
 
 	@Override
-	public void func_230352_b_(IWorld p_230352_1_, StructureManager p_230352_2_, IChunk p_230352_3_) {
+	public void func_230352_b_(IWorld world, StructureManager structManager, IChunk chunkIn) {
 	   ObjectList<StructurePiece> objectlist = new ObjectArrayList<>(10);
 	   ObjectList<JigsawJunction> objectlist1 = new ObjectArrayList<>(32);
-	   ChunkPos chunkpos = p_230352_3_.getPos();
+	   ChunkPos chunkpos = chunkIn.getPos();
 	   int i = chunkpos.x;
 	   int j = chunkpos.z;
 	   int k = i << 4;
 	   int l = j << 4;
 
 	   for(Structure<?> structure : Structure.field_236384_t_) {
-	      p_230352_2_.func_235011_a_(SectionPos.from(chunkpos, 0), structure).forEach((p_236089_5_) -> {
+	      structManager.func_235011_a_(SectionPos.from(chunkpos, 0), structure).forEach((p_236089_5_) -> {
 	         for(StructurePiece structurepiece1 : p_236089_5_.getComponents()) {
 	            if (structurepiece1.func_214810_a(chunkpos, 12)) {
 	               if (structurepiece1 instanceof AbstractVillagePiece) {
@@ -680,7 +666,7 @@ public class EvoChunkGenerator extends ChunkGenerator
 	      adouble[1][i5] = new double[this.noiseSizeY + 1];
 	   }
 
-	   ChunkPrimer chunkprimer = (ChunkPrimer)p_230352_3_;
+	   ChunkPrimer chunkprimer = (ChunkPrimer)chunkIn;
 	   Heightmap heightmap = chunkprimer.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG);
 	   Heightmap heightmap1 = chunkprimer.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
 	   BlockPos.Mutable blockpos$mutable = new BlockPos.Mutable();
