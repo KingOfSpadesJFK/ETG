@@ -46,7 +46,7 @@ public class EvoBiomeProvider extends BiomeProvider
     private OpenSimplexNoiseOctaves swampType;
     private double landOffset;
     private final long seed;
-    private static final List<RegistryKey<Biome>> biomes = ImmutableList.of(Biomes.OCEAN,
+    private static final List<RegistryKey<Biome>> VANILLA_BIOMES = ImmutableList.of(Biomes.OCEAN,
     		Biomes.PLAINS,
     		Biomes.DESERT,
     		Biomes.FOREST,
@@ -130,11 +130,10 @@ public class EvoBiomeProvider extends BiomeProvider
 	}
 
 	public EvoBiomeProvider(EvoBiomeProviderSettings settingsProvider, long seed, Registry<Biome> lookupRegistry) {
-		super(biomes.stream().map((key) -> {
-	         return () -> {
-	            return lookupRegistry.getOrThrow(key);
-	         };
-	      }));
+		super(VANILLA_BIOMES.stream().map((key) -> 
+		{
+			return () -> { return lookupRegistry.getOrThrow(key); };
+		}));
 		
 		this.evoBiomes = new EvoBiomeLookup(lookupRegistry);
 		this.lookupRegistry = lookupRegistry;
@@ -446,18 +445,18 @@ public class EvoBiomeProvider extends BiomeProvider
 
 	public Biome getLandBiome(double temp, double humid, double chance)
     {
-    	EvoBiome[] arr = evoBiomes.WARM_BIOMES.toArray(new EvoBiome[evoBiomes.WARM_BIOMES.size()]);
+		EvoBiomeLookup.EvoBiome[] arr = evoBiomes.WARM_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.WARM_BIOMES.size()]);
     	
 		if (temp < SNOW_TEMP)
-			arr = evoBiomes.SNOWY_BIOMES.toArray(new EvoBiome[evoBiomes.SNOWY_BIOMES.size()]);
+			arr = evoBiomes.SNOWY_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.SNOWY_BIOMES.size()]);
 		else if (temp < COLD_TEMP)
-			arr = evoBiomes.COLD_BIOMES.toArray(new EvoBiome[evoBiomes.COLD_BIOMES.size()]);
+			arr = evoBiomes.COLD_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.COLD_BIOMES.size()]);
 		else if (temp < WARM_TEMP)
-			arr = evoBiomes.WARM_BIOMES.toArray(new EvoBiome[evoBiomes.WARM_BIOMES.size()]);
+			arr = evoBiomes.WARM_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.WARM_BIOMES.size()]);
 		else if (temp < HOT_TEMP)
-			arr = evoBiomes.HOT_BIOMES.toArray(new EvoBiome[evoBiomes.HOT_BIOMES.size()]);
+			arr = evoBiomes.HOT_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.HOT_BIOMES.size()]);
 		else
-			arr = evoBiomes.ARID_BIOMES.toArray(new EvoBiome[evoBiomes.ARID_BIOMES.size()]);
+			arr = evoBiomes.ARID_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.ARID_BIOMES.size()]);
 		
 		return arr[(int)((arr.length - 1) * humid)].getBiome(chance);
     }

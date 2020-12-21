@@ -1,11 +1,14 @@
 package kos.evolutionterraingenerator.world.gen;
 
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -53,6 +56,7 @@ import net.minecraft.world.gen.GenerationStage;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.WorldGenRegion;
 import net.minecraft.world.gen.carver.ConfiguredCarver;
+import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.gen.feature.StructureFeature;
 import net.minecraft.world.gen.feature.jigsaw.JigsawJunction;
 import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
@@ -189,14 +193,13 @@ public class EvoChunkGenerator extends ChunkGenerator
 
 	@Override
 	public void func_230354_a_(WorldGenRegion region) {
-	   if (!this.dimensionSettings.get().func_242744_a(null)) {
 	      int x = region.getMainChunkX();
 	      int z = region.getMainChunkZ();
-	      Biome biome = region.getBiome((new ChunkPos(x, z)).asBlockPos());
+	      int y = region.getChunk(x, z).getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x << 4, z << 4);
+	      Biome biome = this.biomeProvider.getNoiseBiome(x << 4, y, z << 4, false);
 	      SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
 	      sharedseedrandom.setDecorationSeed(region.getSeed(), x << 4, z << 4);
 	      WorldEntitySpawner.performWorldGenSpawning(region, biome, x, z, sharedseedrandom);
-	   }
 	}
 
 	/**
@@ -206,6 +209,41 @@ public class EvoChunkGenerator extends ChunkGenerator
 	public void func_242706_a(Registry<Biome> lookupRegistry, IChunk chunkIn) 
 	{
 		((ChunkPrimer)chunkIn).setBiomes(new BiomeContainer(lookupRegistry, PLAINS_BIOMES));
+	}
+	
+	/*
+	 * WORLD CARVER
+	 *  I guess I probably need this to properly carve the world according to biome
+	 *  From ChunkGenerator.class
+	 */
+	public void func_230350_a_(long l1, BiomeManager biomeManager, IChunk chunkIn, GenerationStage.Carving genStage) 
+	{
+		BiomeManager biomemanager = biomeManager.copyWithProvider(this.biomeProvider);
+	    SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
+	    ChunkPos chunkpos = chunkIn.getPos();
+	    int j = chunkpos.x;
+	    int k = chunkpos.z;
+	    int x = chunkpos.x << 4;
+	    int z = chunkpos.z << 4;
+	    int y = chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, x, z);
+	    BiomeGenerationSettings biomegenerationsettings = this.biomeProvider.getNoiseBiome(x, y, z, false).getGenerationSettings();
+	    BitSet bitset = ((ChunkPrimer)chunkIn).getOrAddCarvingMask(genStage);
+
+	    for(int l = j - 8; l <= j + 8; ++l) {
+	    	for(int i1 = k - 8; i1 <= k + 8; ++i1) {
+	    		List<Supplier<ConfiguredCarver<?>>> list = biomegenerationsettings.getCarvers(genStage);
+	            ListIterator<Supplier<ConfiguredCarver<?>>> listiterator = list.listIterator();
+
+	            while(listiterator.hasNext()) {
+	            	int j1 = listiterator.nextIndex();
+	            	ConfiguredCarver<?> configuredcarver = listiterator.next().get();
+	            	sharedseedrandom.setLargeFeatureSeed(l1 + (long)j1, l, i1);
+	            	if (configuredcarver.shouldCarve(sharedseedrandom, l, i1)) {
+	            		configuredcarver.carveRegion(chunkIn, biomemanager::getBiome, sharedseedrandom, this.getSeaLevel(), l, i1, j, k, bitset);
+	            	}
+	            }
+	    	}
+	    }
 	}
 
 	/**
@@ -233,7 +271,7 @@ public class EvoChunkGenerator extends ChunkGenerator
 		     	double noise = this.surfaceDepthNoise.getNoise((double)x1 * 0.05, (double)z1 * 0.05) * 0.5;
 		     	if (x1 % 4 == 0 && z1 % 4 == 0)
 		     	{
-		     		abiome[k] = biomes[1];
+		     		abiome[k] = biomes[0];
 		     		k++;
 		     	}
 		 		double humidity = this.biomeProvider.getHumidity(x, z)[1];
@@ -253,7 +291,8 @@ public class EvoChunkGenerator extends ChunkGenerator
 		 this.makeBedrock(chunkIn, sharedseedrandom);
 	}
 
-	private void makeBedrock(IChunk chunkIn, Random rand) {
+	private void makeBedrock(IChunk chunkIn, Random rand)
+	{
 	   BlockPos.Mutable blockpos$mutable = new BlockPos.Mutable();
 	   int i = chunkIn.getPos().getXStart();
 	   int j = chunkIn.getPos().getZStart();
@@ -280,7 +319,6 @@ public class EvoChunkGenerator extends ChunkGenerator
 	            }
 	         }
 	      }
-
 	   }
 	}
 
@@ -300,39 +338,6 @@ public class EvoChunkGenerator extends ChunkGenerator
 	{
 	   return this.seed == seed && this.dimensionSettings.get().func_242744_a(dimensionSettings);
 	}
-	
-	/*
-	 * WORLD CARVER
-	 *  I guess I probably need this to properly carve the world according to biome
-	 *  From ChunkGenerator.class
-	 */
-	public void func_230350_a_(long l1, BiomeManager biomeManager, IChunk chunkIn, GenerationStage.Carving genStage) 
-	{
-		BiomeManager biomemanager = biomeManager.copyWithProvider(this.biomeProvider);
-	    SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
-	    ChunkPos chunkpos = chunkIn.getPos();
-	    int j = chunkpos.x;
-	    int k = chunkpos.z;
-	    Biome b = this.biomeProvider.getNoiseBiome(chunkpos.x << 2, chunkIn.getTopBlockY(Heightmap.Type.OCEAN_FLOOR_WG, chunkpos.x << 2, chunkpos.z << 2), chunkpos.z << 2);
-	    BiomeGenerationSettings biomegenerationsettings = b.getGenerationSettings();
-	    BitSet bitset = ((ChunkPrimer)chunkIn).getOrAddCarvingMask(genStage);
-
-	    for(int l = j - 8; l <= j + 8; ++l) {
-	    	for(int i1 = k - 8; i1 <= k + 8; ++i1) {
-	    		List<Supplier<ConfiguredCarver<?>>> list = biomegenerationsettings.getCarvers(genStage);
-	            ListIterator<Supplier<ConfiguredCarver<?>>> listiterator = list.listIterator();
-
-	            while(listiterator.hasNext()) {
-	            	int j1 = listiterator.nextIndex();
-	            	ConfiguredCarver<?> configuredcarver = listiterator.next().get();
-	            	sharedseedrandom.setLargeFeatureSeed(l1 + (long)j1, l, i1);
-	            	if (configuredcarver.shouldCarve(sharedseedrandom, l, i1)) {
-	            		configuredcarver.carveRegion(chunkIn, biomemanager::getBiome, sharedseedrandom, this.getSeaLevel(), l, i1, j, k, bitset);
-	            	}
-	            }
-	    	}
-	    }
-	}
 
 	/*
 	 * DECORATION
@@ -351,29 +356,79 @@ public class EvoChunkGenerator extends ChunkGenerator
 		Biome biome = this.biomeProvider.getNoiseBiome(x + 8, y, z + 8, true);
 		SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
 		long i1 = sharedseedrandom.setDecorationSeed(region.getSeed(), x, z);
-		double temperature = this.biomeProvider.getTemperature(x + 8, z + 8)[1];
-		double humidity = this.biomeProvider.getHumidity(x + 8, z + 8)[1];
-
-		for(GenerationStage.Decoration generationstage$decoration : GenerationStage.Decoration.values()) 
+		
+		try 
 		{
-			try 
-			{
-				if (generationstage$decoration == GenerationStage.Decoration.VEGETAL_DECORATION)
-				{
-					if ( y <= 115 + Math.rint(30.0 * humidity * temperature + sharedseedrandom.nextInt() % 10) )
-						biome.generateFeatures(structManager, this, region, i1, sharedseedrandom, blockpos);
+			generateFeatures(biome, y, structManager, this, region, i1, sharedseedrandom, blockpos);
+		} 
+		catch (Exception exception) 
+		{
+	        CrashReport crashreport = CrashReport.makeCrashReport(exception, "Biome decoration");
+	        crashreport.makeCategory("Generation").addDetail("CenterX", i).addDetail("CenterZ", j).addDetail("Seed", i1).addDetail("Biome", biome);
+	        throw new ReportedException(crashreport);
+		}
+	}
+	
+	//Taken from Biome.class so I can do the thing where the vegetation is like less frequent in higher elevations
+	@SuppressWarnings("deprecation")
+	private void generateFeatures(Biome biome, int y, StructureManager structureManager, ChunkGenerator chunkGenerator, WorldGenRegion worldGenRegion, long seed, SharedSeedRandom rand, BlockPos pos) 
+	{
+		List<List<Supplier<ConfiguredFeature<?, ?>>>> list = biome.getGenerationSettings().getFeatures();
+	    Map<Integer, List<Structure<?>>> biomeStructures = Registry.STRUCTURE_FEATURE.stream().collect(Collectors.groupingBy((structure) -> {
+	    	return structure.getDecorationStage().ordinal();
+	    }));
+	    int i = GenerationStage.Decoration.values().length;
+		double temperature = this.biomeProvider.getTemperature(pos.getX() + 8, pos.getZ() + 8)[1];
+		double humidity = this.biomeProvider.getHumidity(pos.getX() + 8, pos.getZ() + 8)[1];
+
+		for(int j = 0; j < i; ++j) {
+			if (j == GenerationStage.Decoration.VEGETAL_DECORATION.ordinal())
+				if ( y > 115 + Math.rint(30.0 * humidity * temperature + rand.nextInt() % 10) )
+					continue;
+			int k = 0;
+			if (structureManager.canGenerateFeatures()) {
+				for(Structure<?> structure : biomeStructures.getOrDefault(j, Collections.emptyList())) {
+					rand.setFeatureSeed(seed, k, j);
+					int l = pos.getX() >> 4;
+					int i1 = pos.getZ() >> 4;
+					int j1 = l << 4;
+					int k1 = i1 << 4;
+
+					try {
+						structureManager.func_235011_a_(SectionPos.from(pos), structure).forEach((structureStart) -> {
+							structureStart.func_230366_a_(worldGenRegion, structureManager, chunkGenerator, rand, new MutableBoundingBox(j1, k1, j1 + 15, k1 + 15), new ChunkPos(l, i1));
+						});
+					} catch (Exception exception) {
+						CrashReport crashreport = CrashReport.makeCrashReport(exception, "Feature placement");
+						crashreport.makeCategory("Feature").addDetail("Id", Registry.STRUCTURE_FEATURE.getKey(structure)).addDetail("Description", () -> {
+							return structure.toString();
+						});
+						throw new ReportedException(crashreport);
+					}
+
+					++k;
 				}
-				else
-					biome.generateFeatures(structManager, this, region, i1, sharedseedrandom, blockpos);
-			} 
-			catch (Exception exception) 
-			{
-		        CrashReport crashreport = CrashReport.makeCrashReport(exception, "Biome decoration");
-		        crashreport.makeCategory("Generation").addDetail("CenterX", i).addDetail("CenterZ", j).addDetail("Seed", i1).addDetail("Biome", biome);
-		        throw new ReportedException(crashreport);
+			}
+
+			if (list.size() > j) {
+				for(Supplier<ConfiguredFeature<?, ?>> supplier : list.get(j)) {
+					ConfiguredFeature<?, ?> configuredfeature = supplier.get();
+					rand.setFeatureSeed(seed, k, j);
+
+					try {
+						configuredfeature.generate(worldGenRegion, chunkGenerator, rand, pos);
+					} catch (Exception exception1) {
+						CrashReport crashreport1 = CrashReport.makeCrashReport(exception1, "Feature placement");
+						crashreport1.makeCategory("Feature").addDetail("Id", Registry.FEATURE.getKey(configuredfeature.feature)).addDetail("Config", configuredfeature.config).addDetail("Description", () -> {
+							return configuredfeature.feature.toString();
+						});
+						throw new ReportedException(crashreport1);
+					}
+
+					++k;
+				}
 			}
 		}
-
 	}
 	
 	/*
@@ -381,13 +436,19 @@ public class EvoChunkGenerator extends ChunkGenerator
 	 *  Generates the structures
 	 *  Taken from ChunkGenerator.class
 	 */
+	@Override
 	public void func_242707_a(DynamicRegistries structureRegistry, StructureManager structureManager, IChunk chunkIn, TemplateManager template, long l) 
 	{
 		ChunkPos chunkpos = chunkIn.getPos();
-	    Biome biome = this.biomeProvider.getNoiseBiome((chunkpos.x << 2) + 2, getHeight((chunkpos.x << 2)+2, (chunkpos.z << 2)+2, Heightmap.Type.OCEAN_FLOOR_WG), (chunkpos.z << 2) + 2);
+		int x = chunkpos.getXStart() + 9;
+		int z = chunkpos.getZStart() + 9;
+		int y = getHeight(x, z, Heightmap.Type.OCEAN_FLOOR_WG) + 1;
+		Biome biome = this.biomeProvider.getNoiseBiome(x, y, z, false);
 	    this.placeStructure(StructureFeatures.STRONGHOLD, structureRegistry, structureManager, chunkIn, template, l, chunkpos, biome);
-	    for(Supplier<StructureFeature<?, ?>> supplier : biome.getGenerationSettings().getStructures()) {
-	    	this.placeStructure(supplier.get(), structureRegistry, structureManager, chunkIn, template, l, chunkpos, biome);
+	    for(Supplier<StructureFeature<?, ?>> supplier : biome.getGenerationSettings().getStructures()) 
+	    {
+	    	if (this.biomeProvider.hasStructure(supplier.get().field_236268_b_))
+	    		this.placeStructure(supplier.get(), structureRegistry, structureManager, chunkIn, template, l, chunkpos, biome);
 	    }
 	}
 
@@ -414,15 +475,15 @@ public class EvoChunkGenerator extends ChunkGenerator
 
 	@Override
 	public IBlockReader func_230348_a_(int x, int z) {
-	   BlockState[] ablockstate = new BlockState[this.noiseSizeY * this.verticalNoiseGranularity];
-	   this.func_236087_a_(x, z, ablockstate, (Predicate<BlockState>)null);
-	   return new Blockreader(ablockstate);
+		BlockState[] ablockstate = new BlockState[this.noiseSizeY * this.verticalNoiseGranularity];
+		this.func_236087_a_(x, z, ablockstate, (Predicate<BlockState>)null);
+		return new Blockreader(ablockstate);
 	}
 
 	private double[] func_222547_b(int p_222547_1_, int p_222547_2_) {
-	   double[] adouble = new double[this.noiseSizeY + 1];
-	   this.fillNoiseColumn(adouble, p_222547_1_, p_222547_2_);
-	   return adouble;
+		double[] adouble = new double[this.noiseSizeY + 1];
+		this.fillNoiseColumn(adouble, p_222547_1_, p_222547_2_);
+		return adouble;
 	}
 
 
