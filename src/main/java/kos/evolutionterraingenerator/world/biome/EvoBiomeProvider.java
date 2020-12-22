@@ -7,16 +7,18 @@ import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.provider.BiomeProvider;
+import net.minecraftforge.registries.ForgeRegistries;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import biomesoplenty.api.biome.BOPBiomes;
+import kos.evolutionterraingenerator.core.EvoRegistry;
 import kos.evolutionterraingenerator.core.EvolutionTerrainGenerator;
 import kos.evolutionterraingenerator.util.OpenSimplexNoiseOctaves;
 
-import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
@@ -46,72 +48,7 @@ public class EvoBiomeProvider extends BiomeProvider
     private OpenSimplexNoiseOctaves swampType;
     private double landOffset;
     private final long seed;
-    private static final List<RegistryKey<Biome>> VANILLA_BIOMES = ImmutableList.of(Biomes.OCEAN,
-    		Biomes.PLAINS,
-    		Biomes.DESERT,
-    		Biomes.FOREST,
-    		Biomes.TAIGA,
-    		Biomes.SWAMP,
-    		Biomes.RIVER,
-    		Biomes.FROZEN_OCEAN,
-    		Biomes.FROZEN_RIVER,
-    		Biomes.SNOWY_TUNDRA,
-    		Biomes.SNOWY_MOUNTAINS,
-    		Biomes.MUSHROOM_FIELDS,
-    		Biomes.MUSHROOM_FIELD_SHORE,
-    		Biomes.BEACH,
-    		Biomes.DESERT_HILLS,
-    		Biomes.WOODED_HILLS,
-    		Biomes.TAIGA_HILLS,
-    		Biomes.MOUNTAIN_EDGE,
-    		Biomes.JUNGLE,
-    		Biomes.JUNGLE_HILLS,
-    		Biomes.JUNGLE_EDGE,
-    		Biomes.DEEP_OCEAN,
-    		Biomes.STONE_SHORE,
-    		Biomes.SNOWY_BEACH,
-    		Biomes.BIRCH_FOREST,
-    		Biomes.BIRCH_FOREST_HILLS,
-    		Biomes.DARK_FOREST,
-    		Biomes.SNOWY_TAIGA,
-    		Biomes.SNOWY_TAIGA_HILLS,
-    		Biomes.GIANT_TREE_TAIGA,
-    		Biomes.GIANT_TREE_TAIGA_HILLS,
-    		Biomes.WOODED_MOUNTAINS,
-    		Biomes.SAVANNA,
-    		Biomes.SAVANNA_PLATEAU,
-    		Biomes.BADLANDS,
-    		Biomes.WOODED_BADLANDS_PLATEAU,
-    		Biomes.BADLANDS_PLATEAU,
-    		Biomes.WARM_OCEAN,
-    		Biomes.LUKEWARM_OCEAN,
-    		Biomes.COLD_OCEAN,
-    		Biomes.DEEP_WARM_OCEAN,
-    		Biomes.DEEP_LUKEWARM_OCEAN,
-    		Biomes.DEEP_COLD_OCEAN,
-    		Biomes.DEEP_FROZEN_OCEAN,
-    		Biomes.SUNFLOWER_PLAINS,
-    		Biomes.DESERT_LAKES,
-    		Biomes.GRAVELLY_MOUNTAINS,
-    		Biomes.FLOWER_FOREST,
-    		Biomes.TAIGA_MOUNTAINS,
-    		Biomes.SWAMP_HILLS,
-    		Biomes.ICE_SPIKES,
-    		Biomes.MODIFIED_JUNGLE,
-    		Biomes.MODIFIED_JUNGLE_EDGE,
-    		Biomes.TALL_BIRCH_FOREST,
-    		Biomes.TALL_BIRCH_HILLS,
-    		Biomes.DARK_FOREST_HILLS,
-    		Biomes.SNOWY_TAIGA_MOUNTAINS,
-    		Biomes.GIANT_SPRUCE_TAIGA,
-    		Biomes.GIANT_SPRUCE_TAIGA_HILLS,
-    		Biomes.MODIFIED_GRAVELLY_MOUNTAINS,
-    		Biomes.SHATTERED_SAVANNA,
-    		Biomes.SHATTERED_SAVANNA_PLATEAU,
-    		Biomes.ERODED_BADLANDS,
-    		Biomes.MODIFIED_WOODED_BADLANDS_PLATEAU,
-    		Biomes.MODIFIED_BADLANDS_PLATEAU);
-
+    
 	public static final double SNOW_TEMP = 0.125;
 	public static final double COLD_TEMP = 0.375;
 	public static final double WARM_TEMP = 0.625;
@@ -123,6 +60,7 @@ public class EvoBiomeProvider extends BiomeProvider
 	private EvoBiomeProviderSettings providerSettings;
 	private final Registry<Biome> lookupRegistry;
 	private EvoBiomeLookup evoBiomes;
+    private static final Set<Entry<RegistryKey<Biome>, Biome>> ALL_BIOMES = ForgeRegistries.BIOMES.getEntries();
 	
 	public EvoBiomeProvider(long seed, Registry<Biome> lookupRegistry)
 	{
@@ -130,9 +68,8 @@ public class EvoBiomeProvider extends BiomeProvider
 	}
 
 	public EvoBiomeProvider(EvoBiomeProviderSettings settingsProvider, long seed, Registry<Biome> lookupRegistry) {
-		super(VANILLA_BIOMES.stream().map((key) -> 
-		{
-			return () -> { return lookupRegistry.getOrThrow(key); };
+		super(ALL_BIOMES.stream().map( (key) -> {
+			return () -> key.getValue();
 		}));
 		
 		this.evoBiomes = new EvoBiomeLookup(lookupRegistry);
@@ -486,8 +423,8 @@ public class EvoBiomeProvider extends BiomeProvider
         		//return NewBiomes.DRY_GRAVEL_BEACH;
     		//return NewBiomes.DRY_BEACH;
     	}
-    	//if (isGravel)
-    		//return NewBiomes.GRAVEL_BEACH;
+    	if (isGravel)
+    		return EvoRegistry.GRAVEL_BEACH.get();
     	return getBiome(Biomes.BEACH);
     }
     

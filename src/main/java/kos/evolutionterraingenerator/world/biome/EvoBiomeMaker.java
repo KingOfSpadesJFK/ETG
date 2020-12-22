@@ -1,9 +1,11 @@
 package kos.evolutionterraingenerator.world.biome;
 
+import kos.evolutionterraingenerator.core.EvolutionTerrainGenerator;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.WorldGenRegistries;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeAmbience;
 import net.minecraft.world.biome.BiomeGenerationSettings;
@@ -15,7 +17,10 @@ import net.minecraft.world.gen.feature.BlockStateFeatureConfig;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.Features;
 import net.minecraft.world.gen.feature.structure.StructureFeatures;
-import net.minecraft.world.gen.surfacebuilders.ConfiguredSurfaceBuilders;
+import net.minecraft.world.gen.surfacebuilders.ConfiguredSurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilders.ISurfaceBuilderConfig;
+import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
 
 public class EvoBiomeMaker 
 {
@@ -24,6 +29,13 @@ public class EvoBiomeMaker
 		float lvt_1_1_ = temperature / 3.0F;
 		lvt_1_1_ = MathHelper.clamp(lvt_1_1_, -1.0F, 1.0F);
 		return MathHelper.hsvToRGB(0.62222224F - lvt_1_1_ * 0.05F, 0.5F + lvt_1_1_ * 0.1F, 1.0F);
+	}  
+	
+	public static final ConfiguredSurfaceBuilder<SurfaceBuilderConfig> gravel_surface = registerConfiguredSurfaceBuilder("etg_gravel", SurfaceBuilder.DEFAULT.func_242929_a(SurfaceBuilder.GRAVEL_CONFIG));
+	
+	private static <SC extends ISurfaceBuilderConfig> ConfiguredSurfaceBuilder<SC> registerConfiguredSurfaceBuilder(String name, ConfiguredSurfaceBuilder<SC> surfaceBuilder) 
+	{
+		return WorldGenRegistries.register(WorldGenRegistries.CONFIGURED_SURFACE_BUILDER, name, surfaceBuilder);
 	}
 	   
 	public static Biome createGravelBeachBiome(float depth, float scale, float temperature, float downfall, int waterColor, boolean isColdBiome) 
@@ -34,7 +46,7 @@ public class EvoBiomeMaker
 		}
 
 		DefaultBiomeFeatures.withBatsAndHostiles(mobspawninfo$builder);
-		BiomeGenerationSettings.Builder biomegenerationsettings$builder = (new BiomeGenerationSettings.Builder()).withSurfaceBuilder( ConfiguredSurfaceBuilders.field_244172_d);
+		BiomeGenerationSettings.Builder biomegenerationsettings$builder = (new BiomeGenerationSettings.Builder()).withSurfaceBuilder(gravel_surface);
 		biomegenerationsettings$builder.withStructure(StructureFeatures.MINESHAFT);
 		biomegenerationsettings$builder.withStructure(StructureFeatures.BURIED_TREASURE);
 		biomegenerationsettings$builder.withStructure(StructureFeatures.SHIPWRECK_BEACHED);

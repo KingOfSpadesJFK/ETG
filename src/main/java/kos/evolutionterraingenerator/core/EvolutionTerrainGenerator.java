@@ -33,7 +33,7 @@ public class EvolutionTerrainGenerator {
         
         evoWorldType.setRegistryName(new ResourceLocation(MODID, "evolution"));
         ForgeRegistries.WORLD_TYPES.register(evoWorldType);
-        EvoBiomeRegistry.init();
+        //EvoRegistry.init();
 	}
 
 	//Event Loaders
