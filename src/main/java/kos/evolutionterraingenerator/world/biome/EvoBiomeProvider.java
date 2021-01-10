@@ -424,7 +424,7 @@ public class EvoBiomeProvider extends BiomeProvider
     		//return NewBiomes.DRY_BEACH;
     	}
     	if (isGravel)
-    		return EvoRegistry.GRAVEL_BEACH.get();
+    		return ForgeRegistries.BIOMES.getValue(EvoRegistry.GRAVEL_BEACH);
     	return getBiome(Biomes.BEACH);
     }
     
