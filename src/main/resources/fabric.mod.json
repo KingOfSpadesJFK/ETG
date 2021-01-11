@@ -1,35 +1,36 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "evolutionterraingenerator",
   "version": "${version}",
 
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "Evolution Terrain Generator",
+  "description": "A new take on the Minecraft terrain generator, featuring the best of vanilla Minecraft terrain generators in history and then some!",
   "authors": [
     "Me!"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/KingOfSpadesJFK/ETG",
+    "sources": "https://github.com/KingOfSpadesJFK/ETG"
   },
 
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/modid/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "kos.evolutionterraingenerator.core.EvolutionTerrainGenerator"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "evolutionterraingenerator.mixins.json"
   ],
+  "accessWidener": "evolutionterraingenerator.accesswidener",
 
   "depends": {
-    "fabricloader": ">=0.7.4",
+    "fabricloader": ">=0.10.8",
     "fabric": "*",
-    "minecraft": "1.16.x"
+    "minecraft": "1.16.4"
   },
   "suggests": {
     "flamingo": "*"

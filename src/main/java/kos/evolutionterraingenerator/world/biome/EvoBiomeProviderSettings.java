@@ -1,4 +1,6 @@
-package kos.evolutionterraingenerator.world;
+package kos.evolutionterraingenerator.world.biome;
+
+import kos.evolutionterraingenerator.world.gen.EvoGenSettings;
 
 public class EvoBiomeProviderSettings
 {
