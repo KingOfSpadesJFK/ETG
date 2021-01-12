@@ -636,7 +636,7 @@ public final class EvoChunkGenerator extends ChunkGenerator
 	}
 
 	private double func_236095_c_(int x, int z) {
-	   double d0 = this.depthNoise.eval((double)(x * this.settings.getDepthNoiseScaleX()), 10.0D, (double)(z * this.settings.getDepthNoiseScaleZ()), 1.0D, 0.0D, true);
+	   double d0 = this.depthNoise.sample((double)(x * this.settings.getDepthNoiseScaleX()), 10.0D, (double)(z * this.settings.getDepthNoiseScaleZ()), 1.0D, 0.0D, true);
 	   double d1;
 	   if (d0 < 0.0D) {
 	      d1 = -d0 * 0.3D;

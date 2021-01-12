@@ -2,6 +2,19 @@ accessWidener v1 named
 
 extendable method net/minecraft/client/world/GeneratorType <init> (Ljava/lang/String;)V
 accessible method net/minecraft/world/gen/chunk/ChunkGeneratorSettings <init> (Lnet/minecraft/world/gen/chunk/StructuresConfig;Lnet/minecraft/world/gen/chunk/GenerationShapeConfig;Lnet/minecraft/block/BlockState;Lnet/minecraft/block/BlockState;IIIZ)V
+extendable class net/minecraft/world/gen/chunk/ChunkGeneratorSettings
 
 extendable class net/minecraft/world/gen/chunk/NoiseChunkGenerator
-extendable class net/minecraft/world/gen/chunk/ChunkGeneratorSettings
+extendable method net/minecraft/world/gen/chunk/NoiseChunkGenerator sampleNoiseColumn ([DII)V
+extendable method net/minecraft/world/gen/chunk/NoiseChunkGenerator sampleNoiseColumn (II)[D
+extendable method net/minecraft/world/gen/chunk/NoiseChunkGenerator getRandomDensityAt (II)D
+
+accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator worldSeed J
+accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator settings Ljava/util/function/Supplier;
+accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator BIOME_WEIGHT_TABLE [F
+accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator noiseSizeY I
+
+extendable class net/minecraft/util/math/noise/PerlinNoiseSampler
+accessible field net/minecraft/util/math/noise/PerlinNoiseSampler permutations [B
+accessible field net/minecraft/util/math/noise/OctavePerlinNoiseSampler octaveSamplers [Lnet/minecraft/util/math/noise/PerlinNoiseSampler;
+mutable field net/minecraft/util/math/noise/OctavePerlinNoiseSampler octaveSamplers [Lnet/minecraft/util/math/noise/PerlinNoiseSampler;

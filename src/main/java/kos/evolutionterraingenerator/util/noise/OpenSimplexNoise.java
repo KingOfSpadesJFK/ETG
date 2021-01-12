@@ -1,6 +1,7 @@
 package kos.evolutionterraingenerator.util.noise;
 
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.noise.PerlinNoiseSampler;
 import net.minecraft.world.gen.ChunkRandom;
 
 /*
@@ -20,57 +21,35 @@ import net.minecraft.world.gen.ChunkRandom;
  *   will be the same when ported to other languages.
  */
  
-public class OpenSimplexNoise
+public class OpenSimplexNoise extends PerlinNoiseSampler
 {
 
 	private static final double STRETCH_CONSTANT_2D = -0.211324865405187;    //(1/Math.sqrt(2+1)-1)/2;
 	private static final double SQUISH_CONSTANT_2D = 0.366025403784439;      //(Math.sqrt(2+1)-1)/2;
 	private static final double STRETCH_CONSTANT_3D = -1.0 / 6;              //(1/Math.sqrt(3+1)-1)/3;
 	private static final double SQUISH_CONSTANT_3D = 1.0 / 3;                //(Math.sqrt(3+1)-1)/3;
-	private static final double STRETCH_CONSTANT_4D = -0.138196601125011;    //(1/Math.sqrt(4+1)-1)/4;
-	private static final double SQUISH_CONSTANT_4D = 0.309016994374947;      //(Math.sqrt(4+1)-1)/4;
 	
 	private static final double NORM_CONSTANT_2D = 47;
 	private static final double NORM_CONSTANT_3D = 103;
-	private static final double NORM_CONSTANT_4D = 30;
 	
-	private short[] perm;
 	private short[] permGradIndex3D;
-	
-	public final double xCoord;
-	public final double yCoord;
-	public final double zCoord;
 	
 	//Initializes the class using a permutation array generated from a 64-bit seed.
 	//Generates a proper permutation (i.e. doesn't merely perform N successive pair swaps on a base array)
 	//Uses a simple 64-bit LCG.
 	public OpenSimplexNoise(ChunkRandom seed)
 	{
-		this.xCoord = seed.nextDouble() * 256.0D;
-	    this.yCoord = seed.nextDouble() * 256.0D;
-	    this.zCoord = seed.nextDouble() * 256.0D;
-	    
-		perm = new short[256];
+		super(seed);
+
 		permGradIndex3D = new short[256];
-		short[] source = new short[256];
-		for (short i = 0; i < 256; i++)
-			source[i] = i;
-		
 		for (int i = 255; i >= 0; i--) 
-		{
-	        int r = seed.nextInt(256 - i);
-			if (r < 0)
-				r += (i + 1);
-			perm[i] = source[r];
-			permGradIndex3D[i] = (short)((perm[i] % (gradients3D.length / 3)) * 3);
-			source[r] = source[i];
-		}
+			permGradIndex3D[i] = (short)((this.permutations[i] % (gradients3D.length / 3)) * 3);
 	}
 	
 	//2D OpenSimplex Noise.
-	public double eval(double x, double y) {
-		x += this.xCoord;
-		y += this.xCoord;
+	public double sample(double x, double y, double d, double e) {
+		x += this.originX;
+		y += this.originY;
 	
 		//Place input coordinates onto grid.
 		double stretchOffset = (x + y) * STRETCH_CONSTANT_2D;
@@ -96,6 +75,15 @@ public class OpenSimplexNoise
 		//Positions relative to origin point.
 		double dx0 = x - xb;
 		double dy0 = y - yb;
+		
+		double t0;
+		if (d != 0.0D) {
+			double r = Math.min(e, dy0);
+	        t0 = (double)MathHelper.floor(r / d) * d;
+		} else {
+			t0 = 0.0D;
+		}
+		dy0 -= t0;
 		
 		//We'll be defining these inside the next block and using them afterwards.
 		double dx_ext, dy_ext;
@@ -185,10 +173,11 @@ public class OpenSimplexNoise
 	}
 	
 	//3D OpenSimplex Noise.
-	public double eval(double x, double y, double z, double d, double e) {
-		x += this.xCoord;
-		y += this.xCoord;
-		z += this.zCoord;
+	@Override
+	public double sample(double x, double y, double z, double d, double e) {
+		x += this.originX;
+		y += this.originY;
+		z += this.originZ;
 	
 		//Place input coordinates on simplectic honeycomb.
 		double stretchOffset = (x + y + z) * STRETCH_CONSTANT_3D;
@@ -759,14 +748,14 @@ public class OpenSimplexNoise
 	
 	private double extrapolate(int xsb, int ysb, double dx, double dy)
 	{
-		int index = perm[(perm[xsb & 0xFF] + ysb) & 0xFF] & 0x0E;
+		int index = MathHelper.abs(this.permutations[(this.permutations[xsb & 0xFF] + ysb) & 0xFF] & 0x0E);
 		return gradients2D[index] * dx
 			+ gradients2D[index + 1] * dy;
 	}
 	
 	private double extrapolate(int xsb, int ysb, int zsb, double dx, double dy, double dz)
 	{
-		int index = permGradIndex3D[(perm[(perm[xsb & 0xFF] + ysb) & 0xFF] + zsb) & 0xFF];
+		int index = MathHelper.abs(permGradIndex3D[(this.permutations[(this.permutations[xsb & 0xFF] + ysb) & 0xFF] + zsb) & 0xFF]);
 		return gradients3D[index] * dx
 			+ gradients3D[index + 1] * dy
 			+ gradients3D[index + 2] * dz;
