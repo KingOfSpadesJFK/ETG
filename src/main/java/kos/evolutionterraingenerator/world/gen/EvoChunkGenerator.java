@@ -26,6 +26,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.noise.OctavePerlinNoiseSampler;
+import net.minecraft.util.math.noise.PerlinNoiseSampler;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -104,7 +106,6 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		this.upperInterpolatedNoise = new OctaveOpenSimplexSampler(this.randomSeed, 16);
 		this.interpolationNoise = new OctaveOpenSimplexSampler(this.randomSeed, 8);
 		this.variationNoise = new OctaveOpenSimplexSampler(this.randomSeed, 4);
-		this.densityNoise = new OctaveOpenSimplexSampler(this.randomSeed, 16);
 		this.randomSeed.consume(2620);
 	}
 
@@ -446,9 +447,9 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 			{
 	 			double temperature = this.biomeProvider.getTemperature((x + m) * 4, (z + n) * 4)[1];
 	 			double humidity =  this.biomeProvider.getTemperature((x + m) * 4, (z + n) * 4)[1];
-	 			double variation = MathHelper.clamp(this.variationNoise.sample((x + m) * 0.0825, (z + n) * 0.0825) * 0.2 + 0.5, 0.0, 1.0);
+	 			double variation = 1.0; //MathHelper.clamp(this.variationNoise.sample((x + m) * 0.0825, (z + n) * 0.0825) * 0.2 + 0.5, 0.0, 1.0);
 	 			double noiseDepth = (this.settings.getBiomeDepth() 
-	 					+ ( (1.0 - humidity * temperature) * this.settings.getBiomeDepthFactor()) )
+	 					+ ( (0.125 - humidity * temperature * 0.125) * this.settings.getBiomeDepthFactor()) )
 	 					* this.settings.getBiomeDepthWeight();
 				double noiseScale = (this.settings.getBiomeScale() + (variation * variation * this.settings.getBiomeScaleFactor())) * this.settings.getBiomeScaleWeight();
 
@@ -494,10 +495,10 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 
 		double w = h / i;
 		double y = g / i;
-        ai = w * 4.0D - 1.0D / 8.0D;
+        ai = w * 0.5F - 0.125F;
         aj = y * 0.9D + 0.1D;
-        ac = ai;
-        ad = aj;
+        ac = ai * 0.265625D;
+        ad = 96.0D / aj;
 
 		double ae = 684.412D * generationShapeConfig.getSampling().getXZScale();
 		double af = 684.412D * generationShapeConfig.getSampling().getYScale();
@@ -540,37 +541,57 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 
 	}
 
-    private double func_222545_a(double p_222545_1_, double p_222545_3_, int p_222545_5_) {
-       double depthBase = this.settings.getDepthBaseSize();
-       double d1 = ((double)p_222545_5_ - (depthBase + p_222545_1_ * depthBase / 8.0D * 4.0D)) * this.settings.getHeightStretch() * 128.0D / 256.0D / p_222545_3_;
-       if (d1 < 0.0D) {
-          d1 *= 4.0D;
-       }
-
-       return d1;
-    }
-
-
 	@Override
-	protected double sampleNoise(int x, int y, int z, double horizontalScale, double verticalScale, double horizontalStretch, double verticalStretch) {
-	      double d = this.lowerInterpolatedNoise.sample(
-	    		  x * horizontalScale, 
-	    		  y * verticalScale, 
-	    		  z * horizontalScale, 
-	    		  verticalScale, y * verticalScale, true);
-	      double e = this.upperInterpolatedNoise.sample(
-	    		  x * horizontalScale, 
-	    		  y * verticalScale, 
-	    		  z * horizontalScale, 
-	    		  verticalScale, y * verticalScale, true);
-	      double f = this.interpolationNoise.sample(
-	    		  x * horizontalStretch, 
-	    		  y * verticalStretch, 
-	    		  z * horizontalStretch, 
-	    		  verticalStretch, y * verticalStretch, true);
+	protected double sampleNoise(int x, int y, int z, double horizontalScale, double verticalScale, double horizontalStretch, double verticalStretch) 
+	{
+		double d = 0.0D;
+		double e = 0.0D;
+		double f = 0.0D;
+		double g = 1.0D;
 
-	      return MathHelper.clampedLerp(d / 512.0D, e / 512.0D, (f / 10.0D + 1.0D) / 2.0D);
-	   }
+		for(int i = 0; i < 16; ++i) {
+			double x1 = maintainPrecision((double)x * horizontalScale * g);
+			double y1 = maintainPrecision((double)y * verticalScale * g);
+			double z1 = maintainPrecision((double)z * horizontalScale * g);
+			double yScale = verticalScale * g;
+			if (this.lowerInterpolatedNoise.getOctave(i) != null) {
+				d += this.lowerInterpolatedNoise.getOctave(i).sample(x1, y1, z1, yScale, (double)y * yScale) / g;
+			}
+
+			if (this.upperInterpolatedNoise.getOctave(i) != null) {
+				e += this.upperInterpolatedNoise.getOctave(i).sample(x1, y1, z1, yScale, (double)y * yScale) / g;
+			}
+
+			if (i < 8) {
+				if (this.interpolationNoise.getOctave(i) != null) {
+					x1 = maintainPrecision((double)x * horizontalStretch * g);
+					y1 = maintainPrecision((double)y * verticalStretch * g);
+					z1 = maintainPrecision((double)z * horizontalStretch * g);
+					yScale = verticalStretch * g;
+					f += this.interpolationNoise.getOctave(i).sample(x1, y1, z1, yScale, (double)y * yScale) / g;
+				}
+			}
+
+			g /= 2.0D;
+		}
+		return MathHelper.clampedLerp(d / 512.0D, e / 512.0D, (f / 10.0D + 1.0D) / 2.0D);
+	}
+
+	protected double getRandomDensityAt(int x, int z) {
+		double d = this.densityNoise.sample((double)(x * 200), 10.0D, (double)(z * 200), 1.0D, 0.0D, true);
+		double f;
+		if (d < 0.0D) {
+			f = -d * 0.3D;
+		} else {
+			f = d;
+		}
+		double g = f * 24.575625D - 2.0D;
+		return g < 0.0D ? g * 0.009486607142857142D : Math.min(g, 1.0D) * 0.006640625D;
+	}
+
+	public static double maintainPrecision(double d) {
+		return d - (double)MathHelper.lfloor(d / 3.3554432E7D + 0.5D) * 3.3554432E7D;
+	}
 	
 	public static void register()
 	{

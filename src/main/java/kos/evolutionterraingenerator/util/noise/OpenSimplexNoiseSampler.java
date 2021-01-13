@@ -1,7 +1,5 @@
 package kos.evolutionterraingenerator.util.noise;
 
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.noise.PerlinNoiseSampler;
 import net.minecraft.world.gen.ChunkRandom;
 
 /*
@@ -21,7 +19,7 @@ import net.minecraft.world.gen.ChunkRandom;
  *   will be the same when ported to other languages.
  */
  
-public class OpenSimplexNoiseSampler extends PerlinNoiseSampler
+public class OpenSimplexNoiseSampler
 {
 
 	private static final double STRETCH_CONSTANT_2D = -0.211324865405187;    //(1/Math.sqrt(2+1)-1)/2;
@@ -33,17 +31,34 @@ public class OpenSimplexNoiseSampler extends PerlinNoiseSampler
 	private static final double NORM_CONSTANT_3D = 103;
 	
 	private short[] permGradIndex3D;
+	public final short[] permutations;
+	public final double originX;
+	public final double originY;
+	public final double originZ;
 	
 	//Initializes the class using a permutation array generated from a 64-bit seed.
 	//Generates a proper permutation (i.e. doesn't merely perform N successive pair swaps on a base array)
 	//Uses a simple 64-bit LCG.
 	public OpenSimplexNoiseSampler(ChunkRandom seed)
 	{
-		super(seed);
-
-		permGradIndex3D = new short[256];
+		this.originX = seed.nextDouble() * 256.0D;
+		this.originY = seed.nextDouble() * 256.0D;
+		this.originZ = seed.nextDouble() * 256.0D;
+		this.permutations = new short[256];
+		this.permGradIndex3D = new short[256];
+		short[] source = new short[256];
+		for (short i = 0; i < 256; i++)
+			source[i] = i;
+		
 		for (int i = 255; i >= 0; i--) 
-			permGradIndex3D[i] = (short)((this.permutations[i] % (gradients3D.length / 3)) * 3);
+		{
+	        int r = seed.nextInt(256 - i);
+			if (r < 0)
+				r += (i + 1);
+			this.permutations[i] = source[r];
+			this.permGradIndex3D[i] = (short)((this.permutations[i] % (gradients3D.length / 3)) * 3);
+			source[r] = source[i];
+		}
 	}
 	
 	//2D OpenSimplex Noise.
@@ -79,7 +94,7 @@ public class OpenSimplexNoiseSampler extends PerlinNoiseSampler
 		double t0;
 		if (d != 0.0D) {
 			double r = Math.min(e, dy0);
-	        t0 = (double)MathHelper.floor(r / d) * d;
+	        t0 = (double)fastFloor(r / d) * d;
 		} else {
 			t0 = 0.0D;
 		}
@@ -173,7 +188,6 @@ public class OpenSimplexNoiseSampler extends PerlinNoiseSampler
 	}
 	
 	//3D OpenSimplex Noise.
-	@Override
 	public double sample(double x, double y, double z, double d, double e) {
 		x += this.originX;
 		y += this.originY;
@@ -212,7 +226,7 @@ public class OpenSimplexNoiseSampler extends PerlinNoiseSampler
 		double t0;
 		if (d != 0.0D) {
 			double r = Math.min(e, dy0);
-	        t0 = (double)MathHelper.floor(r / d) * d;
+	        t0 = (double)fastFloor(r / d) * d;
 		} else {
 			t0 = 0.0D;
 		}
@@ -748,14 +762,14 @@ public class OpenSimplexNoiseSampler extends PerlinNoiseSampler
 	
 	private double extrapolate(int xsb, int ysb, double dx, double dy)
 	{
-		int index = MathHelper.abs(this.permutations[(this.permutations[xsb & 0xFF] + ysb) & 0xFF] & 0x0E);
+		int index = this.permutations[(this.permutations[xsb & 0xFF] + ysb) & 0xFF] & 0x0E;
 		return gradients2D[index] * dx
 			+ gradients2D[index + 1] * dy;
 	}
 	
 	private double extrapolate(int xsb, int ysb, int zsb, double dx, double dy, double dz)
 	{
-		int index = MathHelper.abs(permGradIndex3D[(this.permutations[(this.permutations[xsb & 0xFF] + ysb) & 0xFF] + zsb) & 0xFF]);
+		int index = this.permGradIndex3D[(this.permutations[(this.permutations[xsb & 0xFF] + ysb) & 0xFF] + zsb) & 0xFF];
 		return gradients3D[index] * dx
 			+ gradients3D[index + 1] * dy
 			+ gradients3D[index + 2] * dz;

@@ -32,8 +32,8 @@ public class EvoGenSettings
 	}
 
 	private static ChunkGeneratorSettings createEvoSurfaceSettings(StructuresConfig structuresConfig, Identifier id) {
-		double xzScale = 1.9554628571428571428571428571429D;
-		double yScale = 4.5627466666666666666666666666667D;
+		double xzScale = 0.51138787747730898932222111827379D;
+		double yScale = 0.21916623320456099542380905068877D;
 	    return new ChunkGeneratorSettings(
 	    		structuresConfig,
 	    		new GenerationShapeConfig(
@@ -60,9 +60,9 @@ public class EvoGenSettings
 	private double lowerLimitScale = 512.0;
 	private double upperLimitScale = 512.0;
 	
-	private double biomeDepth = 0.275;
+	private double biomeDepth = 0.205;
 	private double biomeScale = 0.110;
-	private double biomeDepthFactor = 0.125;
+	private double biomeDepthFactor = 0.30;
 	private double biomeScaleFactor = 1.015;
 	
 	private double biomeDepthWeight = 1.0;

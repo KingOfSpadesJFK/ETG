@@ -87,13 +87,11 @@ public class EvoBiomeProvider extends BiomeSource
         this.swampType = new OctaveOpenSimplexSampler(rand, 4);
 		this.providerSettings = settingsProvider;
 		this.landOffset = 0.0;
-		/*
 		if (landOctave2.sample(0.0, 0.0) * 0.125 / (double)oceanOctaves < oceanThreshold)
 		{
 			while (landOctave.sample(0.0, landOffset, 0.0) * 0.125 / (double)oceanOctaves < oceanThreshold)
 				landOffset += 1.0;
 		}
-		*/
 		
 		evoBiomes.init();
 		/*
