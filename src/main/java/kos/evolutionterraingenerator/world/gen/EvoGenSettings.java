@@ -34,7 +34,22 @@ public class EvoGenSettings
 	private static ChunkGeneratorSettings createEvoSurfaceSettings(StructuresConfig structuresConfig, Identifier id) {
 		double xzScale = 1.9554628571428571428571428571429D;
 		double yScale = 4.5627466666666666666666666666667D;
-	    return new ChunkGeneratorSettings(structuresConfig, new GenerationShapeConfig(256, new NoiseSamplingConfig(xzScale, yScale, 160.0D, 60.0D), new SlideConfig(-10, 3, 0), new SlideConfig(-30, 0, 0), 1, 2, 1.0D, -0.46875D, true, true, false, false), Blocks.STONE.getDefaultState(), Blocks.WATER.getDefaultState(), -10, 0, 63, false);
+	    return new ChunkGeneratorSettings(
+	    		structuresConfig,
+	    		new GenerationShapeConfig(
+	    				256,
+	    				new NoiseSamplingConfig(
+	    						xzScale, yScale, 160.0D, 60.0D),
+	    				new SlideConfig(-10, 3, 0),
+	    				new SlideConfig(-30, 0, 0),
+	    				1,
+	    				2,
+	    				1.0D,
+	    				-0.46875D,
+	    				true, true, false, false), 
+	    		Blocks.STONE.getDefaultState(), 
+	    		Blocks.WATER.getDefaultState(),
+	    		-10, 0, 63, false);
 	}
 
 	private int noiseOctaves = 8;
@@ -45,7 +60,7 @@ public class EvoGenSettings
 	private double lowerLimitScale = 512.0;
 	private double upperLimitScale = 512.0;
 	
-	private double biomeDepth = 0.55;
+	private double biomeDepth = 0.275;
 	private double biomeScale = 0.110;
 	private double biomeDepthFactor = 0.125;
 	private double biomeScaleFactor = 1.015;

@@ -8,13 +8,24 @@ extendable class net/minecraft/world/gen/chunk/NoiseChunkGenerator
 extendable method net/minecraft/world/gen/chunk/NoiseChunkGenerator sampleNoiseColumn ([DII)V
 extendable method net/minecraft/world/gen/chunk/NoiseChunkGenerator sampleNoiseColumn (II)[D
 extendable method net/minecraft/world/gen/chunk/NoiseChunkGenerator getRandomDensityAt (II)D
+extendable method net/minecraft/world/gen/chunk/NoiseChunkGenerator sampleNoise (IIIDDDD)D
 
 accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator worldSeed J
 accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator settings Ljava/util/function/Supplier;
 accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator BIOME_WEIGHT_TABLE [F
 accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator noiseSizeY I
+accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator surfaceDepthNoise Lnet/minecraft/util/math/noise/NoiseSampler;
+accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator lowerInterpolatedNoise Lnet/minecraft/util/math/noise/OctavePerlinNoiseSampler;
+mutable field net/minecraft/world/gen/chunk/NoiseChunkGenerator lowerInterpolatedNoise Lnet/minecraft/util/math/noise/OctavePerlinNoiseSampler;
+accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator upperInterpolatedNoise Lnet/minecraft/util/math/noise/OctavePerlinNoiseSampler;
+mutable field net/minecraft/world/gen/chunk/NoiseChunkGenerator upperInterpolatedNoise Lnet/minecraft/util/math/noise/OctavePerlinNoiseSampler;
+accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator interpolationNoise Lnet/minecraft/util/math/noise/OctavePerlinNoiseSampler;
+mutable field net/minecraft/world/gen/chunk/NoiseChunkGenerator interpolationNoise Lnet/minecraft/util/math/noise/OctavePerlinNoiseSampler;
+accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator densityNoise Lnet/minecraft/util/math/noise/OctavePerlinNoiseSampler;
+mutable field net/minecraft/world/gen/chunk/NoiseChunkGenerator densityNoise Lnet/minecraft/util/math/noise/OctavePerlinNoiseSampler;
 
 extendable class net/minecraft/util/math/noise/PerlinNoiseSampler
 accessible field net/minecraft/util/math/noise/PerlinNoiseSampler permutations [B
 accessible field net/minecraft/util/math/noise/OctavePerlinNoiseSampler octaveSamplers [Lnet/minecraft/util/math/noise/PerlinNoiseSampler;
 mutable field net/minecraft/util/math/noise/OctavePerlinNoiseSampler octaveSamplers [Lnet/minecraft/util/math/noise/PerlinNoiseSampler;
+accessible method net/minecraft/util/math/noise/OctavePerlinNoiseSampler <init> (Lnet/minecraft/world/gen/ChunkRandom;Lcom/mojang/datafixers/util/Pair;)V
