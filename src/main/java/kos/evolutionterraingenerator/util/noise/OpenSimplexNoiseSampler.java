@@ -1,6 +1,6 @@
 package kos.evolutionterraingenerator.util.noise;
 
-import net.minecraft.world.gen.ChunkRandom;
+import java.util.Random;
 
 /*
  * OpenSimplex Noise in Java.
@@ -30,8 +30,8 @@ public class OpenSimplexNoiseSampler
 	private static final double NORM_CONSTANT_2D = 47;
 	private static final double NORM_CONSTANT_3D = 103;
 	
-	private short[] permGradIndex3D;
-	public final short[] permutations;
+	private final short[] permGradIndex3D;
+	private final short[] permutations;
 	public final double originX;
 	public final double originY;
 	public final double originZ;
@@ -39,7 +39,7 @@ public class OpenSimplexNoiseSampler
 	//Initializes the class using a permutation array generated from a 64-bit seed.
 	//Generates a proper permutation (i.e. doesn't merely perform N successive pair swaps on a base array)
 	//Uses a simple 64-bit LCG.
-	public OpenSimplexNoiseSampler(ChunkRandom seed)
+	public OpenSimplexNoiseSampler(Random seed)
 	{
 		this.originX = seed.nextDouble() * 256.0D;
 		this.originY = seed.nextDouble() * 256.0D;
@@ -62,7 +62,7 @@ public class OpenSimplexNoiseSampler
 	}
 	
 	//2D OpenSimplex Noise.
-	public double sample(double x, double y, double d, double e) {
+	public double sample(double x, double y) {
 		x += this.originX;
 		y += this.originY;
 	
@@ -90,15 +90,6 @@ public class OpenSimplexNoiseSampler
 		//Positions relative to origin point.
 		double dx0 = x - xb;
 		double dy0 = y - yb;
-		
-		double t0;
-		if (d != 0.0D) {
-			double r = Math.min(e, dy0);
-	        t0 = (double)fastFloor(r / d) * d;
-		} else {
-			t0 = 0.0D;
-		}
-		dy0 -= t0;
 		
 		//We'll be defining these inside the next block and using them afterwards.
 		double dx_ext, dy_ext;
@@ -188,7 +179,7 @@ public class OpenSimplexNoiseSampler
 	}
 	
 	//3D OpenSimplex Noise.
-	public double sample(double x, double y, double z, double d, double e) {
+	public double sample(double x, double y, double z) {
 		x += this.originX;
 		y += this.originY;
 		z += this.originZ;
@@ -222,15 +213,6 @@ public class OpenSimplexNoiseSampler
 		double dx0 = x - xb;
 		double dy0 = y - yb;
 		double dz0 = z - zb;
-		
-		double t0;
-		if (d != 0.0D) {
-			double r = Math.min(e, dy0);
-	        t0 = (double)fastFloor(r / d) * d;
-		} else {
-			t0 = 0.0D;
-		}
-		dy0 -= t0;
 		
 		//We'll be defining these inside the next block and using them afterwards.
 		double dx_ext0, dy_ext0, dz_ext0;

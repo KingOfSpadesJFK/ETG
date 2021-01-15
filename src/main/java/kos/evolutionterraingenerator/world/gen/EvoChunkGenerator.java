@@ -11,7 +11,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import kos.evolutionterraingenerator.util.OctaveOpenSimplexSampler;
-import kos.evolutionterraingenerator.util.noise.OpenSimplexNoiseSampler;
 import kos.evolutionterraingenerator.world.biome.EvoBiomeProvider;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -26,8 +25,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.noise.OctavePerlinNoiseSampler;
-import net.minecraft.util.math.noise.PerlinNoiseSampler;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -54,6 +51,7 @@ import net.minecraft.world.gen.chunk.StructureConfig;
 import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.gen.feature.ConfiguredStructureFeatures;
+import net.minecraft.world.gen.feature.StructureFeature;
 
 public final class EvoChunkGenerator extends NoiseChunkGenerator
 {
@@ -82,11 +80,11 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 	protected final EvoGenSettings settings;
 	private final StructuresConfig structureSettings;
 	private final int maxBuildHeight;
-	private OctaveOpenSimplexSampler variationNoise;
 	
 	private final OctaveOpenSimplexSampler lowerInterpolatedNoise;
 	private final OctaveOpenSimplexSampler upperInterpolatedNoise;
 	private final OctaveOpenSimplexSampler interpolationNoise;
+	private final TerrainLayerSampler terrainLayer;
 
 	public EvoChunkGenerator(EvoBiomeProvider biomeProvider, long seed, Supplier<ChunkGeneratorSettings> settings) 
 	{
@@ -105,7 +103,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		this.lowerInterpolatedNoise = new OctaveOpenSimplexSampler(this.randomSeed, 16);
 		this.upperInterpolatedNoise = new OctaveOpenSimplexSampler(this.randomSeed, 16);
 		this.interpolationNoise = new OctaveOpenSimplexSampler(this.randomSeed, 8);
-		this.variationNoise = new OctaveOpenSimplexSampler(this.randomSeed, 4);
+		this.terrainLayer = TerrainLayerSampler.TerrainLayerBuilder.build(seed, 5);
 		this.randomSeed.consume(2620);
 	}
 
@@ -152,18 +150,18 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 	{
 		BiomeAccess biomemanager = biomeManager.withSource(this.biomeProvider);
 		ChunkRandom sharedseedrandom = new ChunkRandom();
-		 ChunkPos chunkpos = chunkIn.getPos();
-		 int j = chunkpos.x;
-		 int k = chunkpos.z;
-		 int x = chunkpos.x << 4;
-		 int z = chunkpos.z << 4;
-		 int y = chunkIn.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x, z);
-		 GenerationSettings biomegenerationsettings = this.biomeProvider.getBiomeForNoiseGen(x, y, z, false).getGenerationSettings();
-		 BitSet bitset = ((ProtoChunk)chunkIn).getOrCreateCarvingMask(genStage);
+		ChunkPos chunkpos = chunkIn.getPos();
+		int j = chunkpos.x;
+		int k = chunkpos.z;
+		int x = chunkpos.x << 4;
+		int z = chunkpos.z << 4;
+		int y = chunkIn.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x, z);
+		GenerationSettings biomegenerationsettings = this.biomeProvider.getBiomeForNoiseGen(x, y, z, false).getGenerationSettings();
+		BitSet bitset = ((ProtoChunk)chunkIn).getOrCreateCarvingMask(genStage);
 
-		 for(int l = j - 8; l <= j + 8; ++l) {
-		 	for(int i1 = k - 8; i1 <= k + 8; ++i1) {
-		 		List<Supplier<ConfiguredCarver<?>>> list = biomegenerationsettings.getCarversForStep(genStage);
+		for(int l = j - 8; l <= j + 8; ++l) {
+			for(int i1 = k - 8; i1 <= k + 8; ++i1) {
+				List<Supplier<ConfiguredCarver<?>>> list = biomegenerationsettings.getCarversForStep(genStage);
 				ListIterator<Supplier<ConfiguredCarver<?>>> listiterator = list.listIterator();
 
 				while(listiterator.hasNext()) {
@@ -174,8 +172,8 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 						configuredcarver.carve(chunkIn, biomemanager::getBiome, sharedseedrandom, this.getSeaLevel(), l, i1, j, k, bitset);
 					}
 				}
-		 	}
-		 }
+			}
+		}
 	}
 
 	/**
@@ -209,9 +207,15 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		 		double humidity = this.biomeProvider.getHumidity(x, z)[1];
 		 		double temperature = this.biomeProvider.getTemperature(x, z)[1];
 		 		if (biomes[0] == this.biomeProvider.decodeBiome(BiomeKeys.BADLANDS) || biomes[0] == this.biomeProvider.decodeBiome(BiomeKeys.WOODED_BADLANDS_PLATEAU))
-			  		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getGeneratorSettings().get().getDefaultBlock(), this.settings.getGeneratorSettings().get().getDefaultFluid(), this.getSeaLevel(), randomSeed.nextLong());
-		 		else if ( y <= 130 + Math.rint(40.0 * humidity * temperature + (sharedseedrandom.nextInt() % 10 - 5)) )
-			  		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getGeneratorSettings().get().getDefaultBlock(), this.settings.getGeneratorSettings().get().getDefaultFluid(), this.getSeaLevel(), randomSeed.nextLong());
+			  		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getGeneratorSettings().get().getDefaultBlock(), this.settings.getGeneratorSettings().get().getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+		 		else if ( y <= 130 + Math.rint(40.0 * humidity * temperature + ((double)(sharedseedrandom.nextInt() % 30 - 15) * (0.125 + humidity * temperature * 0.875))) )
+			  		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getGeneratorSettings().get().getDefaultBlock(), this.settings.getGeneratorSettings().get().getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+		 		/*
+		 		if (this.terrainLayer.sample(x1, z1) == 1)
+		 			this.biomeProvider.decodeBiome(BiomeKeys.DESERT).buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getGeneratorSettings().get().getDefaultBlock(), this.settings.getGeneratorSettings().get().getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+		 		if (this.terrainLayer.sample(x1, z1) >= 2)
+		 			this.biomeProvider.decodeBiome(BiomeKeys.BADLANDS).buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getGeneratorSettings().get().getDefaultBlock(), this.settings.getGeneratorSettings().get().getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+			  	*/
 			  }
 		 }
 		 while (k < BiomeArray.DEFAULT_LENGTH)
@@ -295,12 +299,14 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		int y = region.getChunk(blockpos).sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x + 8, z + 8) + 1;
 		Biome biome = this.biomeProvider.getBiomeForNoiseGen(x + 8, y, z + 8, true);
 		ChunkRandom sharedseedrandom = new ChunkRandom();
-		long i1 = sharedseedrandom.setDecoratorSeed(region.getSeed(), x, z);
+		long i1 = sharedseedrandom.setPopulationSeed(region.getSeed(), x, z);
 		
 		try 
 		{
-			//generateFeatures(biome, y, structManager, this, region, i1, sharedseedrandom, blockpos);
-			biome.generateFeatureStep(structManager, this, region, i1, sharedseedrandom, blockpos);
+			if (this.terrainLayer.sample(x, z) == TerrainLayerSampler.RIVER_LAYER && y < this.getSeaLevel())
+				this.biomeProvider.decodeBiome(BiomeKeys.RIVER).generateFeatureStep(structManager, this, region, i1, sharedseedrandom, blockpos);
+			else
+				biome.generateFeatureStep(structManager, this, region, i1, sharedseedrandom, blockpos);
 		} 
 		catch (Exception exception) 
 		{
@@ -309,70 +315,6 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 			throw new CrashException(crashReport);
 		}
 	}
-	
-	//Taken from Biome.class so I can do the thing where the vegetation is like less frequent in higher elevations
-	/*
-	@SuppressWarnings("deprecation")
-	private void generateFeatures(Biome biome, int y, StructureAccessor structureManager, ChunkGenerator chunkGenerator, ChunkRegion worldGenRegion, long seed, ChunkRandom rand, BlockPos pos) 
-	{
-		List<List<Supplier<ConfiguredFeature<?, ?>>>> list = biome.getGenerationSettings().getFeatures();
-		 Map<Integer, List<Structure<?>>> biomeStructures = Registry.STRUCTURE_FEATURE.stream().collect(Collectors.groupingBy((structure) -> {
-		 	return structure.getDecorationStage().ordinal();
-		 }));
-		 int i = GenerationStage.Decoration.values().length;
-		double temperature = this.biomeProvider.getTemperature(pos.getX() + 8, pos.getZ() + 8)[1];
-		double humidity = this.biomeProvider.getHumidity(pos.getX() + 8, pos.getZ() + 8)[1];
-
-		for(int j = 0; j < i; ++j) {
-			if (j == GenerationStage.Decoration.VEGETAL_DECORATION.ordinal())
-				if ( y > 115 + Math.rint(30.0 * humidity * temperature + rand.nextInt() % 10) )
-					continue;
-			int k = 0;
-			if (structureManager.canGenerateFeatures()) {
-				for(Structure<?> structure : biomeStructures.getOrDefault(j, Collections.emptyList())) {
-					rand.setFeatureSeed(seed, k, j);
-					int l = pos.getX() >> 4;
-					int i1 = pos.getZ() >> 4;
-					int j1 = l << 4;
-					int k1 = i1 << 4;
-
-					try {
-						structureManager.func_235011_a_(SectionPos.from(pos), structure).forEach((structureStart) -> {
-							structureStart.func_230366_a_(worldGenRegion, structureManager, chunkGenerator, rand, new MutableBoundingBox(j1, k1, j1 + 15, k1 + 15), new ChunkPos(l, i1));
-						});
-					} catch (Exception exception) {
-						CrashReport crashreport = CrashReport.makeCrashReport(exception, "Feature placement");
-						crashreport.makeCategory("Feature").addDetail("Id", Registry.STRUCTURE_FEATURE.getKey(structure)).addDetail("Description", () -> {
-							return structure.toString();
-						});
-						throw new ReportedException(crashreport);
-					}
-
-					++k;
-				}
-			}
-
-			if (list.size() > j) {
-				for(Supplier<ConfiguredFeature<?, ?>> supplier : list.get(j)) {
-					ConfiguredFeature<?, ?> configuredfeature = supplier.get();
-					rand.setFeatureSeed(seed, k, j);
-
-					try {
-						configuredfeature.generate(worldGenRegion, chunkGenerator, rand, pos);
-					} catch (Exception exception1) {
-						CrashReport crashreport1 = CrashReport.makeCrashReport(exception1, "Feature placement");
-						crashreport1.makeCategory("Feature").addDetail("Id", Registry.FEATURE.getKey(configuredfeature.feature)).addDetail("Config", configuredfeature.config).addDetail("Description", () -> {
-							return configuredfeature.feature.toString();
-						});
-						throw new ReportedException(crashreport1);
-					}
-
-					++k;
-				}
-			}
-		}
-	}
-	*/
 	
 	/*
 	 * STRUCTURE GENERATION
@@ -387,10 +329,13 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		int z = chunkpos.getStartZ() + 9;
 		int y = getHeight(x, z, Heightmap.Type.OCEAN_FLOOR_WG) + 1;
 		Biome biome = this.biomeProvider.getBiomeForNoiseGen(x, y, z, false);
+		int terrain = this.terrainLayer.sample(x, z);
 		this.setStructureStart(ConfiguredStructureFeatures.STRONGHOLD, structureRegistry, structureManager, chunkIn, template, l, chunkpos, biome);
 		
 		for (Supplier<ConfiguredStructureFeature<?, ?>> supplier : biome.getGenerationSettings().getStructureFeatures()) 
 		{
+			if (terrain > 0 && supplier.get().feature == StructureFeature.VILLAGE)
+				continue;
 			if (this.biomeProvider.hasStructureFeature(supplier.get().feature))
 				this.setStructureStart(supplier.get(), structureRegistry, structureManager, chunkIn, template, l, chunkpos, biome);
 		}
@@ -436,9 +381,12 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		{
  			double temperature = this.biomeProvider.getTemperature(x * 4, z * 4)[1];
  			double humidity =  this.biomeProvider.getTemperature(x * 4, z * 4)[1];
+ 			int terrain = this.terrainLayer.sample(x * 4, z * 4);
  			l = (this.settings.getBiomeDepth() 
  					+ ( (1.0 - humidity * temperature) * this.settings.getBiomeDepthFactor()) )
  					* this.settings.getBiomeDepthWeight();
+ 			if (terrain >= TerrainLayerSampler.PLATEAU_LAYER)
+ 				l += 0.6D * (double)(terrain - TerrainLayerSampler.PLATEAU_LAYER);
 		}
 
 		for(int m = -2; m <= 2; ++m) 
@@ -447,14 +395,17 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 			{
 	 			double temperature = this.biomeProvider.getTemperature((x + m) * 4, (z + n) * 4)[1];
 	 			double humidity =  this.biomeProvider.getTemperature((x + m) * 4, (z + n) * 4)[1];
-	 			double variation = 1.0; //MathHelper.clamp(this.variationNoise.sample((x + m) * 0.0825, (z + n) * 0.0825) * 0.2 + 0.5, 0.0, 1.0);
-	 			double noiseDepth = (this.settings.getBiomeDepth() 
-	 					+ ( (0.125 - humidity * temperature * 0.125) * this.settings.getBiomeDepthFactor()) )
+	 			int terrain = this.terrainLayer.sample((x + m) * 4, (z + n) * 4);
+	 			double noiseDepth = (0.4//this.settings.getBiomeDepth() 
+	 					+ ( (0.175 - humidity * temperature * 0.175) * this.settings.getBiomeDepthFactor()) )
 	 					* this.settings.getBiomeDepthWeight();
-				double noiseScale = (this.settings.getBiomeScale() + (variation * variation * this.settings.getBiomeScaleFactor())) * this.settings.getBiomeScaleWeight();
-
+	 			if (terrain >= TerrainLayerSampler.PLATEAU_LAYER)
+	 				noiseDepth += 0.45D * (double)terrain;
+				double noiseScale = (this.settings.getBiomeScale() + (terrain == 1 ? this.settings.getBiomeScaleFactor() : 0.075D)) * this.settings.getBiomeScaleWeight();
+				if (terrain >= 2)
+					noiseScale = 0.0D * this.settings.getBiomeScaleWeight();
 	             
-    			boolean isRiver = this.biomeProvider.getRiver((x + m) * 4, (z + n) * 4);
+    			boolean isRiver = terrain == TerrainLayerSampler.RIVER_LAYER;
     			double[] landmass = this.biomeProvider.getLandmass((x + m) * 4, (z + n) * 4);
     			boolean isOcean = landmass[4] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
     			boolean isBeach = !isOcean && (landmass[4] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach((x + m) * 4, (z + n) * 4);
@@ -480,13 +431,13 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
     				}
     			}
     			
-				if (generationShapeConfig.isAmplified() && noiseDepth > 0.0F) {
-					noiseDepth = 1.0F + noiseDepth * 2.0F;
-					noiseScale = 1.0F + noiseScale * 4.0F;
+				if (generationShapeConfig.isAmplified() && noiseDepth > 0.0D) {
+					noiseDepth = 1.0D + noiseDepth * 2.0D;
+					noiseScale = 1.0D + noiseScale * 4.0D;
 				}
 
-				double u = noiseDepth > l ? 0.5F : 1.0F;
-				double v = u * BIOME_WEIGHT_TABLE[m + 2 + (n + 2) * 5] / (noiseDepth + 2.0F);
+				double u = noiseDepth > l ? 0.5D : 1.0D;
+				double v = u * BIOME_WEIGHT_TABLE[m + 2 + (n + 2) * 5] / (noiseDepth + 2.0D);
 				g += noiseScale * v;
 				h += noiseDepth * v;
 				i += v;
@@ -495,102 +446,71 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 
 		double w = h / i;
 		double y = g / i;
-        ai = w * 0.5F - 0.125F;
+        ai = w * 0.5D - 0.125D;
         aj = y * 0.9D + 0.1D;
-        ac = ai * 0.265625D;
-        ad = 96.0D / aj;
+        double finalDepth = ai * 0.265625D;
+        double finalScale = 96.0D / aj;
 
-		double ae = 684.412D * generationShapeConfig.getSampling().getXZScale();
-		double af = 684.412D * generationShapeConfig.getSampling().getYScale();
-		double ag = ae / generationShapeConfig.getSampling().getXZFactor();
-		double ah = af / generationShapeConfig.getSampling().getYFactor();
-		ai = (double)generationShapeConfig.getTopSlide().getTarget();
-		aj = (double)generationShapeConfig.getTopSlide().getSize();
-		double ak = (double)generationShapeConfig.getTopSlide().getOffset();
-		double al = (double)generationShapeConfig.getBottomSlide().getTarget();
-		double am = (double)generationShapeConfig.getBottomSlide().getSize();
-		double an = (double)generationShapeConfig.getBottomSlide().getOffset();
-		double ao = generationShapeConfig.hasRandomDensityOffset() ? this.getRandomDensityAt(x, z) : 0.0D;
-		double ap = generationShapeConfig.getDensityFactor();
-		double aq = generationShapeConfig.getDensityOffset();
+		double xzScale = 684.412D * generationShapeConfig.getSampling().getXZScale();
+		double yScale = 684.412D * generationShapeConfig.getSampling().getYScale();
+		double xzFactor = xzScale / generationShapeConfig.getSampling().getXZFactor();
+		double yFactor = yScale / generationShapeConfig.getSampling().getYFactor();
+		double topTarget = (double)generationShapeConfig.getTopSlide().getTarget();
+		double topSize = (double)generationShapeConfig.getTopSlide().getSize();
+		double topOffset = (double)generationShapeConfig.getTopSlide().getOffset();
+		double bottomTarget = (double)generationShapeConfig.getBottomSlide().getTarget();
+		double bottomSize = (double)generationShapeConfig.getBottomSlide().getSize();
+		double bottomOffset = (double)generationShapeConfig.getBottomSlide().getOffset();
+		double density = generationShapeConfig.hasRandomDensityOffset() ? this.getRandomDensityAt(x, z) : 0.0D;
+		double densityFactor = generationShapeConfig.getDensityFactor();
+		double densityOffset = generationShapeConfig.getDensityOffset();
+
+		double[] landmass = this.biomeProvider.getLandmass(x * 4, z * 4);
+		boolean isBeach = (landmass[4] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach(x * 4, z * 4);
+		int terrainType = this.terrainLayer.sample(x * 4, z * 4);
+		if (terrainType != 0 && !isBeach)			density *= 2.75;
 
 		for(int ar = 0; ar <= this.noiseSizeY; ++ar) {
-			double as = this.sampleNoise(x, ar, z, ae, af, ag, ah);
-			double at = 1.0D - (double)ar * 2.0D / (double)this.noiseSizeY + ao;
-			double au = at * ap + aq;
-			double av = (au + ac) * ad;
-			if (av > 0.0D) {
-				as += av * 4.0D;
+			double noiseSample = this.sampleNoise(x, ar, z, xzScale, yScale, xzFactor, yFactor);
+			double densitySample = 1.0D - (double)ar * 2.0D / (double)this.noiseSizeY + density;
+			densitySample = densitySample * densityFactor + densityOffset;
+			double scaledSample = (densitySample + finalDepth) * finalScale;
+			if (scaledSample > 0.0D) {
+				noiseSample += scaledSample * 4.0D;
 			} else {
-				as += av;
+				noiseSample += scaledSample;
 			}
 
 			double ax;
-			if (aj > 0.0D) {
-				ax = ((double)(this.noiseSizeY - ar) - ak) / aj;
-				as = MathHelper.clampedLerp(ai, as, ax);
+			if (topSize > 0.0D) {
+				ax = ((double)(this.noiseSizeY - ar) - topOffset) / topSize;
+				noiseSample = MathHelper.clampedLerp(topTarget, noiseSample, ax);
 			}
 
-			if (am > 0.0D) {
-				ax = ((double)ar - an) / am;
-				as = MathHelper.clampedLerp(al, as, ax);
+			if (bottomSize > 0.0D) {
+				ax = ((double)ar - bottomOffset) / bottomSize;
+				noiseSample = MathHelper.clampedLerp(bottomTarget, noiseSample, ax);
 			}
 
-			buffer[ar] = as;
+			buffer[ar] = noiseSample;
 		}
-
 	}
 
 	@Override
 	protected double sampleNoise(int x, int y, int z, double horizontalScale, double verticalScale, double horizontalStretch, double verticalStretch) 
 	{
-		double d = 0.0D;
-		double e = 0.0D;
-		double f = 0.0D;
-		double g = 1.0D;
+		double x1 = (double)x * horizontalScale;
+		double y1 = (double)y * verticalScale;
+		double z1 = (double)z * horizontalScale;
+		double d = this.lowerInterpolatedNoise.sample(x1, y1, z1);
+		double e = this.upperInterpolatedNoise.sample(x1, y1, z1);
 
-		for(int i = 0; i < 16; ++i) {
-			double x1 = maintainPrecision((double)x * horizontalScale * g);
-			double y1 = maintainPrecision((double)y * verticalScale * g);
-			double z1 = maintainPrecision((double)z * horizontalScale * g);
-			double yScale = verticalScale * g;
-			if (this.lowerInterpolatedNoise.getOctave(i) != null) {
-				d += this.lowerInterpolatedNoise.getOctave(i).sample(x1, y1, z1, yScale, (double)y * yScale) / g;
-			}
-
-			if (this.upperInterpolatedNoise.getOctave(i) != null) {
-				e += this.upperInterpolatedNoise.getOctave(i).sample(x1, y1, z1, yScale, (double)y * yScale) / g;
-			}
-
-			if (i < 8) {
-				if (this.interpolationNoise.getOctave(i) != null) {
-					x1 = maintainPrecision((double)x * horizontalStretch * g);
-					y1 = maintainPrecision((double)y * verticalStretch * g);
-					z1 = maintainPrecision((double)z * horizontalStretch * g);
-					yScale = verticalStretch * g;
-					f += this.interpolationNoise.getOctave(i).sample(x1, y1, z1, yScale, (double)y * yScale) / g;
-				}
-			}
-
-			g /= 2.0D;
-		}
+		x1 = (double)x * horizontalStretch;
+		y1 = (double)y * verticalStretch;
+		z1 = (double)z * horizontalStretch;
+		double f = this.interpolationNoise.sample(x1, y1, z1);
+		
 		return MathHelper.clampedLerp(d / 512.0D, e / 512.0D, (f / 10.0D + 1.0D) / 2.0D);
-	}
-
-	protected double getRandomDensityAt(int x, int z) {
-		double d = this.densityNoise.sample((double)(x * 200), 10.0D, (double)(z * 200), 1.0D, 0.0D, true);
-		double f;
-		if (d < 0.0D) {
-			f = -d * 0.3D;
-		} else {
-			f = d;
-		}
-		double g = f * 24.575625D - 2.0D;
-		return g < 0.0D ? g * 0.009486607142857142D : Math.min(g, 1.0D) * 0.006640625D;
-	}
-
-	public static double maintainPrecision(double d) {
-		return d - (double)MathHelper.lfloor(d / 3.3554432E7D + 0.5D) * 3.3554432E7D;
 	}
 	
 	public static void register()
