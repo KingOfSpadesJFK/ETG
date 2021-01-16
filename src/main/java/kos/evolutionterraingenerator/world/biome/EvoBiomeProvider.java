@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import kos.evolutionterraingenerator.util.OctaveOpenSimplexSampler;
 import net.minecraft.util.collection.IndexedIterable;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -36,8 +35,6 @@ public class EvoBiomeProvider extends BiomeSource
     private OctaveOpenSimplexSampler noiseOctave;
     private OctaveOpenSimplexSampler mushroomOctave;
     private OctaveOpenSimplexSampler islandOctave;
-    private OctaveOpenSimplexSampler riverOctave;
-    private OctaveOpenSimplexSampler riverOctave2;
     private OctaveOpenSimplexSampler swampChance;
     private OctaveOpenSimplexSampler swampType;
     private double landOffset;
@@ -75,8 +72,6 @@ public class EvoBiomeProvider extends BiomeSource
         ChunkRandom rand = new ChunkRandom(seed);
         this.landOctave = new OctaveOpenSimplexSampler(rand, oceanOctaves);
 		this.landOctave2 = new OctaveOpenSimplexSampler(rand, oceanOctaves);
-		this.riverOctave = new OctaveOpenSimplexSampler(rand, 8);
-		this.riverOctave2 = new OctaveOpenSimplexSampler(rand, 8);
 		this.tempOctave = new OctaveOpenSimplexSampler(rand, 8);
         this.humidOctave = new OctaveOpenSimplexSampler(rand, 8);
 		this.biomeChanceOctave = new OctaveOpenSimplexSampler(rand, 4);
@@ -160,14 +155,6 @@ public class EvoBiomeProvider extends BiomeSource
     				MathHelper.clamp(d0 + noise * 0.01, 0.0, 1.0),
     		};
     	return arr;
-    }
-    
-    public boolean getRiver(int x, int z)
-    {
-    	double riverChance = riverOctave.sample((double)x * (0.025 / riverScale), (double)z * (0.025 / riverScale)) * 0.125;
-    	double riverChance2 = riverOctave2.sample((double)x * (0.025 / riverScale), (double)z * (0.025 / riverScale)) * 0.125;
-    	return (riverChance >= riverMidPoint - riverThreshold && riverChance <= riverMidPoint + riverThreshold) ||
-    			(riverChance2 >= riverMidPoint - riverThreshold && riverChance2 <= riverMidPoint + riverThreshold);
     }
     
     public double[] getLandmass(double x, double z)

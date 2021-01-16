@@ -303,7 +303,10 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		
 		try 
 		{
-			if (this.terrainLayer.sample(x, z) == TerrainLayerSampler.RIVER_LAYER && y < this.getSeaLevel())
+			double[] landmass = this.biomeProvider.getLandmass(x, z);
+			boolean isOcean = landmass[4] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+			boolean isBeach = !isOcean && (landmass[4] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach(x, z);
+			if (!isBeach && !isOcean && this.terrainLayer.sample(x, z) == TerrainLayerSampler.RIVER_LAYER && y < this.getSeaLevel())
 				this.biomeProvider.decodeBiome(BiomeKeys.RIVER).generateFeatureStep(structManager, this, region, i1, sharedseedrandom, blockpos);
 			else
 				biome.generateFeatureStep(structManager, this, region, i1, sharedseedrandom, blockpos);
@@ -369,8 +372,6 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 	protected void sampleNoiseColumn(double[] buffer, int x, int z) 
 	{
 		GenerationShapeConfig generationShapeConfig = this.settings.getGeneratorSettings().get().getGenerationShapeConfig();
-		double ac;
-		double ad;
 		double ai;
 		double aj;
 		
@@ -387,6 +388,29 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
  					* this.settings.getBiomeDepthWeight();
  			if (terrain >= TerrainLayerSampler.PLATEAU_LAYER)
  				l += 0.6D * (double)(terrain - TerrainLayerSampler.PLATEAU_LAYER);
+ 			
+			boolean isRiver = terrain == TerrainLayerSampler.RIVER_LAYER;
+			double[] landmass = this.biomeProvider.getLandmass(x * 4, z * 4);
+			boolean isOcean = landmass[4] < EvoBiomeProvider.oceanThreshold - EvoBiomeProvider.beachThreshold / (double)EvoBiomeProvider.oceanOctaves / EvoBiomeProvider.oceanScale;
+			boolean isBeach = !isOcean && (landmass[4] < EvoBiomeProvider.oceanThreshold) && this.biomeProvider.canBeBeach(x * 4, z * 4);
+			
+			if (isBeach | isOcean)
+			{
+				l = this.settings.getBiomeDepthOffset() + MathHelper.clamp((landmass[4] - EvoBiomeProvider.oceanThreshold + 0.025) * 6.0, -1.9, 0.0) * this.settings.getBiomeDepthWeight();
+			}
+         
+			if (isRiver)
+			{
+				if (isBeach | isOcean)
+				{
+					if (l > (this.settings.getBiomeDepthOffset() + this.biomeProvider.decodeBiome(BiomeKeys.RIVER).getDepth()) * this.settings.getBiomeDepthWeight())
+						l = (this.settings.getBiomeDepthOffset() + this.biomeProvider.decodeBiome(BiomeKeys.RIVER).getDepth()) * this.settings.getBiomeDepthWeight();
+				}
+				else
+				{
+					l = (this.settings.getBiomeDepthOffset() + this.biomeProvider.decodeBiome(BiomeKeys.OCEAN).getDepth()) * this.settings.getBiomeDepthWeight();
+				}
+			}
 		}
 
 		for(int m = -2; m <= 2; ++m) 

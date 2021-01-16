@@ -11,6 +11,7 @@ import net.minecraft.world.biome.layer.type.MergingLayer;
 import net.minecraft.world.biome.layer.type.ParentedLayer;
 import net.minecraft.world.biome.layer.util.CachingLayerContext;
 import net.minecraft.world.biome.layer.util.CachingLayerSampler;
+import net.minecraft.world.biome.layer.util.IdentityCoordinateTransformer;
 import net.minecraft.world.biome.layer.util.LayerFactory;
 import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 import net.minecraft.world.biome.layer.util.LayerSampleContext;
@@ -50,18 +51,20 @@ public class TerrainLayerSampler
 			layerFactory = ScaleLayer.NORMAL.create((LayerSampleContext<T>)contextProvider.apply(2003L), layerFactory);
 			LayerFactory<T> layerFactory2 = (new SimpleLayer(PLATEAU_STEPPE_COUNT + 1, 0, true)).create((LayerSampleContext<T>)contextProvider.apply(2000L), layerFactory);
 			layerFactory2 = stack(2001L, ScaleLayer.NORMAL, layerFactory2, 6, contextProvider);
-			LayerFactory<T> layerFactory3 = (new SimpleLayer(299999 + 2, 2, true)).create((LayerSampleContext<T>)contextProvider.apply(2000L), layerFactory);
+			LayerFactory<T> layerFactory3 = stack(1000L, ScaleLayer.NORMAL, layerFactory, 0, contextProvider); 
+			layerFactory3 = (new SimpleLayer(299999 + 2, 2, true)).create((LayerSampleContext<T>)contextProvider.apply(2000L), layerFactory);
 			layerFactory3 = stack(1000L, ScaleLayer.NORMAL, layerFactory3, 2, contextProvider);
-			layerFactory3 = stack(1000L, ScaleLayer.NORMAL, layerFactory3, 10, contextProvider);
+			layerFactory3 = stack(1000L, ScaleLayer.NORMAL, layerFactory3, 6, contextProvider);
 			layerFactory3 = EvoNoiseToRiverLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1L), layerFactory3);
+			layerFactory3 = stack(1000L, ScaleLayer.NORMAL, layerFactory3, 4, contextProvider);
 			layerFactory3 = SmoothLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1000L), layerFactory3);
 			
 			for (int i = 0; i < terrainSize; i++)
 				layerFactory = ScaleLayer.NORMAL.create((LayerSampleContext<T>)contextProvider.apply(1000L + (long)i), layerFactory);
 
-			layerFactory = SmoothLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1000L), layerFactory);
 			layerFactory2 = AddPlateauLayers.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1000L), layerFactory2, layerFactory);
-			layerFactory2 = OverwriteLayers.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1000L), layerFactory2, layerFactory3);
+			layerFactory2 = SmoothLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1000L), layerFactory2);
+			layerFactory2 = EvoAddRiverLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1000L), layerFactory2, layerFactory3);
 			return layerFactory2;
 		}
 
@@ -110,7 +113,7 @@ public class TerrainLayerSampler
 		@Override
 		public int sample(LayerRandomnessSource context, int n, int e, int s, int w, int center) {
 			int i = isValidForRiver(center);
-			return i == isValidForRiver(w) && i == isValidForRiver(n) && i == isValidForRiver(e) && i == isValidForRiver(s) ? 0 : RIVER_LAYER;
+			return i == isValidForRiver(w) && i == isValidForRiver(n) && i == isValidForRiver(e) && i == isValidForRiver(s) ? -1 : RIVER_LAYER;
 		}
 		
 		private static int isValidForRiver(int value) {
@@ -118,25 +121,32 @@ public class TerrainLayerSampler
 		}
 	}
 
-	public enum OverwriteLayers implements MergingLayer, NorthWestCoordinateTransformer {
+	public enum OverwriteLayers implements MergingLayer, IdentityCoordinateTransformer {
 		INSTANCE;
-
-		@Override
-		public int transformX(int x) {
-			return x;
-		}
-
-		@Override
-		public int transformZ(int y) {
-			return y;
-		}
 
 		@Override
 		public int sample(LayerRandomnessSource context, LayerSampler sampler1, LayerSampler sampler2, int x, int z) {
 			int i = sampler2.sample(this.transformX(x), this.transformZ(z));
-			if (i != 0)
+			if (i != -1)
 				return i;
 			return sampler1.sample(this.transformX(x), this.transformZ(z));
+		}
+	}
+	
+	public enum EvoAddRiverLayer implements MergingLayer, IdentityCoordinateTransformer
+	{
+		INSTANCE;
+
+		@Override
+		public int sample(LayerRandomnessSource context, LayerSampler sampler1, LayerSampler sampler2, int x, int z)
+		{
+			int i = sampler1.sample(this.transformX(x), this.transformZ(z));
+			int j = sampler2.sample(this.transformX(x), this.transformZ(z));
+			if (j == RIVER_LAYER) {
+				return RIVER_LAYER;
+			} else {
+				return i;
+			}
 		}
 	}
 }
