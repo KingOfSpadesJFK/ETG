@@ -6,11 +6,11 @@ import kos.evolutionterraingenerator.util.KdTree;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 
-public class BiomeMap
+public class BiomeSelector
 {
 	private KdTree<Biome> tree;
 	
-	public BiomeMap(Registry<Biome> registry)
+	public BiomeSelector(Registry<Biome> registry)
 	{
 		this.tree = new KdTree<Biome>();
 		for(Biome b : registry)

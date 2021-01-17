@@ -55,7 +55,7 @@ public class EvoBiomeProvider extends BiomeSource
 	private final Registry<Biome> lookupRegistry;
 	private static final List<RegistryKey<Biome>> BIOMES;
 	private EvoBiomeLookup evoBiomes;
-	private BiomeMap biomeMap;
+	private BiomeSelector biomeMap;
 	
 	public EvoBiomeProvider(long seed, Registry<Biome> lookupRegistry)
 	{
@@ -71,7 +71,7 @@ public class EvoBiomeProvider extends BiomeSource
 		}));
 		
 		this.evoBiomes = new EvoBiomeLookup(lookupRegistry);
-		this.biomeMap = new BiomeMap(lookupRegistry);
+		this.biomeMap = new BiomeSelector(lookupRegistry);
 		this.lookupRegistry = lookupRegistry;
 		this.seed = seed;
         ChunkRandom rand = new ChunkRandom(seed);
