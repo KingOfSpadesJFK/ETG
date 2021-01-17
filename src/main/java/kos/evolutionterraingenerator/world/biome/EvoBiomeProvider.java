@@ -5,6 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import kos.evolutionterraingenerator.util.OctaveOpenSimplexSampler;
+import kos.evolutionterraingenerator.world.gen.layer.ClimateLayerSampler;
+import kos.evolutionterraingenerator.world.gen.layer.LayerBuilder;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.IndexedIterable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
@@ -52,6 +55,7 @@ public class EvoBiomeProvider extends BiomeSource
 	private final Registry<Biome> lookupRegistry;
 	private static final List<RegistryKey<Biome>> BIOMES;
 	private EvoBiomeLookup evoBiomes;
+	private BiomeMap biomeMap;
 	
 	public EvoBiomeProvider(long seed, Registry<Biome> lookupRegistry)
 	{
@@ -67,6 +71,7 @@ public class EvoBiomeProvider extends BiomeSource
 		}));
 		
 		this.evoBiomes = new EvoBiomeLookup(lookupRegistry);
+		this.biomeMap = new BiomeMap(lookupRegistry);
 		this.lookupRegistry = lookupRegistry;
 		this.seed = seed;
         ChunkRandom rand = new ChunkRandom(seed);
@@ -121,10 +126,10 @@ public class EvoBiomeProvider extends BiomeSource
     public static final double riverMidPoint = 0.0;
     public static final double riverScale = 4.0;
     
-    public double[] getTemperature(double x, double z)
+    public double[] getTemperature(int x, int z)
     {
     	double noise = noiseOctave.sample((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
-    	double d0 = (tempOctave.sample(x * (0.0875 / biomeScale), z * (0.0875 / biomeScale)) * 0.00625 + 0.5) * 0.99;
+    	double d0 = (tempOctave.sample((double)x * (0.0875 / biomeScale), (double)z * (0.0875 / biomeScale)) * 0.00625 + 0.5) * 0.99;
     	double[] arr =
     		{
     				MathHelper.clamp(d0 + 0.01, 0.0, 1.0),
@@ -133,7 +138,7 @@ public class EvoBiomeProvider extends BiomeSource
     	return arr;
     }
     
-    public double[] getHumidity(double x, double z)
+    public double[] getHumidity(int x, int z)
     {
     	double noise = noiseOctave.sample((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
     	double d0 = (humidOctave.sample((double)x * (0.3 / biomeScale / humidityScale), (double)z * (0.3 / biomeScale / humidityScale)) * 0.0075 + 0.5) * 0.95;
@@ -175,7 +180,7 @@ public class EvoBiomeProvider extends BiomeSource
     	return new double[]{landmass1, landmass2, islandChance, mushroomChance, domLand};
     }
     
-    public Biome[] generateLandBiome(double x, double z)
+    public Biome[] generateLandBiome(int x, int z)
     {
         double[] temperature = getTemperature(x, z);
         double[] humidity = getHumidity(x, z);
@@ -188,7 +193,7 @@ public class EvoBiomeProvider extends BiomeSource
 				};
     }
     
-    public Biome generateLandBiome(double x, double z, boolean useNoise)
+    public Biome generateLandBiome(int x, int z, boolean useNoise)
     {
         double temperature = useNoise ? getTemperature(x, z)[1] : getTemperature(x, z)[0];
         double humidity = useNoise ? getHumidity(x, z)[1] : getHumidity(x, z)[0];
@@ -234,7 +239,7 @@ public class EvoBiomeProvider extends BiomeSource
     
     public Biome getBiomeForNoiseGen(int x, int y, int z, boolean useNoise) 
     {
-    	Biome biome = generateLandBiome((double)x, (double)z, useNoise);
+    	Biome biome = generateLandBiome(x, z, useNoise);
     	return setBiomebyHeight(biome, x, y, z, useNoise);
     }
     
@@ -291,7 +296,7 @@ public class EvoBiomeProvider extends BiomeSource
 				biome = evoBiomes.HOT_ISLANDS.getBiome(biomeChance);
     	}
     	if (landmass[3] == landmass[4] && isSpecialIsland)
-			biome = decodeBiome(BiomeKeys.MUSHROOM_FIELDS);
+			biome = decodeBiome(BiomeList.MUSHROOM_FIELDS);
         
         if (isBeach || isOcean)
         {
@@ -299,9 +304,9 @@ public class EvoBiomeProvider extends BiomeSource
         		return getOcean(temperature, y < 40);
         	if (y < seaLevel + 3)
         	{
-	    		if (!biome.equals(decodeBiome(BiomeKeys.BADLANDS)) && 
-	    				!biome.equals(decodeBiome(BiomeKeys.MUSHROOM_FIELDS)) && 
-	    				!biome.equals(decodeBiome(BiomeKeys.DESERT))
+	    		if (!biome.equals(decodeBiome(BiomeList.BADLANDS)) && 
+	    				!biome.equals(decodeBiome(BiomeList.MUSHROOM_FIELDS)) && 
+	    				!biome.equals(decodeBiome(BiomeList.DESERT))
 	    						)
 	    			return getBeach(x, z);
         	}
@@ -327,12 +332,12 @@ public class EvoBiomeProvider extends BiomeSource
             if (swamp != null)
             	biome = swamp;
     	}
-    	if (biome.equals(decodeBiome(BiomeKeys.BADLANDS)))
+    	if (biome.equals(decodeBiome(BiomeList.BADLANDS)))
     	{
     		if (y >= seaLevel + 50)
-        		biome = decodeBiome(BiomeKeys.WOODED_BADLANDS_PLATEAU);
+        		biome = decodeBiome(BiomeList.WOODED_BADLANDS_PLATEAU);
     	}
-    	/*if (getSettings().isUseBOPBiomes() && temperature < EvoBiomeProvider.SNOW_TEMP && !biome.equals(BiomeKeys.ICE_SPIKES))
+    	/*if (getSettings().isUseBOPBiomes() && temperature < EvoBiomeProvider.SNOW_TEMP && !biome.equals(BiomeList.ICE_SPIKES))
     	{
     		if (y >= seaLevel + 65)
     			biome = BOPBiomes.alps.get();
@@ -342,10 +347,13 @@ public class EvoBiomeProvider extends BiomeSource
     	return biome;
     }
 
-    public Biome decodeBiome(RegistryKey<Biome> biome)
-    {
+    public Biome decodeBiome(RegistryKey<Biome> biome) {
     	return this.lookupRegistry.getOrThrow(biome);
 	}
+    
+    public Biome decodeBiome(Identifier biomeId) {
+    	return this.lookupRegistry.get(biomeId);
+    }
 
 	public Biome getLandBiome(double temp, double humid, double chance)
     {
@@ -365,7 +373,7 @@ public class EvoBiomeProvider extends BiomeSource
 		return arr[(int)((arr.length - 1) * humid)].getBiome(chance);
     }
 
-	public Biome getBeach(double x, double z)
+	public Biome getBeach(int x, int z)
 	{
 		double temp = getTemperature(x, z)[1];
 		double humid = getHumidity(x, z)[1];
@@ -380,19 +388,19 @@ public class EvoBiomeProvider extends BiomeSource
     {
     	if (temp < SNOW_TEMP)
     	{
-    		//if (isGravel)
-    			//return NewBiomes.SNOWY_GRAVEL_BEACH;
-    		return decodeBiome(BiomeKeys.SNOWY_BEACH);
+    		if (isGravel)
+        		return decodeBiome(BiomeList.SNOWY_GRAVEL_BEACH);
+    		return decodeBiome(BiomeList.SNOWY_BEACH);
     	}
     	if (noDownfall)
     	{
-        	//if (isGravel)
-        		//return NewBiomes.DRY_GRAVEL_BEACH;
-    		//return NewBiomes.DRY_BEACH;
+    		if (isGravel)
+        		return decodeBiome(BiomeList.DRY_GRAVEL_BEACH);
+    		return decodeBiome(BiomeList.DRY_BEACH);
     	}
-    	//if (isGravel)
-    		//return ForgeRegistries.BIOMES.getValue(EvoRegistry.GRAVEL_BEACH);
-    	return decodeBiome(BiomeKeys.BEACH);
+		if (isGravel)
+    		return decodeBiome(BiomeList.GRAVEL_BEACH);
+    	return decodeBiome(BiomeList.BEACH);
     }
     
     public Biome getOcean(double temp, boolean deep)
@@ -400,26 +408,26 @@ public class EvoBiomeProvider extends BiomeSource
     	if (deep)
     	{		
     		if (temp < SNOW_TEMP)
-    			return decodeBiome(BiomeKeys.DEEP_FROZEN_OCEAN);
+    			return decodeBiome(BiomeList.DEEP_FROZEN_OCEAN);
     		else if (temp < COLD_TEMP)
-    			return decodeBiome(BiomeKeys.DEEP_COLD_OCEAN);
+    			return decodeBiome(BiomeList.DEEP_COLD_OCEAN);
     		else if (temp < WARM_TEMP)
-    			return decodeBiome(BiomeKeys.DEEP_OCEAN);
+    			return decodeBiome(BiomeList.DEEP_OCEAN);
     		else if (temp < HOT_TEMP)
-    			return decodeBiome(BiomeKeys.DEEP_LUKEWARM_OCEAN);
+    			return decodeBiome(BiomeList.DEEP_LUKEWARM_OCEAN);
     		else
-    			return decodeBiome(BiomeKeys.DEEP_WARM_OCEAN);
+    			return decodeBiome(BiomeList.DEEP_WARM_OCEAN);
     	}
 		if (temp < SNOW_TEMP)
-			return decodeBiome(BiomeKeys.FROZEN_OCEAN);
+			return decodeBiome(BiomeList.FROZEN_OCEAN);
 		else if (temp < COLD_TEMP)
-			return decodeBiome(BiomeKeys.COLD_OCEAN);
+			return decodeBiome(BiomeList.COLD_OCEAN);
 		else if (temp < WARM_TEMP)
-			return decodeBiome(BiomeKeys.OCEAN);
+			return decodeBiome(BiomeList.OCEAN);
 		else if (temp < HOT_TEMP)
-			return decodeBiome(BiomeKeys.DEEP_LUKEWARM_OCEAN);
+			return decodeBiome(BiomeList.DEEP_LUKEWARM_OCEAN);
 		else
-			return decodeBiome(BiomeKeys.WARM_OCEAN);
+			return decodeBiome(BiomeList.WARM_OCEAN);
     }
     
 	public EvoBiomeProviderSettings getSettings() 

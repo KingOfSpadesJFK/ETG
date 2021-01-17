@@ -16,13 +16,11 @@ public class EvoGeneratorType extends GeneratorType
 {
 	public static final EvoGeneratorType INSTANCE = new EvoGeneratorType();
 	
-    private EvoGeneratorType() 
-    {
+    private EvoGeneratorType() {
     	super("evolution");
     }
     
-    public static void register()
-    {
+    public static void register() {
     	GeneratorType.VALUES.add(INSTANCE);
     }
 
@@ -30,7 +28,7 @@ public class EvoGeneratorType extends GeneratorType
 	protected ChunkGenerator getChunkGenerator(Registry<Biome> biomeRegistry,
 			Registry<ChunkGeneratorSettings> chunkGeneratorSettingsRegistry, long seed) {
         return new EvoChunkGenerator(new EvoBiomeProvider(seed, biomeRegistry), seed, () -> {
-            return (ChunkGeneratorSettings)chunkGeneratorSettingsRegistry.getOrThrow(EvoGenSettings.SETTINGS);
+            return chunkGeneratorSettingsRegistry.getOrThrow(EvoGenSettings.SETTINGS);
          });
 	}
 }

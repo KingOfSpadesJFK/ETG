@@ -4,10 +4,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import kos.evolutionterraingenerator.world.EvoGeneratorType;
+import kos.evolutionterraingenerator.world.biome.BiomeHandler;
 import kos.evolutionterraingenerator.world.biome.EvoBiomeProvider;
 import kos.evolutionterraingenerator.world.gen.EvoChunkGenerator;
 import kos.evolutionterraingenerator.world.gen.EvoGenSettings;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 
 public class EvolutionTerrainGenerator implements ModInitializer  {
 	
@@ -21,11 +24,13 @@ public class EvolutionTerrainGenerator implements ModInitializer  {
 	@Override
 	public void onInitialize() {
 		instance = this;
+		BiomeHandler.registerAll();
 		EvoChunkGenerator.register();
 		EvoBiomeProvider.register();
-
-        EvoGeneratorType.register();
-        
         EvoGenSettings.register();
+
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+			EvoGeneratorType.register();
+		}
 	}
 }

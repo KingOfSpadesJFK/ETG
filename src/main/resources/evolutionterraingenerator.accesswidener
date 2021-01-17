@@ -16,3 +16,5 @@ accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator BIOME_WEIGHT_
 accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator noiseSizeY I
 accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator surfaceDepthNoise Lnet/minecraft/util/math/noise/NoiseSampler;
 accessible field net/minecraft/world/gen/chunk/NoiseChunkGenerator densityNoise Lnet/minecraft/util/math/noise/OctavePerlinNoiseSampler;
+
+accessible method net/minecraft/world/biome/DefaultBiomeCreator getSkyColor (F)I

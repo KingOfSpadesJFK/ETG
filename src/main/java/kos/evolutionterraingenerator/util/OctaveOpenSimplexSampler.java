@@ -29,7 +29,7 @@ public class OctaveOpenSimplexSampler implements NoiseSampler
 	{
 		double f = 0.0D;
 		double h = 1.0D;
-
+		
 		for(int i = 0; i < this.octaveSamplers.length; ++i) 
 		{
 			OpenSimplexNoiseSampler noise = this.octaveSamplers[i];
@@ -48,7 +48,7 @@ public class OctaveOpenSimplexSampler implements NoiseSampler
 	{
 		double f = 0.0D;
 		double h = 1.0D;
-
+		
 		for(int i = 0; i < this.octaveSamplers.length; ++i) 
 		{
 			OpenSimplexNoiseSampler noise = this.octaveSamplers[i];

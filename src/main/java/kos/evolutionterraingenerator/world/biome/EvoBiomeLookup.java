@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeKeys;
 
 public class EvoBiomeLookup 
 {
@@ -21,7 +20,7 @@ public class EvoBiomeLookup
 	public final EvoBiome JUNGLE;
 	public final EvoBiome SAVANNA;
 	public final EvoBiome DESERT;
-	//public final EvoBiome SONWY_GIANT_TREE_TAIGA;
+	public final EvoBiome SONWY_GIANT_TREE_TAIGA;
 	//public final EvoBiome TUNDRA;
 	//public final EvoBiome WOODED_TUNDRA;
 	//public final EvoBiome RAINFOREST_ROOFED;
@@ -45,63 +44,63 @@ public class EvoBiomeLookup
     
     public EvoBiomeLookup(Registry<Biome> lookupRegistry)
     {
-    	PLAINS = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.PLAINS), new Biome[]
-    			{lookupRegistry.getOrThrow(BiomeKeys.PLAINS), lookupRegistry.getOrThrow(BiomeKeys.SUNFLOWER_PLAINS)});
-    	FOREST = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.FOREST), new Biome[]
-    			{lookupRegistry.getOrThrow(BiomeKeys.FOREST), lookupRegistry.getOrThrow(BiomeKeys.FLOWER_FOREST)});
-    	BIRCH_FOREST = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.BIRCH_FOREST), new Biome[]
-    			{lookupRegistry.getOrThrow(BiomeKeys.BIRCH_FOREST), lookupRegistry.getOrThrow(BiomeKeys.TALL_BIRCH_FOREST)});
-    	SNOWY_TUNDRA = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.SNOWY_TUNDRA), 0.125F, new Biome[]
-    			{lookupRegistry.getOrThrow(BiomeKeys.SNOWY_TUNDRA), lookupRegistry.getOrThrow(BiomeKeys.SNOWY_TUNDRA), lookupRegistry.getOrThrow(BiomeKeys.SNOWY_TUNDRA), lookupRegistry.getOrThrow(BiomeKeys.ICE_SPIKES)});
-    	MOUNTAINS = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.MOUNTAINS), new Biome[]
-    			{lookupRegistry.getOrThrow(BiomeKeys.MOUNTAINS), lookupRegistry.getOrThrow(BiomeKeys.GRAVELLY_MOUNTAINS)});
-    	WOODED_MOUNTAINS = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.WOODED_MOUNTAINS));
-    	TAIGA = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.TAIGA));
-    	SNOWY_TAIGA = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.SNOWY_TAIGA));
-    	GIANT_TREE_TAIGA = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.DARK_FOREST), new Biome[]
-    			{lookupRegistry.getOrThrow(BiomeKeys.GIANT_TREE_TAIGA), lookupRegistry.getOrThrow(BiomeKeys.GIANT_SPRUCE_TAIGA)});
-    	DARK_FOREST = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.DARK_FOREST));
-    	JUNGLE = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.JUNGLE), new Biome[]
-    			{lookupRegistry.getOrThrow(BiomeKeys.JUNGLE), lookupRegistry.getOrThrow(BiomeKeys.BAMBOO_JUNGLE)});
-    	SAVANNA = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.SAVANNA), new Biome[]
-    			 {lookupRegistry.getOrThrow(BiomeKeys.SAVANNA), lookupRegistry.getOrThrow(BiomeKeys.SHATTERED_SAVANNA)});
-    	DESERT = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.DESERT), new Biome[]
-    			{lookupRegistry.getOrThrow(BiomeKeys.DESERT), lookupRegistry.getOrThrow(BiomeKeys.DESERT), lookupRegistry.getOrThrow(BiomeKeys.BADLANDS)});
-    	/*SONWY_GIANT_TREE_TAIGA = new EvoBiome(NewlookupRegistry.getOrThrow(SNOWY_GIANT_TREE_TAIGA, new Biome[]
-    			{NewlookupRegistry.getOrThrow(SNOWY_GIANT_TREE_TAIGA, NewlookupRegistry.getOrThrow(SNOWY_GIANT_SPRUCE_TAIGA});
-    	TUNDRA = new EvoBiome(NewlookupRegistry.getOrThrow(TUNDRA, new Biome[]
+    	PLAINS = new EvoBiome(lookupRegistry.get(BiomeList.PLAINS), new Biome[]
+    			{lookupRegistry.get(BiomeList.PLAINS), lookupRegistry.get(BiomeList.SUNFLOWER_PLAINS)});
+    	FOREST = new EvoBiome(lookupRegistry.get(BiomeList.FOREST), new Biome[]
+    			{lookupRegistry.get(BiomeList.FOREST), lookupRegistry.get(BiomeList.FLOWER_FOREST)});
+    	BIRCH_FOREST = new EvoBiome(lookupRegistry.get(BiomeList.BIRCH_FOREST), new Biome[]
+    			{lookupRegistry.get(BiomeList.BIRCH_FOREST), lookupRegistry.get(BiomeList.TALL_BIRCH_FOREST)});
+    	SNOWY_TUNDRA = new EvoBiome(lookupRegistry.get(BiomeList.SNOWY_TUNDRA), 0.125F, new Biome[]
+    			{lookupRegistry.get(BiomeList.SNOWY_TUNDRA), lookupRegistry.get(BiomeList.SNOWY_TUNDRA), lookupRegistry.get(BiomeList.SNOWY_TUNDRA), lookupRegistry.get(BiomeList.ICE_SPIKES)});
+    	MOUNTAINS = new EvoBiome(lookupRegistry.get(BiomeList.MOUNTAINS), new Biome[]
+    			{lookupRegistry.get(BiomeList.MOUNTAINS), lookupRegistry.get(BiomeList.GRAVELLY_MOUNTAINS)});
+    	WOODED_MOUNTAINS = new EvoBiome(lookupRegistry.get(BiomeList.WOODED_MOUNTAINS));
+    	TAIGA = new EvoBiome(lookupRegistry.get(BiomeList.TAIGA));
+    	SNOWY_TAIGA = new EvoBiome(lookupRegistry.get(BiomeList.SNOWY_TAIGA));
+    	GIANT_TREE_TAIGA = new EvoBiome(lookupRegistry.get(BiomeList.DARK_FOREST), new Biome[]
+    			{lookupRegistry.get(BiomeList.GIANT_TREE_TAIGA), lookupRegistry.get(BiomeList.GIANT_SPRUCE_TAIGA)});
+    	DARK_FOREST = new EvoBiome(lookupRegistry.get(BiomeList.DARK_FOREST));
+    	JUNGLE = new EvoBiome(lookupRegistry.get(BiomeList.JUNGLE), new Biome[]
+    			{lookupRegistry.get(BiomeList.JUNGLE), lookupRegistry.get(BiomeList.BAMBOO_JUNGLE)});
+    	SAVANNA = new EvoBiome(lookupRegistry.get(BiomeList.SAVANNA), new Biome[]
+    			 {lookupRegistry.get(BiomeList.SAVANNA), lookupRegistry.get(BiomeList.SHATTERED_SAVANNA)});
+    	DESERT = new EvoBiome(lookupRegistry.get(BiomeList.DESERT), new Biome[]
+    			{lookupRegistry.get(BiomeList.DESERT), lookupRegistry.get(BiomeList.DESERT), lookupRegistry.get(BiomeList.BADLANDS)});
+    	SONWY_GIANT_TREE_TAIGA = new EvoBiome(lookupRegistry.get(BiomeList.SNOWY_GIANT_TREE_TAIGA), new Biome[]
+    			{lookupRegistry.get(BiomeList.SNOWY_GIANT_TREE_TAIGA), lookupRegistry.get(BiomeList.SNOWY_GIANT_SPRUCE_TAIGA)});
+    	/*TUNDRA = new EvoBiome(NewlookupRegistry.get(TUNDRA, new Biome[]
     			{NewBiomes.TUNDRA, NewBiomes.GRAVELLY_TUNDRA});
     	WOODED_TUNDRA = new EvoBiome(NewBiomes.TUNDRA_WOODED);
     	RAINFOREST_ROOFED = new EvoBiome(NewBiomes.RAINFOREST, new Biome[]
-    			{	NewBiomes.RAINFOREST, lookupRegistry.getOrThrow(DARK_FOREST), 
-    				NewBiomes.RAINFOREST, lookupRegistry.getOrThrow(DARK_FOREST), 
-    				NewBiomes.RAINFOREST, lookupRegistry.getOrThrow(DARK_FOREST), 
-    				NewBiomes.RAINFOREST, lookupRegistry.getOrThrow(DARK_FOREST)	});
+    			{	NewBiomes.RAINFOREST, lookupRegistry.get(DARK_FOREST), 
+    				NewBiomes.RAINFOREST, lookupRegistry.get(DARK_FOREST), 
+    				NewBiomes.RAINFOREST, lookupRegistry.get(DARK_FOREST), 
+    				NewBiomes.RAINFOREST, lookupRegistry.get(DARK_FOREST)	});
     	RAINFOREST = new EvoBiome(NewBiomes.RAINFOREST);*/
-    	SAVANNA_PLAINS = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.PLAINS), new Biome[]
-    			{	lookupRegistry.getOrThrow(BiomeKeys.SAVANNA), lookupRegistry.getOrThrow(BiomeKeys.PLAINS), 
-    					lookupRegistry.getOrThrow(BiomeKeys.SAVANNA), lookupRegistry.getOrThrow(BiomeKeys.PLAINS), 
-    					lookupRegistry.getOrThrow(BiomeKeys.SAVANNA), lookupRegistry.getOrThrow(BiomeKeys.PLAINS), 
-    					lookupRegistry.getOrThrow(BiomeKeys.SAVANNA), lookupRegistry.getOrThrow(BiomeKeys.PLAINS),
-    					lookupRegistry.getOrThrow(BiomeKeys.SHATTERED_SAVANNA), lookupRegistry.getOrThrow(BiomeKeys.SUNFLOWER_PLAINS)});
+    	SAVANNA_PLAINS = new EvoBiome(lookupRegistry.get(BiomeList.PLAINS), new Biome[]
+    			{	lookupRegistry.get(BiomeList.SAVANNA), lookupRegistry.get(BiomeList.PLAINS), 
+    					lookupRegistry.get(BiomeList.SAVANNA), lookupRegistry.get(BiomeList.PLAINS), 
+    					lookupRegistry.get(BiomeList.SAVANNA), lookupRegistry.get(BiomeList.PLAINS), 
+    					lookupRegistry.get(BiomeList.SAVANNA), lookupRegistry.get(BiomeList.PLAINS),
+    					lookupRegistry.get(BiomeList.SHATTERED_SAVANNA), lookupRegistry.get(BiomeList.SUNFLOWER_PLAINS)});
     	
-    	HOT_SWAMP = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.SWAMP));
-    	WARM_SWAMP = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.SWAMP));
-    	COLD_SWAMP = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.SWAMP));
+    	HOT_SWAMP = new EvoBiome(lookupRegistry.get(BiomeList.SWAMP));
+    	WARM_SWAMP = new EvoBiome(lookupRegistry.get(BiomeList.SWAMP));
+    	COLD_SWAMP = new EvoBiome(lookupRegistry.get(BiomeList.SWAMP));
     	
-    	COLD_ISLANDS = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.ICE_SPIKES));
+    	COLD_ISLANDS = new EvoBiome(lookupRegistry.get(BiomeList.ICE_SPIKES));
     	
-    	ISLAND_BIOMES = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.PLAINS), new Biome[]
+    	ISLAND_BIOMES = new EvoBiome(lookupRegistry.get(BiomeList.PLAINS), new Biome[]
     			{
-    				lookupRegistry.getOrThrow(BiomeKeys.PLAINS),
-    				lookupRegistry.getOrThrow(BiomeKeys.FOREST),
-    				lookupRegistry.getOrThrow(BiomeKeys.PLAINS),
-    				lookupRegistry.getOrThrow(BiomeKeys.FOREST),
-    				lookupRegistry.getOrThrow(BiomeKeys.PLAINS),
-    				lookupRegistry.getOrThrow(BiomeKeys.FOREST),
+    				lookupRegistry.get(BiomeList.PLAINS),
+    				lookupRegistry.get(BiomeList.FOREST),
+    				lookupRegistry.get(BiomeList.PLAINS),
+    				lookupRegistry.get(BiomeList.FOREST),
+    				lookupRegistry.get(BiomeList.PLAINS),
+    				lookupRegistry.get(BiomeList.FOREST),
     			});
     	
-    	HOT_ISLANDS = new EvoBiome(lookupRegistry.getOrThrow(BiomeKeys.JUNGLE));
+    	HOT_ISLANDS = new EvoBiome(lookupRegistry.get(BiomeList.JUNGLE));
     }
     
 	public void init()
@@ -109,7 +108,7 @@ public class EvoBiomeLookup
 		SNOWY_BIOMES.clear();
 		SNOWY_BIOMES.add(SNOWY_TUNDRA);
 		SNOWY_BIOMES.add(SNOWY_TAIGA);
-		//SNOWY_BIOMES.add(SONWY_GIANT_TREE_TAIGA);
+		SNOWY_BIOMES.add(SONWY_GIANT_TREE_TAIGA);
 		//SNOWY_BIOMES.sort(null);
 
 		COLD_BIOMES.clear();;
