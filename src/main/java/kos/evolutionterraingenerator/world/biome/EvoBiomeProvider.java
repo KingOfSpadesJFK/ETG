@@ -383,20 +383,20 @@ public class EvoBiomeProvider extends BiomeSource
 		double humid = getHumidity(x, z)[1];
 		double chance = getBiomeChance(x, z)[1];
 		double[] landmass = getLandmass(x, z);
-		return getBeach(temp, humid, 
+		return getBeach(temp, 
 				landmass[0] < landmass[1], 
-				getLandBiome(temp, humid, chance).getDownfall() <= 0.0F);
+				getLandBiome(temp, humid, chance).getPrecipitation());
 	}
 
-    public Biome getBeach(double temp, double humid, boolean isGravel, boolean noDownfall)
+    public Biome getBeach(double temp, boolean isGravel, Biome.Precipitation percipitation)
     {
-    	if (temp < SNOW_TEMP)
+    	if (percipitation == Biome.Precipitation.SNOW)
     	{
     		if (isGravel)
         		return decodeBiome(BiomeList.SNOWY_GRAVEL_BEACH);
     		return decodeBiome(BiomeList.SNOWY_BEACH);
     	}
-    	if (noDownfall)
+    	if (percipitation == Biome.Precipitation.NONE)
     	{
     		if (isGravel)
         		return decodeBiome(BiomeList.DRY_GRAVEL_BEACH);

@@ -46,8 +46,8 @@ public class BiomeList
 	public final static Identifier DEEP_WARM_OCEAN = BiomeKeys.DEEP_WARM_OCEAN.getValue();
 
 	public final static Identifier BEACH = BiomeKeys.BEACH.getValue();
-	public final static Identifier SNOWY_BEACH = BiomeKeys.BEACH.getValue();
-	public final static Identifier STONE_BEACH = BiomeKeys.BEACH.getValue();
+	public final static Identifier SNOWY_BEACH = BiomeKeys.SNOWY_BEACH.getValue();
+	public final static Identifier STONE_SHORE = BiomeKeys.STONE_SHORE.getValue();
 	
 	public final static Identifier RIVER = BiomeKeys.RIVER.getValue();
 	

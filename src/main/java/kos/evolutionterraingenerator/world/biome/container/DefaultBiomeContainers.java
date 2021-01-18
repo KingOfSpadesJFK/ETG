@@ -42,9 +42,8 @@ public class DefaultBiomeContainers
 		containers.add(new BiomeContainer(BiomeList.JUNGLE, 0.875, 0.9, 0.5));
 		containers.add(new BiomeContainer(BiomeList.BAMBOO_JUNGLE, 0.875, 0.9, 0.8));
 		
-		//Mesa
-		containers.add(new BiomeContainer(BiomeList.BADLANDS, 0.75, 0.1, 0.425));
-		containers.add(new BiomeContainer(BiomeList.WOODED_BADLANDS_PLATEAU, 0.75, 0.1, 0.575));
+		//Badlands
+		containers.add(new BiomeContainer(BiomeList.BADLANDS, 0.75, 0.1, 0.5));
 		
 		//Dark Forest
 		containers.add(new BiomeContainer(BiomeList.DARK_FOREST, 0.65, 0.75, 0.5));
@@ -62,7 +61,7 @@ public class DefaultBiomeContainers
 		containers.add(new BiomeContainer(BiomeList.GIANT_SPRUCE_TAIGA, 0.3275, 0.765, 0.12));
 		
 		//Snowy Giant Tree Taiga
-		containers.add(new BiomeContainer(BiomeList.SNOWY_GIANT_TREE_TAIGA, 0.125, 0.5, 0.5));
-		containers.add(new BiomeContainer(BiomeList.SNOWY_GIANT_SPRUCE_TAIGA, 0.125, 0.5, 0.9));
+		containers.add(new BiomeContainer(BiomeList.SNOWY_GIANT_TREE_TAIGA, 0.125, 0.765, 0.5));
+		containers.add(new BiomeContainer(BiomeList.SNOWY_GIANT_SPRUCE_TAIGA, 0.125, 0.765, 0.9));
 	}
 }
