@@ -117,7 +117,7 @@ public class EvoBiomeProvider extends BiomeSource
 	}
 
 	public static final int oceanOctaves = 8;
-    public static final double biomeScale = 2.0;
+    public static final double biomeScale = 1.0;
     public static final double oceanScale = 0.0375;
     public static final double oceanThreshold = 0.5;
     public static final double beachThreshold = 0.01;

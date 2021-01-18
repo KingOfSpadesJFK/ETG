@@ -2,6 +2,7 @@ package kos.evolutionterraingenerator.util;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * 2d-tree implementation. A mutable data type that uses a 2d-tree to implement
@@ -104,7 +105,10 @@ public class KdTree<V> {
         Node<V> curr = root;
         do {
             if (curr.p.equals(p)) {
-                return;
+            	Random rand = new Random(1000L);
+            	p.x += rand.nextDouble() * 0.001;
+            	p.y += rand.nextDouble() * 0.001;
+            	p.z += rand.nextDouble() * 0.001;
             }
             prev = curr;
             curr = curr.isRightOrTopOf(p) ? curr.leftBottom : curr.rightTop; 
