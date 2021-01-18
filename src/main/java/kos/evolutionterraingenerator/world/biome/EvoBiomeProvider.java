@@ -71,7 +71,8 @@ public class EvoBiomeProvider extends BiomeSource
 		}));
 		
 		this.evoBiomes = new EvoBiomeLookup(lookupRegistry);
-		this.biomeMap = new BiomeSelector(lookupRegistry);
+		this.biomeMap = new BiomeSelector();
+		this.biomeMap.addDefaultBiomes();
 		this.lookupRegistry = lookupRegistry;
 		this.seed = seed;
         ChunkRandom rand = new ChunkRandom(seed);
@@ -300,7 +301,7 @@ public class EvoBiomeProvider extends BiomeSource
         
         if (isBeach || isOcean)
         {
-        	if (y < seaLevel)
+        	if (y < seaLevel - 5)
         		return getOcean(temperature, y < 40);
         	if (y < seaLevel + 3)
         	{
@@ -357,6 +358,8 @@ public class EvoBiomeProvider extends BiomeSource
 
 	public Biome getLandBiome(double temp, double humid, double chance)
     {
+		return this.lookupRegistry.get(biomeMap.pick(temp, humid, chance).mainBiome);
+		/*
 		EvoBiomeLookup.EvoBiome[] arr = evoBiomes.WARM_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.WARM_BIOMES.size()]);
     	
 		if (temp < SNOW_TEMP)
@@ -371,6 +374,7 @@ public class EvoBiomeProvider extends BiomeSource
 			arr = evoBiomes.ARID_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.ARID_BIOMES.size()]);
 		
 		return arr[(int)((arr.length - 1) * humid)].getBiome(chance);
+		*/
     }
 
 	public Biome getBeach(int x, int z)

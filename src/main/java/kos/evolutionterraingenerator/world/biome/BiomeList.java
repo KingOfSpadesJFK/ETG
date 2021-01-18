@@ -2,8 +2,6 @@ package kos.evolutionterraingenerator.world.biome;
 
 import kos.evolutionterraingenerator.core.EvolutionTerrainGenerator;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
 
 public class BiomeList

@@ -372,7 +372,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		double noiseDepth = this.settings.getNoiseDepth() 
 				+ ( (0.175 - humidity * temperature * 0.175) * this.settings.getNoiseDepthFactor());
 		if (terrain == TerrainLayerSampler.PLATEAU_LAYER)
-			noiseDepth += 1.125 * (double)this.plateauSteps.sample(x, z);
+			noiseDepth += 0.9 * (double)(this.plateauSteps.sample(x, z) + 1);
 			
 		boolean isRiver = terrain == TerrainLayerSampler.RIVER_LAYER;
 		double[] landmass = this.biomeProvider.getLandmass(x, z);
