@@ -11,57 +11,44 @@ public class DefaultBiomeContainers
 	
 	public static void createContainers() {
 		containers = new ArrayList<BiomeContainer>();
-		
-		//Plains
-		containers.add(new BiomeContainer(BiomeList.PLAINS, 0.5, 0.12, 0.5));
-		containers.add(new BiomeContainer(BiomeList.SUNFLOWER_PLAINS, 0.5, 0.12, 0.9));
-		
-		//Forest
-		containers.add(new BiomeContainer(BiomeList.FOREST, 0.5, 0.5, 0.5));
-		containers.add(new BiomeContainer(BiomeList.FLOWER_FOREST, 0.5, 0.5, 0.235));
-		
-		//Mountains
-		containers.add(new BiomeContainer(BiomeList.MOUNTAINS, 0.25, 0.125, 0.5));
-		containers.add(new BiomeContainer(BiomeList.WOODED_MOUNTAINS, 0.25, 0.25, 0.5));
-		containers.add(new BiomeContainer(BiomeList.GRAVELLY_MOUNTAINS, 0.25, 0.1, 0.75));
-		
-		//Taiga
-		containers.add(new BiomeContainer(BiomeList.TAIGA, 0.325, 0.5, 0.5));
-		
-		//Snowy Tundra
-		containers.add(new BiomeContainer(BiomeList.SNOWY_TUNDRA, 0.1, 0.1, 0.5));
-		containers.add(new BiomeContainer(BiomeList.ICE_SPIKES, 0.085, 0.05, 0.8));
-		
-		//Snowy Taiga
-		containers.add(new BiomeContainer(BiomeList.SNOWY_TAIGA, 0.125, 0.5, 0.5));
-		
-		//Desert
-		containers.add(new BiomeContainer(BiomeList.DESERT, 0.9, 0.1, 0.5));
-		
-		//Jungle
-		containers.add(new BiomeContainer(BiomeList.JUNGLE, 0.875, 0.9, 0.5));
-		containers.add(new BiomeContainer(BiomeList.BAMBOO_JUNGLE, 0.875, 0.9, 0.8));
-		
-		//Badlands
-		containers.add(new BiomeContainer(BiomeList.BADLANDS, 0.75, 0.1, 0.5));
-		
-		//Dark Forest
-		containers.add(new BiomeContainer(BiomeList.DARK_FOREST, 0.65, 0.75, 0.5));
-		
-		//Savanna
-		containers.add(new BiomeContainer(BiomeList.SAVANNA, 0.75, 0.235, 0.5));
-		containers.add(new BiomeContainer(BiomeList.SHATTERED_SAVANNA, 0.75, 0.235, 0.9));
-		
-		//Birch Forest
-		containers.add(new BiomeContainer(BiomeList.BIRCH_FOREST, 0.45, 0.5, 0.5));
-		containers.add(new BiomeContainer(BiomeList.TALL_BIRCH_FOREST, 0.45, 0.5, 0.124));
-		
-		//Giant Tree Taiga
-		containers.add(new BiomeContainer(BiomeList.GIANT_TREE_TAIGA, 0.3275, 0.765, 0.5));
-		containers.add(new BiomeContainer(BiomeList.GIANT_SPRUCE_TAIGA, 0.3275, 0.765, 0.12));
-		
-		//Snowy Giant Tree Taiga
-		containers.add(new BiomeContainer(BiomeList.SNOWY_GIANT_TREE_TAIGA, 0.125, 0.765, 0.5));
-		containers.add(new BiomeContainer(BiomeList.SNOWY_GIANT_SPRUCE_TAIGA, 0.125, 0.765, 0.9));
+
+		//Temperate Biomes
+		containers.add(new BiomeContainer(BiomeList.PLAINS, 0.5, 0.125, 0.5));
+		containers.add(new BiomeContainer(BiomeList.BIRCH_FOREST, 0.5, 0.375, 0.5));
+		containers.add(new BiomeContainer(BiomeList.TALL_BIRCH_FOREST, 0.5, 0.375, 0.1));
+		containers.add(new BiomeContainer(BiomeList.FOREST, 0.5, 0.625, 0.5));
+		containers.add(new BiomeContainer(BiomeList.DARK_FOREST, 0.5, 0.875, 0.5));
+
+		//Warm Biomes
+		containers.add(new BiomeContainer(BiomeList.SAVANNA, 0.7, 0.125, 0.5));
+		containers.add(new BiomeContainer(BiomeList.BADLANDS, 0.8, 0.125, 0.25).setPrimaryBeach(BiomeList.BADLANDS));
+		containers.add(new BiomeContainer(BiomeList.PLAINS, 0.7, 0.375, 0.5));
+		containers.add(new BiomeContainer(BiomeList.SUNFLOWER_PLAINS, 0.7, 0.375, 0.1));
+		containers.add(new BiomeContainer(BiomeList.FOREST, 0.7, 0.625, 0.5));
+		containers.add(new BiomeContainer(BiomeList.FLOWER_FOREST, 0.7, 0.625, 0.125));
+		containers.add(new BiomeContainer(BiomeList.DARK_FOREST, 0.7, 0.875, 0.5));
+
+		//Hot Biomes
+		containers.add(new BiomeContainer(BiomeList.DESERT, 0.9, 0.125, 0.5).setPrimaryBeach(BiomeList.DRY_BEACH).setSecondaryBeach(BiomeList.DRY_GRAVEL_BEACH));
+		containers.add(new BiomeContainer(BiomeList.SAVANNA, 0.9, 0.375, 0.5).setPrimaryBeach(BiomeList.DRY_BEACH).setSecondaryBeach(BiomeList.DRY_GRAVEL_BEACH));
+		containers.add(new BiomeContainer(BiomeList.SHATTERED_SAVANNA, 0.9, 0.375, 0.9).setPrimaryBeach(BiomeList.DRY_BEACH).setSecondaryBeach(BiomeList.DRY_GRAVEL_BEACH) );
+		containers.add(new BiomeContainer(BiomeList.DARK_FOREST, 0.9, 0.625, 0.5));
+		containers.add(new BiomeContainer(BiomeList.JUNGLE, 0.9, 0.875, 0.5));
+		containers.add(new BiomeContainer(BiomeList.BAMBOO_JUNGLE, 0.9, 0.875, 0.1).setWeirdnessRange(0.05));
+
+		//Cold Biomes
+		containers.add(new BiomeContainer(BiomeList.MOUNTAINS, 0.3, 0.15, 0.5).setPrimaryBeach(BiomeList.STONE_SHORE));
+		containers.add(new BiomeContainer(BiomeList.GRAVELLY_MOUNTAINS, 0.3, 0.15, 0.975).setPrimaryBeach(BiomeList.STONE_SHORE).setWeirdnessRange(0.1));
+		containers.add(new BiomeContainer(BiomeList.WOODED_MOUNTAINS, 0.3, 0.25, 0.5).setPrimaryBeach(BiomeList.STONE_SHORE));
+		containers.add(new BiomeContainer(BiomeList.TAIGA, 0.3, 0.45, 0.5));
+		containers.add(new BiomeContainer(BiomeList.GIANT_TREE_TAIGA, 0.3, 0.85, 0.5));
+		containers.add(new BiomeContainer(BiomeList.GIANT_SPRUCE_TAIGA, 0.3, 0.85, 0.05).setWeirdnessRange(0.5));
+
+		//Snowy Biomes
+		containers.add(new BiomeContainer(BiomeList.SNOWY_TUNDRA, 0.1, 0.15, 0.5).setPrimaryBeach(BiomeList.SNOWY_BEACH).setSecondaryBeach(BiomeList.SNOWY_GRAVEL_BEACH));
+		containers.add(new BiomeContainer(BiomeList.ICE_SPIKES, 0.1, 0.15, 0.0125).setPrimaryBeach(BiomeList.ICE_SPIKES).setSecondaryBeach(BiomeList.ICE_SPIKES).setWeirdnessRange(0.125));
+		containers.add(new BiomeContainer(BiomeList.SNOWY_TAIGA, 0.1, 0.45, 0.5).setPrimaryBeach(BiomeList.SNOWY_BEACH).setSecondaryBeach(BiomeList.SNOWY_GRAVEL_BEACH));
+		containers.add(new BiomeContainer(BiomeList.SNOWY_GIANT_TREE_TAIGA, 0.1, 0.85, 0.5).setPrimaryBeach(BiomeList.SNOWY_BEACH).setSecondaryBeach(BiomeList.SNOWY_GRAVEL_BEACH));
+		containers.add(new BiomeContainer(BiomeList.SNOWY_GIANT_SPRUCE_TAIGA, 0.1, 0.85, 0.975).setWeirdnessRange(0.5).setPrimaryBeach(BiomeList.SNOWY_BEACH).setSecondaryBeach(BiomeList.SNOWY_GRAVEL_BEACH));
 	}
 }

@@ -1,6 +1,6 @@
 package kos.evolutionterraingenerator.world;
 
-import kos.evolutionterraingenerator.world.biome.EvoBiomeProvider;
+import kos.evolutionterraingenerator.world.biome.EvoBiomeSource;
 import kos.evolutionterraingenerator.world.gen.EvoChunkGenerator;
 import kos.evolutionterraingenerator.world.gen.EvoGenSettings;
 import net.fabricmc.api.EnvType;
@@ -27,7 +27,7 @@ public class EvoGeneratorType extends GeneratorType
 	@Override
 	protected ChunkGenerator getChunkGenerator(Registry<Biome> biomeRegistry,
 			Registry<ChunkGeneratorSettings> chunkGeneratorSettingsRegistry, long seed) {
-        return new EvoChunkGenerator(new EvoBiomeProvider(seed, biomeRegistry), seed, () -> {
+        return new EvoChunkGenerator(new EvoBiomeSource(seed, biomeRegistry), seed, () -> {
             return chunkGeneratorSettingsRegistry.getOrThrow(EvoGenSettings.SETTINGS);
          });
 	}

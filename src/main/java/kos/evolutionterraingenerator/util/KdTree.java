@@ -22,44 +22,55 @@ public class KdTree<V> {
     private static class Node<V> {
 
         private final Separator sepr;
-        private final Box rect;
-        private final Point p;
+        private final Rectangle rect;
+        private final Vec2d p;
+        private boolean ranged;
+        private Vec2d range;
         private Node<V> leftBottom;
         private Node<V> rightTop;
         private V value;
-
-        Node(Point p, Separator sepr, Box rect, V value) {
+        
+        Node(Vec2d p, Vec2d range, Separator sepr, Rectangle rect, V value) {
             this.p = p;
             this.sepr = sepr;
             this.rect = rect;
             this.value = value;
+        	if (range == null) {
+        		this.ranged = false;
+        	} else {
+        		this.ranged = true;
+        		this.range = range;
+        	}
         }
 
         public Separator nextSepr() {
-            return sepr == Separator.LEFT_RIGHT ? Separator.UP_DOWN : 
-                    	(sepr == Separator.UP_DOWN ? Separator.FORWARD_BACK : Separator.LEFT_RIGHT);
+            return sepr == Separator.LEFT_RIGHT ? Separator.UP_DOWN : Separator.LEFT_RIGHT;
         }
 
-        public Box rectLB() {
+        public Rectangle rectLB() {
             return sepr == Separator.LEFT_RIGHT
-                    ? new Box(rect.getMinX(), rect.getMinY(), rect.getMinZ(), p.x, rect.getMaxY(), rect.getMaxZ())
-                    	: (sepr == Separator.UP_DOWN 
-                    		? new Box(rect.getMinX(), rect.getMinY(), rect.getMinZ(), rect.getMaxX(), p.y, rect.getMaxZ())
-                    		: new Box(rect.getMinX(), rect.getMinY(), rect.getMinZ(), rect.getMaxX(), rect.getMaxY(), p.z));
+                    ? new Rectangle(rect.minX, rect.minY, p.x, rect.maxY)
+                    	: new Rectangle(rect.minX, rect.minY, rect.maxX, p.y);
         }
 
-        public Box rectRT() {
+        public Rectangle rectRT() {
             return sepr == Separator.LEFT_RIGHT
-                    ? new Box(p.x, rect.getMinY(), rect.getMinZ(), rect.getMaxX(), rect.getMaxY(), rect.getMaxZ())
-                    	: (sepr == Separator.UP_DOWN 
-                    		? new Box(rect.getMinX(), p.y, rect.getMinZ(), rect.getMaxX(), rect.getMaxY(), rect.getMaxZ())
-                    		: new Box(rect.getMinX(), rect.getMinY(), p.z, rect.getMaxX(), rect.getMaxY(), rect.getMaxZ()));
+                    ? new Rectangle(p.x, rect.minY, rect.maxX, rect.maxY)
+                    	: new Rectangle(rect.minX, p.y, rect.maxX, rect.maxY);
         }
 
-        public boolean isRightOrTopOf(Point q) {
-            return (sepr == Separator.FORWARD_BACK && p.z > q.z)
-            		|| (sepr == Separator.UP_DOWN && p.y > q.y)
-                    || (sepr == Separator.LEFT_RIGHT && p.x > q.x);
+        public boolean isRightOrTopOf(Vec2d p2) {
+            return (sepr == Separator.UP_DOWN && p.y > p2.y)
+                    || (sepr == Separator.LEFT_RIGHT && p.x > p2.x);
+        }
+        
+        public boolean inRange(Vec2d p2)
+        {
+        	if (!ranged)
+        		return true;
+        	double xd = Math.abs(p2.x - p.x);
+        	double yd = Math.abs(p2.y - p.y);
+        	return xd <= range.x && yd <= range.y;
         }
     }
 
@@ -88,14 +99,18 @@ public class KdTree<V> {
     /**
      * Add the point to the set (if it is not already in the set)
      */
-    public void insert(double x, double y, double z, V value) {
-    	insert(new Point(x, y, z), value);
+    public void insert(double x, double y, V value) {
+    	insert(new Vec2d(x, y), null, value);
     }
     
-    public void insert(Point p, V value) {
+    public void insert(double x, double y, double r, V value) {
+    	insert(new Vec2d(x, y), Double.isNaN(r) ? null : new Vec2d(1, r), value);
+    }
+    
+    public void insert(Vec2d p, Vec2d range, V value) {
         checkNull(p);
         if (root == null) {
-            root = new Node<V>(p, Separator.LEFT_RIGHT, new Box(0, 0, 0, 1, 1, 1), value);
+            root = new Node<V>(p, range, Separator.LEFT_RIGHT, new Rectangle(0, 0, 1, 1), value);
             size++;
             return;
         }
@@ -106,9 +121,7 @@ public class KdTree<V> {
         do {
             if (curr.p.equals(p)) {
             	Random rand = new Random(1000L);
-            	p.x += rand.nextDouble() * 0.001;
-            	p.y += rand.nextDouble() * 0.001;
-            	p.z += rand.nextDouble() * 0.001;
+            	p.add(rand.nextDouble() * 0.001, rand.nextDouble() * 0.001);
             }
             prev = curr;
             curr = curr.isRightOrTopOf(p) ? curr.leftBottom : curr.rightTop; 
@@ -116,9 +129,9 @@ public class KdTree<V> {
 
         // prepare new node and insert
         if (prev.isRightOrTopOf(p)) {
-            prev.leftBottom = new Node<V>(p, prev.nextSepr(), prev.rectLB(), value);
+            prev.leftBottom = new Node<V>(p, range, prev.nextSepr(), prev.rectLB(), value);
         } else {
-            prev.rightTop = new Node<V>(p, prev.nextSepr(), prev.rectRT(), value);
+            prev.rightTop = new Node<V>(p, range, prev.nextSepr(), prev.rectRT(), value);
         }
         size++;
     }
@@ -126,7 +139,7 @@ public class KdTree<V> {
     /**
      * Does the set contain point p?
      */
-    public boolean contains(Point p) {
+    public boolean contains(Vec2d p) {
         checkNull(p);
         Node<V> node = root;
         while (node != null) {
@@ -141,9 +154,9 @@ public class KdTree<V> {
     /**
      * All points that are inside the rectangle
      */
-    public Iterable<Point> range(Box rect) {
+    public Iterable<Vec2d> range(Rectangle rect) {
         checkNull(rect);
-        List<Point> results = new LinkedList<>();
+        List<Vec2d> results = new LinkedList<>();
         addAll(root, rect, results);
         return results;
     }
@@ -151,7 +164,7 @@ public class KdTree<V> {
     /**
      * Add all points under target node using DFS.
      */
-    private void addAll(Node<V> node, Box rect, List<Point> results) {
+    private void addAll(Node<V> node, Rectangle rect, List<Vec2d> results) {
         if (node == null) {
             return;
         }
@@ -161,10 +174,10 @@ public class KdTree<V> {
             addAll(node.rightTop, rect, results);
             return;
         }
-        if (node.isRightOrTopOf(new Point(rect.getMinX(), rect.getMinY(), rect.getMinZ()))) {
+        if (node.isRightOrTopOf(new Vec2d(rect.minX, rect.minY))) {
             addAll(node.leftBottom, rect, results);
         }
-        if (!node.isRightOrTopOf(new Point(rect.getMaxX(), rect.getMaxY(), rect.getMinZ()))) {
+        if (!node.isRightOrTopOf(new Vec2d(rect.maxX, rect.maxY))) {
             addAll(node.rightTop, rect, results);
         }
     }
@@ -172,25 +185,25 @@ public class KdTree<V> {
     /**
      * A nearest neighbor in the set to point p; null if the set is empty
      */
-    public V nearest(double x, double y, double z) {
-    	return nearest(new Point(x, y, z));
+    public V nearest(double x, double y) {
+    	return nearest(new Vec2d(x, y));
     }
     
-    public V nearest(Point p) {
+    public V nearest(Vec2d p) {
         checkNull(p);
         return isEmpty() ? null : nearest(p, root, root).value;
     }
 
-    private Node<V> nearest(Point target, Node<V>  closest, Node<V> node) {
+    private Node<V> nearest(Vec2d target, Node<V>  closest, Node<V> node) {
         if (node == null) {
             return closest;
         }
         // Recursively search left/bottom or right/top
         // if it could contain a closer point
-        double closestDist = closest.p.distance(target);
-        if (distanceTo(node.rect, target) < closestDist) {
-            double nodeDist = node.p.distance(target);
-            if (nodeDist < closestDist) {
+        double closestDist = closest.p.squaredDistanceTo(target);
+        if (node.rect.distanceTo(target) < closestDist) {
+            double nodeDist = node.p.squaredDistanceTo(target);
+            if (nodeDist < closestDist && node.inRange(target)) {
                 closest = node;
             }
             if (node.isRightOrTopOf(target)) {
@@ -204,122 +217,9 @@ public class KdTree<V> {
         return closest;
     }
 
-    private double distanceTo(Box rect, Point target) 
-    {
-    	Point p = new Point(rect.getCenterX(), rect.getCenterY(), rect.getCenterZ());
-		return p.distance(target);
-	}
-
 	private void checkNull(Object obj) {
         if (obj == null) {
             throw new NullPointerException();
         }
     }
-	
-	public static class Point
-	{
-		double x;
-		double y;
-		double z;
-		
-		protected Point(double x, double y, double z) {
-			setLocation(x, y, z);
-		}
-		
-		protected void setLocation(double x, double y, double z)
-		{
-			this.x = x;
-			this.y = y;
-			this.z = z;
-		}
-		
-		protected double distance(Point p) {
-			return distance(this.x, this.y, this.z, p.x, p.y, p.z);
-		}
-		
-		protected double distanceSq(Point p) {
-			return distanceSq(this.x, this.y, this.z, p.x, p.y, p.z);
-		}
-		
-		protected double distance(double x, double y, double z) {
-			return distance(this.x, this.y, this.z, x, y, z);
-		}
-		
-		protected double distanceSq(double x, double y, double z) {
-			return distanceSq(this.x, this.y, this.z, x, y, z);
-		}
-		
-		protected double distance(double x1, double y1, double z1, double x2, double y2, double z2) {
-			return Math.sqrt(distanceSq(x1, y1, z1, x2, y2, z2));
-		}
-		
-		protected double distanceSq(double x1, double y1, double z1, double x2, double y2, double z2)
-		{
-			double xDist = x2 - x1;
-			double yDist = y2 - y1;
-			double zDist = z2 - z1;
-			return xDist * xDist + yDist * yDist + zDist * zDist;
-		}
-	}
-	
-	public static class Box
-	{
-		double minX;
-		double minY;
-		double minZ;
-		double maxX;
-		double maxY;
-		double maxZ;
-		
-		protected Box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
-			this.minX = minX;
-			this.minY = minY;
-			this.minZ = minZ;
-			this.maxX = maxX;
-			this.maxY = maxY;
-			this.maxZ = maxZ;
-		}
-		
-		protected double getMinX() {
-			return minX;
-		}
-		protected double getMinY() {
-			return minY;
-		}
-		protected double getMinZ() {
-			return minZ;
-		}
-		protected double getMaxX() {
-			return maxX;
-		}
-		protected double getMaxY() {
-			return maxY;
-		}
-		protected double getMaxZ() {
-			return minZ;
-		}
-		
-		protected double getCenterX() {
-			return getMinX() + Math.abs(getMaxX() - getMinX()) / 2.0;
-		}
-		protected double getCenterY() {
-			return getMinY() + Math.abs(getMaxY() - getMinY()) / 2.0;
-		}
-		protected double getCenterZ() {
-			return getMinZ() + Math.abs(getMaxZ() - getMinZ()) / 2.0;
-		}
-		
-		protected boolean contains(double x, double y, double z) {
-			return x >= this.getMinX()
-					&& x <= this.getMaxX()
-					&& y >= this.getMinY()
-					&& y <= this.getMaxY()
-					&& z >= this.getMinZ()
-					&& z <= this.getMaxZ();
-		}
-		
-		protected boolean contains(Point p) {
-			return contains(p.x, p.y, p.z);
-		}
-	}
 }

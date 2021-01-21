@@ -1,22 +1,27 @@
 package kos.evolutionterraingenerator.world.biome.container;
 
+import kos.evolutionterraingenerator.world.biome.BiomeList;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 
 public class BiomeContainer
 {
-	public Identifier mainBiome;
-	public double temperature;
-	public double humidity;
-	public double weirdness;
+	private Identifier mainBiome;
+	private Identifier primaryBeach;
+	private Identifier secondaryBeach;
+	private double temperature;
+	private double humidity;
+	private double weirdness;
+	private double weirdnessRange = Double.NaN;
 	
-	public BiomeContainer(Identifier mainBiome, double temperature, double humidity, double weirdness)
-	{
+	public BiomeContainer(Identifier mainBiome, double temperature, double humidity, double weirdness) {
 		this.mainBiome = mainBiome;
 		this.temperature = temperature;
 		this.humidity = humidity;
 		this.weirdness = weirdness;
+		this.primaryBeach = BiomeList.BEACH;
+		this.secondaryBeach = BiomeList.GRAVEL_BEACH;
 	}
 	
 	public Identifier getID() {
@@ -25,5 +30,48 @@ public class BiomeContainer
 	
 	public final Biome getBiome(Registry<Biome> registry) {
 		return registry.get(getID());
+	}
+
+	public double getTemperature() {
+		return temperature;
+	}
+
+	public double getWeirdness() {
+		return weirdness;
+	}
+
+	public double getHumidity() {
+		return humidity;
+	}
+
+	public Identifier getPrimaryBeach() {
+		return primaryBeach;
+	}
+
+	public BiomeContainer setPrimaryBeach(Identifier primaryBeach) {
+		this.primaryBeach = primaryBeach;
+		return this;
+	}
+
+	public Identifier getSecondaryBeach() {
+		return secondaryBeach;
+	}
+
+	public BiomeContainer setSecondaryBeach(Identifier secondaryBeach) {
+		this.secondaryBeach = secondaryBeach;
+		return this;
+	}
+
+	public double getWeirdnessRange() {
+		return weirdnessRange;
+	}
+
+	public BiomeContainer setWeirdnessRange(double weirdnessRange) {
+		this.weirdnessRange = weirdnessRange;
+		return this;
+	}
+	
+	public String toString() {
+		return "(Main Biome: " + mainBiome.toString() + ")";
 	}
 }
