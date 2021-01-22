@@ -11,13 +11,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import kos.evolutionterraingenerator.util.OctaveOpenSimplexSampler;
-import kos.evolutionterraingenerator.world.biome.BiomeHandler;
 import kos.evolutionterraingenerator.world.biome.BiomeList;
 import kos.evolutionterraingenerator.world.biome.EvoBiomeSource;
 import kos.evolutionterraingenerator.world.gen.layer.LayerBuilder;
 import kos.evolutionterraingenerator.world.gen.layer.TerrainLayerSampler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.structure.StructureStart;
@@ -54,6 +54,9 @@ import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.gen.feature.ConfiguredStructureFeatures;
 import net.minecraft.world.gen.feature.StructureFeature;
+import net.minecraft.world.gen.surfacebuilder.ConfiguredSurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.SurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.TernarySurfaceConfig;
 
 public final class EvoChunkGenerator extends NoiseChunkGenerator
 {
@@ -207,45 +210,48 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 			  	}
 		 		double humidity = this.biomeSource.getHumidity(x, z)[1];
 		 		double temperature = this.biomeSource.getTemperature(x, z)[1];
-		 		
-		 		if (biomes[0] == this.biomeSource.decodeBiome(BiomeList.BADLANDS) || biomes[0] == this.biomeSource.decodeBiome(BiomeList.WOODED_BADLANDS_PLATEAU))
-			  		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
-		 		else if (y <= 130 + Math.rint(40.0 * humidity * temperature + ((double)(sharedseedrandom.nextInt() % 30 - 15) * (0.125 + humidity * temperature * 0.875))) ) {
-		 			//double erosion = this.erode(x1, z1);
+		 		if (y <= 130 + Math.rint(40.0 * humidity * temperature + ((double)(sharedseedrandom.nextInt() % 30 - 15) * (0.125 + humidity * temperature * 0.875))) ) {
 		 			int heightDiff = 0;
 		 			int samples = 0;
-		 			for (int a = -3; a <= 3; a++) {
-		 				for (int b = -3; b <= 3; b++) {
+		 			for (int a = -2; a <= 2; a++) {
+		 				for (int b = -2; b <= 2; b++) {
 		 					if (b + j >= 0 && b + j < 16 && a + i >= 0 && a + i < 16) {
 		 						heightDiff += Math.abs(y - chunkIn.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x1 + b, z1 + a));
 		 						samples++;
 		 					}
 		 				}
 		 			}
-		 			if ((double)heightDiff / (double)samples >= 2.0) {
-		 				if ((double)heightDiff / (double)samples >= 3.0)
-		 					continue;
-		 				BiomeHandler.GRASS_STONE.initSeed(worldRegion.getSeed());
-		 				BiomeHandler.GRASS_STONE.generate(sharedseedrandom, chunkIn, biomes[0], x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+		 			if ((double)heightDiff / (double)samples >= 1.75) {
+		 				BlockState top = biomes[0].getGenerationSettings().getSurfaceConfig().getTopMaterial();
+		 				BlockState stone = Blocks.STONE.getDefaultState();
+		 				if ((double)heightDiff / (double)samples >= 2.75) {
+		 					top = stone;
+		 				} else if ((double)heightDiff / (double)samples >= 2.125) {
+		 					top = biomes[0].getGenerationSettings().getSurfaceConfig().getUnderMaterial();
+		 				}
+		 				
+		 				if (top == Blocks.SAND.getDefaultState())
+		 					stone = Blocks.SANDSTONE.getDefaultState();
+		 				if (top == Blocks.RED_SAND.getDefaultState())
+		 					stone = Blocks.WHITE_TERRACOTTA.getDefaultState();
+		 				
+		 				ConfiguredSurfaceBuilder<TernarySurfaceConfig> sb = SurfaceBuilder.DEFAULT
+		 					    .withConfig(new TernarySurfaceConfig(top, stone, stone));
+		 				sb.initSeed(worldRegion.getSeed());
+		 				sb.generate(sharedseedrandom, chunkIn, biomes[0], x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
 		 				continue;
 	 				}
-			  		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
-		 		}
-		 		/*
-		 		if (this.terrainLayer.sample(x1, z1) == 1)
-		 			this.biomeSource.decodeBiome(gravelly.DESERT).buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
-		 		if (this.terrainLayer.sample(x1, z1) >= 2)
-		 			this.biomeSource.decodeBiome(gravelly.BADLANDS).buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
-			  	*/
-			  }
-		 }
-		 while (k < BiomeArray.DEFAULT_LENGTH)
-		 {
-	 		abiome[k] = abiome[k % 16];
+		 			biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+				}
+			}
+		}
+		while (k < BiomeArray.DEFAULT_LENGTH)
+		{
+			abiome[k] = abiome[k % 16];
 	 		k++;
-		 }
-		 ((ProtoChunk)chunkIn).setBiomes(new BiomeArray(this.biomeSource.getRegistry(), abiome));
-		 this.makeBedrock(chunkIn, sharedseedrandom);
+		}
+		((ProtoChunk)chunkIn).setBiomes(new BiomeArray(this.biomeSource.getRegistry(), abiome));
+		this.makeBedrock(chunkIn, sharedseedrandom);
 	}
 	
 	private void makeBedrock(Chunk chunk, Random random)
