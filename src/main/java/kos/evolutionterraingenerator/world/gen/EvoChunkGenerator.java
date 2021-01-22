@@ -11,6 +11,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import kos.evolutionterraingenerator.util.OctaveOpenSimplexSampler;
+import kos.evolutionterraingenerator.world.biome.BiomeHandler;
 import kos.evolutionterraingenerator.world.biome.BiomeList;
 import kos.evolutionterraingenerator.world.biome.EvoBiomeSource;
 import kos.evolutionterraingenerator.world.gen.layer.LayerBuilder;
@@ -206,10 +207,30 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 			  	}
 		 		double humidity = this.biomeSource.getHumidity(x, z)[1];
 		 		double temperature = this.biomeSource.getTemperature(x, z)[1];
+		 		
 		 		if (biomes[0] == this.biomeSource.decodeBiome(BiomeList.BADLANDS) || biomes[0] == this.biomeSource.decodeBiome(BiomeList.WOODED_BADLANDS_PLATEAU))
 			  		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
-		 		else if ( y <= 130 + Math.rint(40.0 * humidity * temperature + ((double)(sharedseedrandom.nextInt() % 30 - 15) * (0.125 + humidity * temperature * 0.875))) )
+		 		else if (y <= 130 + Math.rint(40.0 * humidity * temperature + ((double)(sharedseedrandom.nextInt() % 30 - 15) * (0.125 + humidity * temperature * 0.875))) ) {
+		 			//double erosion = this.erode(x1, z1);
+		 			int heightDiff = 0;
+		 			int samples = 0;
+		 			for (int a = -3; a <= 3; a++) {
+		 				for (int b = -3; b <= 3; b++) {
+		 					if (b + j >= 0 && b + j < 16 && a + i >= 0 && a + i < 16) {
+		 						heightDiff += Math.abs(y - chunkIn.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x1 + b, z1 + a));
+		 						samples++;
+		 					}
+		 				}
+		 			}
+		 			if ((double)heightDiff / (double)samples >= 2.0) {
+		 				if ((double)heightDiff / (double)samples >= 3.0)
+		 					continue;
+		 				BiomeHandler.GRASS_STONE.initSeed(worldRegion.getSeed());
+		 				BiomeHandler.GRASS_STONE.generate(sharedseedrandom, chunkIn, biomes[0], x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+		 				continue;
+	 				}
 			  		biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+		 		}
 		 		/*
 		 		if (this.terrainLayer.sample(x1, z1) == 1)
 		 			this.biomeSource.decodeBiome(gravelly.DESERT).buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
@@ -461,9 +482,9 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		double ai;
 		double aj;
 		
-		double g = 0.0F;
-		double h = 0.0F;
-		double i = 0.0F;
+		double g = 0.0;
+		double h = 0.0;
+		double i = 0.0;
 		double l = calculateNoiseDepth(x << 2, z << 2) * this.settings.getNoiseDepthWeight() + this.settings.getNoiseDepthOffset();
 
 		for(int m = -2; m <= 2; ++m) 
@@ -485,7 +506,6 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 				i += v;
 			}
 		}
-
 		double w = h / i;
 		double y = g / i;
         ai = w * 0.5D - 0.125D;
@@ -508,14 +528,11 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		double densityOffset = generationShapeConfig.getDensityOffset();
 
 		double[] landmass = this.biomeSource.getLandmass(x * 4, z * 4);
-		boolean isBeach = (landmass[4] < EvoBiomeSource.oceanThreshold) && this.biomeSource.canBeBeach(x * 4, z * 4);
-		int terrainType = this.terrainLayer.sample(x * 4, z * 4);
-		if (terrainType != 0 && !isBeach)			density *= 2.75;
 		if ((landmass[4] - EvoBiomeSource.oceanThreshold + 0.025) * 6.0 < -1.9) {
 			xzFactor *= 5.0;
 			yFactor *= 5.0;
 		}
-
+		
 		for(int ar = 0; ar <= this.noiseSizeY; ++ar) {
 			double noiseSample = this.sampleNoise(x, ar, z, xzScale, yScale, xzFactor, yFactor);
 			double densitySample = 1.0D - (double)ar * 2.0D / (double)this.noiseSizeY + density;

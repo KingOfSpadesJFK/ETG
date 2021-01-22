@@ -137,7 +137,7 @@ public class EvoBiomeSource extends BiomeSource
     public double[] getTemperature(int x, int z)
     {
     	double noise = noiseOctave.sample((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
-    	double d0 = (tempOctave.sample((double)x * (0.045 / biomeScale), (double)z * (0.0875 / biomeScale)) * 0.00625 + 0.5) * 0.99;
+    	double d0 = (tempOctave.sample((double)x * (0.035 / biomeScale), (double)z * (0.0875 / biomeScale)) * 0.00625 + 0.5) * 0.99;
     	double[] arr =
     		{
     				MathHelper.clamp(d0 + 0.01, 0.0, 1.0),

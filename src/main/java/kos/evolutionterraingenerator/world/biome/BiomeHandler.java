@@ -22,11 +22,16 @@ import net.minecraft.world.gen.surfacebuilder.TernarySurfaceConfig;
 
 public class BiomeHandler 
 {
-	private static final ConfiguredSurfaceBuilder<TernarySurfaceConfig> GRAVELLY = SurfaceBuilder.DEFAULT
+	public static final ConfiguredSurfaceBuilder<TernarySurfaceConfig> GRAVELLY = SurfaceBuilder.DEFAULT
 			    .withConfig(new TernarySurfaceConfig(
 			      Blocks.GRAVEL.getDefaultState(),
 			      Blocks.GRAVEL.getDefaultState(),
 			      Blocks.GRAVEL.getDefaultState()));
+	public static final ConfiguredSurfaceBuilder<TernarySurfaceConfig> GRASS_STONE = SurfaceBuilder.DEFAULT
+		    .withConfig(new TernarySurfaceConfig(
+		      Blocks.GRASS_BLOCK.getDefaultState(),
+		      Blocks.STONE.getDefaultState(),
+		      Blocks.STONE.getDefaultState()));
 	private static final String MODID = EvolutionTerrainGenerator.MODID;
 	
 	private static void register(Identifier id, Biome b) {
