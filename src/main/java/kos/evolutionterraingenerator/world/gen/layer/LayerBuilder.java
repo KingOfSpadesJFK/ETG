@@ -20,7 +20,8 @@ public enum LayerBuilder {
 
 	TERRAIN_TYPE, 
 	PLATEAU_STEPS,
-	CLIMATE;
+	CLIMATE,
+	SWAMP;
 	
 	public static TerrainLayerSampler build(long seed,LayerBuilder type, int... info)
 	{
@@ -38,6 +39,11 @@ public enum LayerBuilder {
 				
 			case CLIMATE:
 				return new ClimateLayerSampler(info[1], LayerBuilder.buildClimate(info[0], info[1], (salt) -> {
+					return new CachingLayerContext(25, seed, salt);
+					}));
+				
+			case SWAMP:
+				return new TerrainLayerSampler(LayerBuilder.buildSwamp( (salt) -> {
 					return new CachingLayerContext(25, seed, salt);
 					}));
 				
@@ -66,6 +72,15 @@ public enum LayerBuilder {
 		return climateLayer;
 	}
 	
+	private static <T extends LayerSampler, C extends LayerSampleContext<T>> LayerFactory<T> buildSwamp(LongFunction<C> contextProvider)
+	{
+		LayerFactory<T> swampLayer = ContinentLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1L));
+		swampLayer = PlateauLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(2L), swampLayer);
+		swampLayer = ScaleLayer.FUZZY.create((LayerSampleContext<T>)contextProvider.apply(2000L), swampLayer);
+		swampLayer = stack(2001L, ScaleLayer.NORMAL, swampLayer, 7, contextProvider);
+		return swampLayer;
+	}
+	
 	private static <T extends LayerSampler, C extends LayerSampleContext<T>> LayerFactory<T> build(int terrainSize, int riverSize, LongFunction<C> contextProvider)
 	{
 		LayerFactory<T> terrainLayer = ContinentLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1L));
@@ -78,8 +93,8 @@ public enum LayerBuilder {
 		riverLayer = stack(1000L, ScaleLayer.NORMAL, riverLayer, 2, contextProvider);
 		riverLayer = stack(1000L, ScaleLayer.NORMAL, riverLayer, 6, contextProvider);
 		riverLayer = EvoNoiseToRiverLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1L), riverLayer);
-		riverLayer = stack(1000L, ScaleLayer.NORMAL, riverLayer, riverSize, contextProvider);
 		riverLayer = SmoothLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1000L), riverLayer);
+		riverLayer = stack(1000L, ScaleLayer.NORMAL, riverLayer, riverSize, contextProvider);
 		
 		for (int i = 0; i < terrainSize; i++)
 			terrainLayer = ScaleLayer.NORMAL.create((LayerSampleContext<T>)contextProvider.apply(1000L + (long)i), terrainLayer);

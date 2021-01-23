@@ -8,11 +8,11 @@ import kos.evolutionterraingenerator.world.biome.container.BiomeContainer.Catego
 
 public class DefaultBiomeContainers 
 {
-	public static List<BiomeContainer> containers;
+	public static List<BiomeContainer> containers = new ArrayList<BiomeContainer>();
 	
 	public static void createContainers() {
 		containers = new ArrayList<BiomeContainer>();
-
+		
 		//Temperate Biomes
 		containers.add(new BiomeContainer(BiomeList.PLAINS, 0.5, 0.125, 0.5));
 		containers.add(new BiomeContainer(BiomeList.BIRCH_FOREST, 0.5, 0.375, 0.5));

@@ -18,8 +18,7 @@ public interface BiomeSelector
 	
 	public static LandBiomeSelector createLandSelector() {
 		LandBiomeSelector bs = new LandBiomeSelector();
-		if (DefaultBiomeContainers.isEmpty())
-			DefaultBiomeContainers.createContainers();
+		DefaultBiomeContainers.createContainers();
 		for (BiomeContainer bc : DefaultBiomeContainers.containers) {
 			if (bc.getCategory() == Category.LAND)
 				bs.add(bc);
@@ -29,9 +28,6 @@ public interface BiomeSelector
 	
 	public static SwampBiomeSelector createSwampSelector() {
 		SwampBiomeSelector bs = new SwampBiomeSelector();
-		if (DefaultBiomeContainers.isEmpty())
-			DefaultBiomeContainers.createContainers();
-
 		for (BiomeContainer bc : DefaultBiomeContainers.containers) {
 			if (bc.getCategory() == Category.SWAMP)
 				bs.add(bc);

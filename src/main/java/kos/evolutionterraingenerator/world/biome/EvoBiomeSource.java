@@ -5,9 +5,12 @@ import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import kos.evolutionterraingenerator.util.PositionalCache;
 import kos.evolutionterraingenerator.util.noise.OctaveOpenSimplexSampler;
 import kos.evolutionterraingenerator.world.biome.container.BiomeContainer;
 import kos.evolutionterraingenerator.world.biome.selector.BiomeSelector;
+import kos.evolutionterraingenerator.world.gen.layer.LayerBuilder;
+import kos.evolutionterraingenerator.world.gen.layer.TerrainLayerSampler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.IndexedIterable;
 import net.minecraft.util.math.BlockPos;
@@ -46,11 +49,10 @@ public class EvoBiomeSource extends BiomeSource
     private OctaveOpenSimplexSampler noiseOctave;
     private OctaveOpenSimplexSampler mushroomOctave;
     private OctaveOpenSimplexSampler islandOctave;
-    private OctaveOpenSimplexSampler swampChance;
-    private OctaveOpenSimplexSampler swampType;
     private ChunkGenerator chunkGen;
     private double landOffset;
     private final long seed;
+	private TerrainLayerSampler swampLayer;
     
 	public static final double SNOW_TEMP = 0.125;
 	public static final double COLD_TEMP = 0.375;
@@ -67,6 +69,9 @@ public class EvoBiomeSource extends BiomeSource
 	private BiomeSelector swampSelector;
 	private BiomeSelector islandSelector;
 	
+	private PositionalCache<Biome[]> biomeCache;
+	private PositionalCache<ClimateData> climateCache;
+	
 	public EvoBiomeSource(long seed, Registry<Biome> lookupRegistry)
 	{
 		this(new EvoBiomeSourceSettings(), seed, lookupRegistry);
@@ -80,6 +85,8 @@ public class EvoBiomeSource extends BiomeSource
 			};
 		}));
 		
+		this.biomeCache = new PositionalCache<Biome[]>();
+		this.climateCache = new PositionalCache<ClimateData>();
 		this.landBiomeSelector = BiomeSelector.createLandSelector();
 		this.swampSelector = BiomeSelector.createSwampSelector();
 		this.islandSelector = BiomeSelector.createLandSelector();
@@ -94,8 +101,7 @@ public class EvoBiomeSource extends BiomeSource
 		this.mushroomOctave = new OctaveOpenSimplexSampler(rand, 4);
 		this.islandOctave = new OctaveOpenSimplexSampler(rand, 4);
 		this.noiseOctave = new OctaveOpenSimplexSampler(rand, 2);
-        this.swampChance = new OctaveOpenSimplexSampler(rand, 4);
-        this.swampType = new OctaveOpenSimplexSampler(rand, 4);
+		this.swampLayer = LayerBuilder.build(seed, LayerBuilder.SWAMP);
 		this.providerSettings = settingsProvider;
 		this.landOffset = 0.0;
 		if (landOctave2.sample(0.0, 0.0) * 0.125 / (double)oceanOctaves < oceanThreshold)
@@ -118,6 +124,9 @@ public class EvoBiomeSource extends BiomeSource
     
     public double[] getTemperature(int x, int z)
     {
+    	if (climateCache.containsKey(x, z)) {
+    		return climateCache.getOrThrow(x, z).temperature;
+    	}
     	double noise = noiseOctave.sample((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
     	double d0 = (tempOctave.sample((double)x * (0.035 / biomeScale), (double)z * (0.0875 / biomeScale)) * 0.00625 + 0.5) * 0.99;
     	double[] arr =
@@ -130,6 +139,9 @@ public class EvoBiomeSource extends BiomeSource
     
     public double[] getHumidity(int x, int z)
     {
+    	if (climateCache.containsKey(x, z)) {
+    		return climateCache.getOrThrow(x, z).humidity;
+    	}
     	double noise = noiseOctave.sample((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
     	double d0 = (humidOctave.sample((double)x * (0.3 / biomeScale / humidityScale), (double)z * (0.3 / biomeScale / humidityScale)) * 0.0075 + 0.5) * 0.95;
     	double[] arr =
@@ -140,8 +152,11 @@ public class EvoBiomeSource extends BiomeSource
     	return arr;
     }
     
-    protected double[] getWeirdness(double x, double z)
+    protected double[] getWeirdness(int x, int z)
     {
+    	if (climateCache.containsKey(x, z)) {
+    		return climateCache.getOrThrow(x, z).weirdness;
+    	}
     	double noise = noiseOctave.sample((double)x * 0.25, (double)z * 0.25) * 1.1 + 0.5;
     	double d0 = (weirdnessOctave.sample((double)x * 0.005 / chanceScale, (double)z * 0.005 / chanceScale) * 0.05 + 0.5) * 0.99;
     	double[] arr =
@@ -152,12 +167,15 @@ public class EvoBiomeSource extends BiomeSource
     	return arr;
     }
     
-    public double[] getLandmass(double x, double z)
+    public double[] getLandmass(int x, int z)
     {
+    	if (climateCache.containsKey(x, z)) {
+    		return climateCache.getOrThrow(x, z).landmass;
+    	}
     	double landmass1 = landOctave.sample((double)x * (0.00125 / oceanScale), landOffset, (double)z * (0.00125 / oceanScale))  * 0.125 / (double)oceanOctaves;
     	double landmass2 = landOctave2.sample((double)x * (0.00125 / oceanScale), (double)z * (0.00125 / oceanScale)) * 0.125 / (double)oceanOctaves;
-    	double mushroomChance = (mushroomOctave.sample(x * (0.00375 / biomeScale), z * (0.00375 / biomeScale)) - 8.0) * 2.0 / (double)oceanOctaves;
-    	double islandChance = (islandOctave.sample(x * (0.02 / biomeScale), z * (0.02 / biomeScale)) - 3.25) / (double)oceanOctaves;
+    	double mushroomChance = (mushroomOctave.sample((double)x * (0.00375 / biomeScale), (double)z * (0.00375 / biomeScale)) - 8.0) * 2.0 / (double)oceanOctaves;
+    	double islandChance = (islandOctave.sample((double)x * (0.02 / biomeScale), (double)z * (0.02 / biomeScale)) - 3.25) / (double)oceanOctaves;
 
 		double domLand = landmass1;
 		if (domLand < landmass2)
@@ -222,15 +240,18 @@ public class EvoBiomeSource extends BiomeSource
 	}
 
     @Override
-    public Biome getBiomeForNoiseGen(int x, int y, int z) 
-    {
-    	return getBiomeForNoiseGen(x << 2, y << 2, z << 2, true); 
+    public Biome getBiomeForNoiseGen(int x, int y, int z) {
+    	return getBiome(x << 2, y << 2, z << 2, true); 
     }
     
-    public Biome getBiomeForNoiseGen(int x, int y, int z, boolean useNoise) 
+    public Biome[] getBiome(int x, int y, int z) 
     {
-    	Biome biome = generateLandBiome(x, z, useNoise);
-    	return setBiomebyHeight(biome, x, y, z, useNoise);
+    	Biome[] biome = getBiomesByHeight(x, y, z);
+    	return biome;
+    }
+    
+    public Biome getBiome(int x, int y, int z, boolean useNoise) {
+    	return useNoise ? getBiome(x, y, z)[1] : getBiome(x, y, z)[0];
     }
     
     public Biome[] getBiomesByHeight(int x, int y, int z)
@@ -238,39 +259,32 @@ public class EvoBiomeSource extends BiomeSource
         double[] temperature = getTemperature(x, z);
         double[] humidity = getHumidity(x, z);
 		double[] biomeChance = getWeirdness(x, z);
-		Biome[] biomes = new Biome[2];
+   	 	double[] landmass = getLandmass(x, z);
+		Biome[] biomes;
 		
-		biomes[0] = setBiomebyHeight(getLandBiome(temperature[0], humidity[0], biomeChance[0]), x, y, z, temperature[0], humidity[0], biomeChance[0]);
-		biomes[1] = setBiomebyHeight(getLandBiome(temperature[1], humidity[1], biomeChance[1]), x, y, z, temperature[1], humidity[1], biomeChance[1]);
-		
+		if (biomeCache.containsKey(x, y, z)) {
+			biomes = biomeCache.getOrThrow(x, y, z);
+		} else {
+			biomes = new Biome[2];
+			biomes[0] = setBiomebyHeight(getLandBiome(temperature[0], humidity[0], biomeChance[0]), x, y, z, temperature[0], humidity[0], biomeChance[0], landmass);
+			biomes[1] = setBiomebyHeight(getLandBiome(temperature[1], humidity[1], biomeChance[1]), x, y, z, temperature[1], humidity[1], biomeChance[1], landmass);
+			biomeCache.add(x, y, z, biomes);
+		}
+
+		if (!climateCache.containsKey(x, z)) {
+			ClimateData cd = 
+	    			new ClimateData(temperature,
+	    			humidity,
+	    			biomeChance,
+	    			landmass);
+			climateCache.add(x, z, 0, cd);
+		}
 		return biomes;
     }
     
-    public Biome setBiomebyHeight(Biome biome, int x, int y, int z, boolean useNoise)
-    {
-        double temperature = useNoise ? getTemperature(x, z)[1] : getTemperature(x, z)[0];
-        double humidity = useNoise ? getHumidity(x, z)[1] : getHumidity(x, z)[0];
-		double biomeChance = useNoise ? getWeirdness(x, z)[1] : getWeirdness(x, z)[0];
-		
-		return setBiomebyHeight(biome, x, y, z, temperature, humidity, biomeChance);
-    }
-    
-    public Biome[] setBiomebyHeight(Biome[] biome, int x, int y, int z)
-    {
-        double[] temperature = getTemperature(x, z);
-        double[] humidity = getHumidity(x, z);
-		double[] biomeChance = getWeirdness(x, z);
-		
-		biome[0] = setBiomebyHeight(biome[0], x, y, z, temperature[0], humidity[0], biomeChance[0]);
-		biome[1] = setBiomebyHeight(biome[1], x, y, z, temperature[1], humidity[1], biomeChance[1]);
-		
-		return biome;
-    }
-    
-    private Biome setBiomebyHeight(Biome biome, int x, int y, int z, double temperature, double humidity, double biomeChance)
+    private Biome setBiomebyHeight(Biome biome, int x, int y, int z, double temperature, double humidity, double biomeChance, double[] landmass)
     {
         int seaLevel = this.providerSettings.getSeaLevel();
-   	 	double[] landmass = getLandmass(x, z);
    	 	double beachThreshold = oceanThreshold - EvoBiomeSource.beachThreshold / (double)oceanOctaves / oceanScale;
 		boolean isOcean = landmass[4] < beachThreshold;
 		boolean isBeach = !isOcean && (landmass[4] < EvoBiomeSource.oceanThreshold) && canBeBeach(x, z);
@@ -293,13 +307,9 @@ public class EvoBiomeSource extends BiomeSource
         
         if (isSpecialIsland && landmass[2] == landmass[4] || landmass[3] == landmass[4])
         	return biome;
-
-        double swampChance = this.swampChance.sample((double)x * 0.0125, (double)z * 0.0125);
-        swampChance = MathHelper.clamp(swampChance, 0.0, 1.0);
-    	if (humidity > 0.675 && swampChance < 0.375 - 0.25 * ((MathHelper.clamp(temperature, 0.5, 1.0) - 0.5) * 2.0) && y <= seaLevel + 3)
+        
+    	if (humidity > 0.675 && this.swampLayer.sample(x, z) == 1 && y <= seaLevel + 6)
     	{
-            double swampType = this.swampType.sample((double)x * 0.0125, (double)z * 0.0125) * 0.125 + 0.5;
-            swampType = MathHelper.clamp(swampType, 0.0, 1.0);
             Biome swamp = this.decodeBiome(this.swampSelector.pick(temperature, humidity, biomeChance).getID());
             if (swamp != null)
             	biome = swamp;
@@ -335,25 +345,6 @@ public class EvoBiomeSource extends BiomeSource
 		BiomeContainer bc = this.landBiomeSelector.pick(temp, humid, chance);
 		return decodeBiome(landmass[0] < landmass[1] ? bc.getSecondaryBeach() : bc.getPrimaryBeach());
 	}
-
-    public Biome getBeach(double temp, boolean useSecondary, Biome.Precipitation percipitation)
-    {
-    	if (percipitation == Biome.Precipitation.SNOW)
-    	{
-    		if (useSecondary)
-        		return decodeBiome(BiomeList.SNOWY_GRAVEL_BEACH);
-    		return decodeBiome(BiomeList.SNOWY_BEACH);
-    	}
-    	if (percipitation == Biome.Precipitation.NONE)
-    	{
-    		if (useSecondary)
-        		return decodeBiome(BiomeList.DRY_GRAVEL_BEACH);
-    		return decodeBiome(BiomeList.DRY_BEACH);
-    	}
-		if (useSecondary)
-    		return decodeBiome(BiomeList.GRAVEL_BEACH);
-    	return decodeBiome(BiomeList.BEACH);
-    }
     
     public Biome getOcean(double temp, boolean deep)
     {
@@ -434,7 +425,7 @@ public class EvoBiomeSource extends BiomeSource
 		return set;
 	}
 
-		@Nullable
+	@Nullable
 	public BlockPos locateBiome(int x, int y, int z, int radius, Predicate<Biome> predicate, Random random) {
 		return this.locateBiome(x, y, z, radius, 1, predicate, random, false);
 	}
@@ -529,5 +520,20 @@ public class EvoBiomeSource extends BiomeSource
 
 	public IndexedIterable<Biome> getRegistry() {
 		return this.lookupRegistry;
+	}
+
+	public class ClimateData
+	{
+		final double[] temperature;
+		final double[] humidity;
+		final double[] weirdness;
+		final double[] landmass;
+		
+		public ClimateData(double[] temp, double[] humid, double[] weird, double[] land) {
+			this.temperature = temp;
+			this.humidity = humid;
+			this.weirdness = weird;
+			this.landmass = land;
+		}
 	}
 }

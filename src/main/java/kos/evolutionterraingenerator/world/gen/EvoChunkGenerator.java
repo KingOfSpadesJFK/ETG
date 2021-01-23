@@ -74,8 +74,8 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		for(int i = 0; i < arr.length; i++)
 			arr[i] = BuiltinBiomes.PLAINS;
 	});
-			
-	private final int verticalNoiseGranularity;
+
+	private final int verticalNoiseResolution;
 	private final int noiseSizeY;
 	private final EvoBiomeSource biomeSource;
 	private final long seed;
@@ -99,8 +99,8 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		this.biomeSource = biomeSource;
 		this.biomeSource.setChunkGenerator(this);
 		this.maxBuildHeight = noisesettings.getHeight();
-		this.verticalNoiseGranularity = noisesettings.getSizeVertical() * 4;
-		this.noiseSizeY = noisesettings.getHeight() / this.verticalNoiseGranularity;
+		this.verticalNoiseResolution = noisesettings.getSizeVertical() * 4;
+		this.noiseSizeY = noisesettings.getHeight() / this.verticalNoiseResolution;
 		ChunkRandom random = new ChunkRandom(seed);
 		this.lowerInterpolatedNoise = new OctaveOpenSimplexSampler(random, 16);
 		this.upperInterpolatedNoise = new OctaveOpenSimplexSampler(random, 16);
@@ -160,7 +160,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		int x = chunkpos.x << 4;
 		int z = chunkpos.z << 4;
 		int y = chunkIn.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x, z);
-		GenerationSettings biomegenerationsettings = this.biomeSource.getBiomeForNoiseGen(x, y, z, false).getGenerationSettings();
+		GenerationSettings biomegenerationsettings = this.biomeSource.getBiome(x, y, z, false).getGenerationSettings();
 		BitSet bitset = ((ProtoChunk)chunkIn).getOrCreateCarvingMask(genStage);
 
 		for(int l = j - 8; l <= j + 8; ++l) {
@@ -372,7 +372,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		int x = chunkpos.getStartX() + 9;
 		int z = chunkpos.getStartZ() + 9;
 		int y = getHeight(x, z, Heightmap.Type.OCEAN_FLOOR_WG) + 1;
-		Biome biome = this.biomeSource.getBiomeForNoiseGen(x, y, z, false);
+		Biome biome = this.biomeSource.getBiome(x, y, z, false);
 		int terrain = this.terrainLayer.sample(x, z);
 		if (isOcean(biome))
 			terrain = 0;
