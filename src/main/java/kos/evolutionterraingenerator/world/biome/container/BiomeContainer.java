@@ -13,15 +13,19 @@ public class BiomeContainer
 	private double temperature;
 	private double humidity;
 	private double weirdness;
-	private double weirdnessRange = Double.NaN;
+	private double weirdnessRange;
+	private Category category;
 	
 	public BiomeContainer(Identifier mainBiome, double temperature, double humidity, double weirdness) {
 		this.mainBiome = mainBiome;
 		this.temperature = temperature;
 		this.humidity = humidity;
 		this.weirdness = weirdness;
+		
 		this.primaryBeach = BiomeList.BEACH;
 		this.secondaryBeach = BiomeList.GRAVEL_BEACH;
+		this.weirdnessRange = Double.NaN;
+		this.setCategory(Category.LAND);
 	}
 	
 	public Identifier getID() {
@@ -73,5 +77,21 @@ public class BiomeContainer
 	
 	public String toString() {
 		return "(Main Biome: " + mainBiome.toString() + ")";
+	}
+	
+	public Category getCategory() {
+		return category;
+	}
+
+	public BiomeContainer setCategory(Category category) {
+		this.category = category;
+		return this;
+	}
+
+	public enum Category {
+		LAND,
+		ISLAND,
+		SWAMP,
+		OCEAN;
 	}
 }

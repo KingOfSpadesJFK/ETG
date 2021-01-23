@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import kos.evolutionterraingenerator.util.OctaveOpenSimplexSampler;
+import kos.evolutionterraingenerator.util.noise.OctaveOpenSimplexSampler;
 import kos.evolutionterraingenerator.world.biome.BiomeList;
 import kos.evolutionterraingenerator.world.biome.EvoBiomeSource;
 import kos.evolutionterraingenerator.world.gen.layer.LayerBuilder;
@@ -105,7 +105,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		this.lowerInterpolatedNoise = new OctaveOpenSimplexSampler(random, 16);
 		this.upperInterpolatedNoise = new OctaveOpenSimplexSampler(random, 16);
 		this.interpolationNoise = new OctaveOpenSimplexSampler(random, 8);
-		this.terrainLayer = LayerBuilder.build(seed, LayerBuilder.TERRAIN_TYPE, 5, 4);
+		this.terrainLayer = LayerBuilder.build(seed, LayerBuilder.TERRAIN_TYPE, 5, 0);
 		this.plateauSteps = LayerBuilder.build(seed, LayerBuilder.PLATEAU_STEPS, TerrainLayerSampler.PLATEAU_STEPPE_COUNT);
 	}
 
@@ -211,6 +211,10 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		 		double humidity = this.biomeSource.getHumidity(x, z)[1];
 		 		double temperature = this.biomeSource.getTemperature(x, z)[1];
 		 		if (y <= 130 + Math.rint(40.0 * humidity * temperature + ((double)(sharedseedrandom.nextInt() % 30 - 15) * (0.125 + humidity * temperature * 0.875))) ) {
+		 			if (y < this.getSeaLevel()) {
+			 			biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+			 			continue;
+		 			}
 		 			int heightDiff = 0;
 		 			int samples = 0;
 		 			for (int a = -2; a <= 2; a++) {
@@ -226,14 +230,12 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		 				BlockState stone = Blocks.STONE.getDefaultState();
 		 				if ((double)heightDiff / (double)samples >= 2.75) {
 		 					top = stone;
-		 				} else if ((double)heightDiff / (double)samples >= 2.125) {
-		 					top = biomes[0].getGenerationSettings().getSurfaceConfig().getUnderMaterial();
 		 				}
 		 				
 		 				if (top == Blocks.SAND.getDefaultState())
-		 					stone = Blocks.SANDSTONE.getDefaultState();
+		 					top = Blocks.SANDSTONE.getDefaultState();
 		 				if (top == Blocks.RED_SAND.getDefaultState())
-		 					stone = Blocks.WHITE_TERRACOTTA.getDefaultState();
+		 					top = Blocks.RED_TERRACOTTA.getDefaultState();
 		 				
 		 				ConfiguredSurfaceBuilder<TernarySurfaceConfig> sb = SurfaceBuilder.DEFAULT
 		 					    .withConfig(new TernarySurfaceConfig(top, stone, stone));
@@ -565,21 +567,35 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		}
 	}
 
-	@Override
-	protected double sampleNoise(int x, int y, int z, double horizontalScale, double verticalScale, double horizontalStretch, double verticalStretch) 
+	/*
+	 * Based off SuperCoder79's noise sampling code from JellySquid's Lithium mod
+	 * 		You can thank me for screwing up and trying to find out  
+	 * 		why this didn't work with Lithium initially
+	 * 		Tho I feel like I could've just looked at
+	 * 		MathHelper.clampedLerp and figured it out myself...
+	 */
+	private double sampleNoise(int x, int y, int z, double horizontalScale, double verticalScale, double horizontalStretch, double verticalStretch) 
 	{
-		double x1 = (double)x * horizontalScale;
-		double y1 = (double)y * verticalScale;
-		double z1 = (double)z * horizontalScale;
-		double d = this.lowerInterpolatedNoise.sample(x1, z1);
-		double e = this.upperInterpolatedNoise.sample(x1, z1);
-
+		double x1, y1, z1;
 		x1 = (double)x * horizontalStretch;
 		y1 = (double)y * verticalStretch;
 		z1 = (double)z * horizontalStretch;
 		double f = this.interpolationNoise.sample(x1, y1, z1);
+		f = (f / 10.0D + 1.0D) / 2.0D;
+
+		x1 = (double)x * horizontalScale;
+		y1 = (double)y * verticalScale;
+		z1 = (double)z * horizontalScale;
+		if (f >= 1.0) {
+			return this.upperInterpolatedNoise.sample(x1, z1) / 512.0;
+		}
+		else if (f <= 0.0) {
+			return this.lowerInterpolatedNoise.sample(x1, z1) / 512.0;
+		}
 		
-		return MathHelper.clampedLerp(d / 512.0D, e / 512.0D, (f / 10.0D + 1.0D) / 2.0D);
+		double d = this.lowerInterpolatedNoise.sample(x1, z1);
+		double e = this.upperInterpolatedNoise.sample(x1, z1);
+		return MathHelper.lerp(f, d / 512.0D, e / 512.0D);
 	}
 	
 	public static void register() {

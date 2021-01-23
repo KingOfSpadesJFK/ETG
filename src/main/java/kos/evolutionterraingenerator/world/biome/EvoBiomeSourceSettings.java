@@ -2,7 +2,7 @@ package kos.evolutionterraingenerator.world.biome;
 
 import kos.evolutionterraingenerator.world.gen.EvoGenSettings;
 
-public class EvoBiomeProviderSettings
+public class EvoBiomeSourceSettings
 {
 	private EvoGenSettings settings;
 	

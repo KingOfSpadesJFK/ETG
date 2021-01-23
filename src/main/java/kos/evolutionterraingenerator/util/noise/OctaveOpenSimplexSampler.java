@@ -1,7 +1,7 @@
-package kos.evolutionterraingenerator.util;
+package kos.evolutionterraingenerator.util.noise;
 
 import org.jetbrains.annotations.Nullable;
-import kos.evolutionterraingenerator.util.noise.OpenSimplexNoiseSampler;
+
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.noise.NoiseSampler;
 import net.minecraft.world.gen.ChunkRandom;

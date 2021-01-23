@@ -2,7 +2,6 @@ package kos.evolutionterraingenerator.world.gen.layer;
 
 import java.util.function.LongFunction;
 
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.layer.ContinentLayer;
 import net.minecraft.world.biome.layer.ScaleLayer;
 import net.minecraft.world.biome.layer.SmoothLayer;

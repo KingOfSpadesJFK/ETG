@@ -5,8 +5,9 @@ import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import kos.evolutionterraingenerator.util.OctaveOpenSimplexSampler;
+import kos.evolutionterraingenerator.util.noise.OctaveOpenSimplexSampler;
 import kos.evolutionterraingenerator.world.biome.container.BiomeContainer;
+import kos.evolutionterraingenerator.world.biome.selector.BiomeSelector;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.IndexedIterable;
 import net.minecraft.util.math.BlockPos;
@@ -59,18 +60,19 @@ public class EvoBiomeSource extends BiomeSource
 	private double humidityScale = 1.0;
 	private double chanceScale = 1.0;
 	
-	private EvoBiomeProviderSettings providerSettings;
+	private EvoBiomeSourceSettings providerSettings;
 	private final Registry<Biome> lookupRegistry;
 	private static final List<Identifier> BIOMES;
-	private EvoBiomeLookup evoBiomes;
-	private BiomeSelector biomeMap;
+	private BiomeSelector landBiomeSelector;
+	private BiomeSelector swampSelector;
+	private BiomeSelector islandSelector;
 	
 	public EvoBiomeSource(long seed, Registry<Biome> lookupRegistry)
 	{
-		this(new EvoBiomeProviderSettings(), seed, lookupRegistry);
+		this(new EvoBiomeSourceSettings(), seed, lookupRegistry);
 	}
     
-	public EvoBiomeSource(EvoBiomeProviderSettings settingsProvider, long seed, Registry<Biome> lookupRegistry)
+	public EvoBiomeSource(EvoBiomeSourceSettings settingsProvider, long seed, Registry<Biome> lookupRegistry)
 	{
 		super(BIOMES.stream().map((registryKey) -> {
 			return () -> {
@@ -78,8 +80,9 @@ public class EvoBiomeSource extends BiomeSource
 			};
 		}));
 		
-		this.evoBiomes = new EvoBiomeLookup(lookupRegistry);
-		this.biomeMap = LandBiomeSelector.createDefaultSelector();
+		this.landBiomeSelector = BiomeSelector.createLandSelector();
+		this.swampSelector = BiomeSelector.createSwampSelector();
+		this.islandSelector = BiomeSelector.createLandSelector();
 		this.lookupRegistry = lookupRegistry;
 		this.seed = seed;
         ChunkRandom rand = new ChunkRandom(seed);
@@ -100,27 +103,6 @@ public class EvoBiomeSource extends BiomeSource
 			while (landOctave.sample(0.0, landOffset, 0.0) * 0.125 / (double)oceanOctaves < oceanThreshold)
 				landOffset += 1.0;
 		}
-		
-		evoBiomes.init();
-		/*
-		try
-		{
-			if (providerSettings.isUseBOPBiomes())
-			{
-				humidityScale = 1.0;
-				chanceScale = 1.0;
-				BOPSupport.setup(biomes);
-			}
-		}
-		catch (Exception e)
-		{
-			humidityScale = 1.0;
-			chanceScale = 1.0;
-			EvoBiomes.init();
-			this.providerSettings.setUseBOPBiomes(false);
-			EvolutionTerrainGenerator.logger.error("ETG: Biomes O' Plenty support broken! Check if the right version of any of the mods are listed");
-		}
-		*/
 	}
 
 	public static final int oceanOctaves = 8;
@@ -294,14 +276,8 @@ public class EvoBiomeSource extends BiomeSource
 		boolean isBeach = !isOcean && (landmass[4] < EvoBiomeSource.oceanThreshold) && canBeBeach(x, z);
 		boolean isSpecialIsland = landmass[0] < EvoBiomeSource.oceanThreshold && landmass[1] < EvoBiomeSource.oceanThreshold;
 		
-    	if (landmass[2] == landmass[4] && isSpecialIsland)
-    	{
-			if (temperature < EvoBiomeSource.SNOW_TEMP)
-				biome = evoBiomes.COLD_ISLANDS.getBiome(biomeChance);
-			else if (temperature < EvoBiomeSource.HOT_TEMP)
-				biome = evoBiomes.ISLAND_BIOMES.getBiome(biomeChance);
-			else
-				biome = evoBiomes.HOT_ISLANDS.getBiome(biomeChance);
+    	if (landmass[2] == landmass[4] && isSpecialIsland) {
+    		biome = decodeBiome(this.islandSelector.pick(temperature, humidity, biomeChance).getID());
     	}
     	if (landmass[3] == landmass[4] && isSpecialIsland)
 			biome = decodeBiome(BiomeList.MUSHROOM_FIELDS);
@@ -320,18 +296,11 @@ public class EvoBiomeSource extends BiomeSource
 
         double swampChance = this.swampChance.sample((double)x * 0.0125, (double)z * 0.0125);
         swampChance = MathHelper.clamp(swampChance, 0.0, 1.0);
-    	if (temperature > 0.5 && humidity > 0.675 && swampChance < 0.375 - 0.25 * ((MathHelper.clamp(temperature, 0.5, 1.0) - 0.5) * 2.0) && y <= seaLevel + 3)
+    	if (humidity > 0.675 && swampChance < 0.375 - 0.25 * ((MathHelper.clamp(temperature, 0.5, 1.0) - 0.5) * 2.0) && y <= seaLevel + 3)
     	{
             double swampType = this.swampType.sample((double)x * 0.0125, (double)z * 0.0125) * 0.125 + 0.5;
             swampType = MathHelper.clamp(swampType, 0.0, 1.0);
-            Biome swamp = null;
-            if (temperature < EvoBiomeSource.WARM_TEMP)
-            	swamp = evoBiomes.COLD_SWAMP.getBiome(swampType);
-            else if (temperature < EvoBiomeSource.HOT_TEMP)
-              	swamp = evoBiomes.WARM_SWAMP.getBiome(swampType);
-            else
-            	swamp = evoBiomes.HOT_SWAMP.getBiome(swampType);
-            
+            Biome swamp = this.decodeBiome(this.swampSelector.pick(temperature, humidity, biomeChance).getID());
             if (swamp != null)
             	biome = swamp;
     	}
@@ -340,13 +309,6 @@ public class EvoBiomeSource extends BiomeSource
     		if (y >= seaLevel + 50)
         		biome = decodeBiome(BiomeList.WOODED_BADLANDS_PLATEAU);
     	}
-    	/*if (getSettings().isUseBOPBiomes() && temperature < EvoBiomeSource.SNOW_TEMP && !biome.equals(BiomeList.ICE_SPIKES))
-    	{
-    		if (y >= seaLevel + 65)
-    			biome = BOPBiomes.alps.get();
-    		else if (y >= seaLevel + 50)
-    			biome = BOPBiomes.alps_foothills.get();
-    	}*/
     	return biome;
     }
 
@@ -355,28 +317,13 @@ public class EvoBiomeSource extends BiomeSource
 	}
     
     public Biome decodeBiome(Identifier biomeId) {
+    	if (biomeId == null)
+    		return null;
     	return this.lookupRegistry.get(biomeId);
     }
 
-	public Biome getLandBiome(double temp, double humid, double chance)
-    {
-		return this.lookupRegistry.get(biomeMap.pick(temp, humid, chance).getID());
-		/*
-		EvoBiomeLookup.EvoBiome[] arr = evoBiomes.WARM_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.WARM_BIOMES.size()]);
-    	
-		if (temp < SNOW_TEMP)
-			arr = evoBiomes.SNOWY_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.SNOWY_BIOMES.size()]);
-		else if (temp < COLD_TEMP)
-			arr = evoBiomes.COLD_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.COLD_BIOMES.size()]);
-		else if (temp < WARM_TEMP)
-			arr = evoBiomes.WARM_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.WARM_BIOMES.size()]);
-		else if (temp < HOT_TEMP)
-			arr = evoBiomes.HOT_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.HOT_BIOMES.size()]);
-		else
-			arr = evoBiomes.ARID_BIOMES.toArray(new EvoBiomeLookup.EvoBiome[evoBiomes.ARID_BIOMES.size()]);
-		
-		return arr[(int)((arr.length - 1) * humid)].getBiome(chance);
-		*/
+	public Biome getLandBiome(double temp, double humid, double chance) {
+		return this.decodeBiome(landBiomeSelector.pick(temp, humid, chance).getID());
     }
 
 	public Biome getBeach(int x, int z)
@@ -385,7 +332,7 @@ public class EvoBiomeSource extends BiomeSource
 		double humid = getHumidity(x, z)[1];
 		double chance = getWeirdness(x, z)[1];
 		double[] landmass = getLandmass(x, z);
-		BiomeContainer bc = this.biomeMap.pick(temp, humid, chance);
+		BiomeContainer bc = this.landBiomeSelector.pick(temp, humid, chance);
 		return decodeBiome(landmass[0] < landmass[1] ? bc.getSecondaryBeach() : bc.getPrimaryBeach());
 	}
 
@@ -435,7 +382,7 @@ public class EvoBiomeSource extends BiomeSource
 			return decodeBiome(BiomeList.WARM_OCEAN);
     }
     
-	public EvoBiomeProviderSettings getSettings() {
+	public EvoBiomeSourceSettings getSettings() {
 		return this.providerSettings;
 	}
 
