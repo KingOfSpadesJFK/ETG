@@ -58,8 +58,8 @@ public class EvoGenSettings extends ChunkGeneratorSettings
 	    				256,
 	    				new NoiseSamplingConfig(
 	    						xzScale, yScale, 160.0D, 60.0D),
-	    				new SlideConfig(-10, 1, 0),
-	    				new SlideConfig(-30, 1, 0),
+	    				new SlideConfig(-10, 3, 0),
+	    				new SlideConfig(-30, 0, 0),
 	    				1,
 	    				2,
 	    				1.0D,

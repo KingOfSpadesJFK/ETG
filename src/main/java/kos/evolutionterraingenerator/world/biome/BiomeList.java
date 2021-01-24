@@ -59,6 +59,9 @@ public class BiomeList
 	public final static Identifier SNOWY_GIANT_TREE_TAIGA = id("snowy_giant_tree_taiga");
 	public final static Identifier SNOWY_GIANT_SPRUCE_TAIGA = id("snowy_giant_spruce_taiga");
 	
+	public final static Identifier RAINFOREST = id("rainforest");
+	public final static Identifier VOLCANO = id("volcano");
+	
 	private static Identifier id(String name) {
 		return new Identifier(EvolutionTerrainGenerator.MODID, name);
 	}

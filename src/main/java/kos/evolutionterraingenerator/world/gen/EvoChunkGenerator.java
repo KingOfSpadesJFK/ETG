@@ -54,9 +54,15 @@ import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.gen.feature.ConfiguredStructureFeatures;
 import net.minecraft.world.gen.feature.StructureFeature;
+import net.minecraft.world.gen.surfacebuilder.BadlandsSurfaceBuilder;
 import net.minecraft.world.gen.surfacebuilder.ConfiguredSurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.GiantTreeTaigaSurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.GravellyMountainSurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.MountainSurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.ShatteredSavannaSurfaceBuilder;
 import net.minecraft.world.gen.surfacebuilder.SurfaceBuilder;
 import net.minecraft.world.gen.surfacebuilder.TernarySurfaceConfig;
+import net.minecraft.world.gen.surfacebuilder.WoodedBadlandsSurfaceBuilder;
 
 public final class EvoChunkGenerator extends NoiseChunkGenerator
 {
@@ -105,7 +111,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		this.lowerInterpolatedNoise = new OctaveOpenSimplexSampler(random, 16);
 		this.upperInterpolatedNoise = new OctaveOpenSimplexSampler(random, 16);
 		this.interpolationNoise = new OctaveOpenSimplexSampler(random, 8);
-		this.terrainLayer = LayerBuilder.build(seed, LayerBuilder.TERRAIN_TYPE, 5, 0);
+		this.terrainLayer = LayerBuilder.build(seed, LayerBuilder.TERRAIN_TYPE, 5, 4);
 		this.plateauSteps = LayerBuilder.build(seed, LayerBuilder.PLATEAU_STEPS, TerrainLayerSampler.PLATEAU_STEPPE_COUNT);
 	}
 
@@ -210,41 +216,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 			  	}
 		 		double humidity = this.biomeSource.getHumidity(x, z)[1];
 		 		double temperature = this.biomeSource.getTemperature(x, z)[1];
-		 		if (y <= 130 + Math.rint(40.0 * humidity * temperature + ((double)(sharedseedrandom.nextInt() % 30 - 15) * (0.125 + humidity * temperature * 0.875))) ) {
-		 			if (y < this.getSeaLevel()) {
-			 			biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
-			 			continue;
-		 			}
-		 			int heightDiff = 0;
-		 			int samples = 0;
-		 			for (int a = -2; a <= 2; a++) {
-		 				for (int b = -2; b <= 2; b++) {
-		 					if (b + j >= 0 && b + j < 16 && a + i >= 0 && a + i < 16) {
-		 						heightDiff += Math.abs(y - chunkIn.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x1 + b, z1 + a));
-		 						samples++;
-		 					}
-		 				}
-		 			}
-		 			if ((double)heightDiff / (double)samples >= 1.75) {
-		 				BlockState top = biomes[0].getGenerationSettings().getSurfaceConfig().getTopMaterial();
-		 				BlockState stone = Blocks.STONE.getDefaultState();
-		 				if ((double)heightDiff / (double)samples >= 2.75) {
-		 					top = stone;
-		 				}
-		 				
-		 				if (top == Blocks.SAND.getDefaultState())
-		 					top = Blocks.SANDSTONE.getDefaultState();
-		 				if (top == Blocks.RED_SAND.getDefaultState())
-		 					top = Blocks.RED_TERRACOTTA.getDefaultState();
-		 				
-		 				ConfiguredSurfaceBuilder<TernarySurfaceConfig> sb = SurfaceBuilder.DEFAULT
-		 					    .withConfig(new TernarySurfaceConfig(top, stone, stone));
-		 				sb.initSeed(worldRegion.getSeed());
-		 				sb.generate(sharedseedrandom, chunkIn, biomes[0], x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
-		 				continue;
-	 				}
-		 			biomes[0].buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
-				}
+	 			makeSurface(biomes[0], temperature, humidity, sharedseedrandom, chunkIn, x1, y, z1, i, j, noise, worldRegion);
 			}
 		}
 		while (k < BiomeArray.DEFAULT_LENGTH)
@@ -254,6 +226,89 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		}
 		((ProtoChunk)chunkIn).setBiomes(new BiomeArray(this.biomeSource.getRegistry(), abiome));
 		this.makeBedrock(chunkIn, sharedseedrandom);
+	}
+	
+	private void makeSurface(Biome biome, double temperature, double humidity, ChunkRandom sharedseedrandom, Chunk chunkIn, int x1, int y, int z1, int i, int j, double noise, ChunkRegion worldRegion) 
+	{
+ 		if (y <= 140 + Math.rint(40.0 * humidity * temperature + ((double)(sharedseedrandom.nextInt(61) - 30) * (0.125 + humidity * temperature * 0.875))) ) {
+ 			if (y < this.getSeaLevel()) {
+ 				biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+ 				return;
+ 			}
+ 			int heightDiff = 0;
+ 			int samples = 0;
+ 			for (int a = -2; a <= 2; a++) {
+ 				for (int b = -2; b <= 2; b++) {
+ 					if (b + j >= 0 && b + j < 16 && a + i >= 0 && a + i < 16) {
+ 						heightDiff += Math.abs(y - chunkIn.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, x1 + b, z1 + a));
+ 						samples++;
+ 					}
+ 				}
+ 			}
+ 			if ((double)heightDiff / (double)samples >= 1.75) {
+ 				ConfiguredSurfaceBuilder<TernarySurfaceConfig> sb;
+ 				BlockState top = biome.getGenerationSettings().getSurfaceConfig().getTopMaterial();
+ 				BlockState stone = Blocks.STONE.getDefaultState();
+ 				if (biome.getGenerationSettings().getSurfaceBuilder().get().surfaceBuilder instanceof GiantTreeTaigaSurfaceBuilder) {
+ 					if (noise > 1.75D) {
+ 						top = SurfaceBuilder.COARSE_DIRT_CONFIG.getTopMaterial();
+ 					} else if (noise > -0.95D) {
+ 						top = SurfaceBuilder.PODZOL_CONFIG.getTopMaterial();
+ 					}
+ 				}
+ 				else if (biome.getGenerationSettings().getSurfaceBuilder().get().surfaceBuilder instanceof MountainSurfaceBuilder) {
+ 					if (noise > 1.0) {
+ 						top = SurfaceBuilder.STONE_CONFIG.getTopMaterial();
+ 					} else {
+ 						top = SurfaceBuilder.GRASS_CONFIG.getTopMaterial();
+ 					}
+ 				}
+ 				else if (biome.getGenerationSettings().getSurfaceBuilder().get().surfaceBuilder instanceof ShatteredSavannaSurfaceBuilder) {
+ 	 				if (noise > 1.75D) {
+ 	 					top = SurfaceBuilder.STONE_CONFIG.getTopMaterial();
+ 	 				} else if (noise > -0.5D) {
+ 	 					top = SurfaceBuilder.COARSE_DIRT_CONFIG.getTopMaterial();
+ 	 				}
+ 				}
+ 				else if (biome.getGenerationSettings().getSurfaceBuilder().get().surfaceBuilder instanceof GravellyMountainSurfaceBuilder) {
+ 					if (noise >= -1.0D && noise <= 2.0D) {
+ 						if (noise > 1.0D) {
+ 	 	 					top = SurfaceBuilder.STONE_CONFIG.getTopMaterial();
+ 						}
+ 					} else {
+ 						top = SurfaceBuilder.GRAVEL_CONFIG.getTopMaterial();
+ 					}
+ 				}
+ 				else if (biome.getGenerationSettings().getSurfaceBuilder().get().surfaceBuilder instanceof BadlandsSurfaceBuilder) {
+ 					if (biome.getGenerationSettings().getSurfaceBuilder().get().surfaceBuilder instanceof WoodedBadlandsSurfaceBuilder) {
+ 						sb = SurfaceBuilder.BADLANDS.withConfig(SurfaceBuilder.BADLANDS_CONFIG);
+ 						sb.initSeed(worldRegion.getSeed());
+ 						sb.generate(sharedseedrandom, chunkIn, biome, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+ 						return;
+ 					}
+ 		 			biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+ 		 			return;
+ 				}
+ 				
+ 				if ((double)heightDiff / (double)samples >= 2.75) {
+ 					top = stone;
+ 				}
+ 				///tp 1252 160 2296
+				sb = SurfaceBuilder.DEFAULT.withConfig(new TernarySurfaceConfig(top, stone, stone));
+ 				sb.initSeed(worldRegion.getSeed());
+ 				sb.generate(sharedseedrandom, chunkIn, biome, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+ 				return;
+ 			}
+ 			biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+		} else {
+			if (biome.getGenerationSettings().getSurfaceBuilder().get().surfaceBuilder instanceof WoodedBadlandsSurfaceBuilder) {
+				ConfiguredSurfaceBuilder<TernarySurfaceConfig> sb = SurfaceBuilder.BADLANDS.withConfig(SurfaceBuilder.BADLANDS_CONFIG);
+				sb.initSeed(worldRegion.getSeed());
+				sb.generate(sharedseedrandom, chunkIn, biome, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+			} else if (biome.getGenerationSettings().getSurfaceBuilder().get().surfaceBuilder instanceof BadlandsSurfaceBuilder) {
+	 			biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
+			}
+		}
 	}
 	
 	private void makeBedrock(Chunk chunk, Random random)
@@ -443,11 +498,12 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		}
      
 		if (isRiver) {
-			if (isBeach | isOcean)
+			if (isBeach | isOcean) {
 				if (noiseDepth > -0.5)
 					noiseDepth = -0.5;
-			else
+			} else {
 				noiseDepth = -1.0;
+			}
 		}
 		
 		return noiseDepth;
@@ -472,12 +528,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		}
      
 		if (isRiver) {
-			if (isBeach | isOcean) {
-				noiseScale = 0.0;
-			}
-			else {
-				noiseScale = 0.0;
-			}
+			noiseScale = 0.0;
 		}
 		
 		return noiseScale;
@@ -540,9 +591,14 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 			xzFactor *= 5.0;
 			yFactor *= 5.0;
 		}
-		
+
+		double x1, z1;
+		x1 = (double)x * xzScale;
+		z1 = (double)z * xzScale;
+		double upperLimit = this.upperInterpolatedNoise.sample(x1, z1) / 512.0;
+		double lowerLimit = this.lowerInterpolatedNoise.sample(x1, z1) / 512.0;
 		for(int ar = 0; ar <= this.noiseSizeY; ++ar) {
-			double noiseSample = this.sampleNoise(x, ar, z, xzScale, yScale, xzFactor, yFactor);
+			double noiseSample = this.sampleNoise(x, ar, z, upperLimit, lowerLimit, xzFactor, yFactor);
 			double densitySample = 1.0D - (double)ar * 2.0D / (double)this.noiseSizeY + density;
 			densitySample = densitySample * densityFactor + densityOffset;
 			double scaledSample = (densitySample + finalDepth) * finalScale;
@@ -566,36 +622,17 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 			buffer[ar] = noiseSample;
 		}
 	}
-
-	/*
-	 * Based off SuperCoder79's noise sampling code from JellySquid's Lithium mod
-	 * 		You can thank me for screwing up and trying to find out  
-	 * 		why this didn't work with Lithium initially
-	 * 		Tho I feel like I could've just looked at
-	 * 		MathHelper.clampedLerp and figured it out myself...
-	 */
-	private double sampleNoise(int x, int y, int z, double horizontalScale, double verticalScale, double horizontalStretch, double verticalStretch) 
+	
+	private double sampleNoise(int x, int y, int z, double upperLimit, double lowerLimit, double horizontalStretch, double verticalStretch) 
 	{
 		double x1, y1, z1;
 		x1 = (double)x * horizontalStretch;
 		y1 = (double)y * verticalStretch;
 		z1 = (double)z * horizontalStretch;
-		double f = this.interpolationNoise.sample(x1, y1, z1);
-		f = (f / 10.0D + 1.0D) / 2.0D;
-
-		x1 = (double)x * horizontalScale;
-		y1 = (double)y * verticalScale;
-		z1 = (double)z * horizontalScale;
-		if (f >= 1.0) {
-			return this.upperInterpolatedNoise.sample(x1, z1) / 512.0;
-		}
-		else if (f <= 0.0) {
-			return this.lowerInterpolatedNoise.sample(x1, z1) / 512.0;
-		}
+		double interpolation = this.interpolationNoise.sample(x1, y1, z1);
+		interpolation = (interpolation / 10.0D + 1.0D) / 2.0D;
 		
-		double d = this.lowerInterpolatedNoise.sample(x1, z1);
-		double e = this.upperInterpolatedNoise.sample(x1, z1);
-		return MathHelper.lerp(f, d / 512.0D, e / 512.0D);
+		return MathHelper.clampedLerp(upperLimit, lowerLimit, interpolation);
 	}
 	
 	public static void register() {

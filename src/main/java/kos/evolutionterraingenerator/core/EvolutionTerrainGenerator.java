@@ -4,8 +4,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import kos.evolutionterraingenerator.world.EvoGeneratorType;
-import kos.evolutionterraingenerator.world.biome.BiomeHandler;
 import kos.evolutionterraingenerator.world.biome.EvoBiomeSource;
+import kos.evolutionterraingenerator.world.biome.create.BiomeHandler;
 import kos.evolutionterraingenerator.world.gen.EvoChunkGenerator;
 import kos.evolutionterraingenerator.world.gen.EvoGenSettings;
 import net.fabricmc.api.EnvType;

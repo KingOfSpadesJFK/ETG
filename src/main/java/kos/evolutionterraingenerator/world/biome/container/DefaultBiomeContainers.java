@@ -30,10 +30,12 @@ public class DefaultBiomeContainers
 		containers.add(new BiomeContainer(BiomeList.DARK_FOREST, 0.7, 0.875, 0.5));
 
 		//Hot Biomes
+		containers.add(new BiomeContainer(BiomeList.VOLCANO, 1.0, 0.0, 1.0).setWeirdnessRange(0.01).setPrimaryBeach(BiomeList.VOLCANO).setSecondaryBeach(BiomeList.VOLCANO));
 		containers.add(new BiomeContainer(BiomeList.DESERT, 0.9, 0.125, 0.5).setPrimaryBeach(BiomeList.DRY_BEACH).setSecondaryBeach(BiomeList.DRY_GRAVEL_BEACH));
 		containers.add(new BiomeContainer(BiomeList.SAVANNA, 0.9, 0.375, 0.5).setPrimaryBeach(BiomeList.DRY_BEACH).setSecondaryBeach(BiomeList.DRY_GRAVEL_BEACH));
 		containers.add(new BiomeContainer(BiomeList.SHATTERED_SAVANNA, 0.9, 0.375, 0.9).setPrimaryBeach(BiomeList.DRY_BEACH).setSecondaryBeach(BiomeList.DRY_GRAVEL_BEACH) );
-		containers.add(new BiomeContainer(BiomeList.DARK_FOREST, 0.9, 0.625, 0.5));
+		containers.add(new BiomeContainer(BiomeList.DARK_FOREST, 0.9, 0.625, 0.55));
+		containers.add(new BiomeContainer(BiomeList.RAINFOREST, 0.9, 0.625, 0.45));
 		containers.add(new BiomeContainer(BiomeList.JUNGLE, 0.9, 0.875, 0.5));
 		containers.add(new BiomeContainer(BiomeList.BAMBOO_JUNGLE, 0.9, 0.875, 0.1).setWeirdnessRange(0.05));
 

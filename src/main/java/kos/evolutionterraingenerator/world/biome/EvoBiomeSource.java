@@ -112,7 +112,7 @@ public class EvoBiomeSource extends BiomeSource
 	}
 
 	public static final int oceanOctaves = 8;
-    public static final double biomeScale = 2.0;
+    public static final double biomeScale = 1.75;
     public static final double oceanScale = 0.0375;
     public static final double oceanThreshold = 0.5;
     public static final double beachThreshold = 0.01;
@@ -440,7 +440,7 @@ public class EvoBiomeSource extends BiomeSource
 		int j = x >> 2;
 		int k = z >> 2;
 		int l = radius >> 2;
-		int m = (heightDependent ? this.chunkGen.getHeight(x, z, Heightmap.Type.OCEAN_FLOOR_WG) : y) >> 2;
+		int m = (heightDependent ? this.chunkGen.getHeight(i << 2, k << 2, Heightmap.Type.OCEAN_FLOOR_WG) : y) >> 2;
 		BlockPos blockPos = null;
 		int n = 0;
 		int o = bl ? 0 : l;
