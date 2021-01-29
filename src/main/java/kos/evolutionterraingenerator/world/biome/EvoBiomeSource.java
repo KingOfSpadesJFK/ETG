@@ -8,6 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import kos.evolutionterraingenerator.util.PositionalCache;
 import kos.evolutionterraingenerator.util.noise.OctaveOpenSimplexSampler;
 import kos.evolutionterraingenerator.world.biome.container.BiomeContainer;
+import kos.evolutionterraingenerator.world.biome.container.DefaultBiomeContainers;
 import kos.evolutionterraingenerator.world.biome.selector.BiomeSelector;
 import kos.evolutionterraingenerator.world.gen.layer.LayerBuilder;
 import kos.evolutionterraingenerator.world.gen.layer.TerrainLayerSampler;
@@ -60,7 +61,7 @@ public class EvoBiomeSource extends BiomeSource
 	public static final double HOT_TEMP = 0.875;
 	
 	private double humidityScale = 1.0;
-	private double chanceScale = 1.0;
+	private double chanceScale = 3.0;
 	
 	private EvoBiomeSourceSettings providerSettings;
 	private final Registry<Biome> lookupRegistry;
@@ -68,6 +69,7 @@ public class EvoBiomeSource extends BiomeSource
 	private BiomeSelector landBiomeSelector;
 	private BiomeSelector swampSelector;
 	private BiomeSelector islandSelector;
+	private BiomeSelector oceanSelector;
 	
 	private PositionalCache<Biome[]> biomeCache;
 	private PositionalCache<ClimateData> climateCache;
@@ -87,9 +89,11 @@ public class EvoBiomeSource extends BiomeSource
 		
 		this.biomeCache = new PositionalCache<Biome[]>();
 		this.climateCache = new PositionalCache<ClimateData>();
+		DefaultBiomeContainers.containers.clear();
 		this.landBiomeSelector = BiomeSelector.createLandSelector();
 		this.swampSelector = BiomeSelector.createSwampSelector();
-		this.islandSelector = BiomeSelector.createLandSelector();
+		this.islandSelector = BiomeSelector.createIslandSelector();
+		this.oceanSelector = BiomeSelector.createOceanSelector();
 		this.lookupRegistry = lookupRegistry;
 		this.seed = seed;
         ChunkRandom rand = new ChunkRandom(seed);
@@ -210,6 +214,28 @@ public class EvoBiomeSource extends BiomeSource
 		return getLandBiome(temperature, humidity, biomeChance);
     }
     
+    public BiomeContainer[] generateLandBiomeContainer(int x, int z)
+    {
+        double[] temperature = getTemperature(x, z);
+        double[] humidity = getHumidity(x, z);
+		double[] biomeChance = getWeirdness(x, z);
+
+		return new BiomeContainer[] 
+				{
+						getLandBiomeContainer(temperature[0], humidity[0], biomeChance[0]),
+						getLandBiomeContainer(temperature[1], humidity[1], biomeChance[1])
+				};
+    }
+    
+    public BiomeContainer generateLandBiomeContainer(int x, int z, boolean useNoise)
+    {
+        double temperature = useNoise ? getTemperature(x, z)[1] : getTemperature(x, z)[0];
+        double humidity = useNoise ? getHumidity(x, z)[1] : getHumidity(x, z)[0];
+		double biomeChance = useNoise ? getWeirdness(x, z)[1] : getWeirdness(x, z)[0];
+
+		return getLandBiomeContainer(temperature, humidity, biomeChance);
+    }
+    
 	private static final int BEACH_SAMPLES = 4;
 	private static final double BEACH_SEARCH_SCALE = 2.0;
 	public boolean canBeBeach(double x, double z)
@@ -266,8 +292,8 @@ public class EvoBiomeSource extends BiomeSource
 			biomes = biomeCache.getOrThrow(x, y, z);
 		} else {
 			biomes = new Biome[2];
-			biomes[0] = setBiomebyHeight(getLandBiome(temperature[0], humidity[0], biomeChance[0]), x, y, z, temperature[0], humidity[0], biomeChance[0], landmass);
-			biomes[1] = setBiomebyHeight(getLandBiome(temperature[1], humidity[1], biomeChance[1]), x, y, z, temperature[1], humidity[1], biomeChance[1], landmass);
+			biomes[0] = setBiomebyHeight(getLandBiomeContainer(temperature[0], humidity[0], biomeChance[0]), x, y, z, temperature[0], humidity[0], biomeChance[0], landmass);
+			biomes[1] = setBiomebyHeight(getLandBiomeContainer(temperature[1], humidity[1], biomeChance[1]), x, y, z, temperature[1], humidity[1], biomeChance[1], landmass);
 			biomeCache.add(x, y, z, biomes);
 		}
 
@@ -282,12 +308,11 @@ public class EvoBiomeSource extends BiomeSource
 		return biomes;
     }
     
-    private Biome setBiomebyHeight(Biome biome, int x, int y, int z, double temperature, double humidity, double biomeChance, double[] landmass)
+    private Biome setBiomebyHeight(BiomeContainer biomeContainer, int x, int y, int z, double temperature, double humidity, double biomeChance, double[] landmass)
     {
+    	Biome biome = this.decodeBiome(biomeContainer.getID());
         int seaLevel = this.providerSettings.getSeaLevel();
-   	 	double beachThreshold = oceanThreshold - EvoBiomeSource.beachThreshold / (double)oceanOctaves / oceanScale;
-		boolean isOcean = landmass[4] < beachThreshold;
-		boolean isBeach = !isOcean && (landmass[4] < EvoBiomeSource.oceanThreshold) && canBeBeach(x, z);
+		boolean isOcean = (landmass[4] < EvoBiomeSource.oceanThreshold) && canBeBeach(x, z);
 		boolean isSpecialIsland = landmass[0] < EvoBiomeSource.oceanThreshold && landmass[1] < EvoBiomeSource.oceanThreshold;
 		
     	if (landmass[2] == landmass[4] && isSpecialIsland) {
@@ -296,17 +321,18 @@ public class EvoBiomeSource extends BiomeSource
     	if (landmass[3] == landmass[4] && isSpecialIsland)
 			biome = decodeBiome(BiomeList.MUSHROOM_FIELDS);
         
-        if (isBeach || isOcean)
-        {
-        	if (y < seaLevel - 5)
-        		return getOcean(temperature, y < 40);
+        if (isOcean) {
+        	if (y < seaLevel - 5) {
+        		return this.decodeBiome(getOcean(temperature, y < 40).getID());
+        	}
         	if (y < seaLevel + 3) {
     			return getBeach(x, z);
         	}
         }
         
-        if (isSpecialIsland && landmass[2] == landmass[4] || landmass[3] == landmass[4])
+        if (isSpecialIsland && landmass[2] == landmass[4] || landmass[3] == landmass[4]) {
         	return biome;
+        }
         
     	if (humidity > 0.675 && this.swampLayer.sample(x, z) == 1 && y <= seaLevel + 6)
     	{
@@ -333,8 +359,12 @@ public class EvoBiomeSource extends BiomeSource
     }
 
 	public Biome getLandBiome(double temp, double humid, double chance) {
-		return this.decodeBiome(landBiomeSelector.pick(temp, humid, chance).getID());
+		return this.decodeBiome(this.landBiomeSelector.pick(temp, humid, chance).getID());
     }
+	
+	public BiomeContainer getLandBiomeContainer(double temp, double humid, double weird) {
+		return this.landBiomeSelector.pick(temp, humid, weird);
+	}
 
 	public Biome getBeach(int x, int z)
 	{
@@ -346,31 +376,8 @@ public class EvoBiomeSource extends BiomeSource
 		return decodeBiome(landmass[0] < landmass[1] ? bc.getSecondaryBeach() : bc.getPrimaryBeach());
 	}
     
-    public Biome getOcean(double temp, boolean deep)
-    {
-    	if (deep)
-    	{		
-    		if (temp < SNOW_TEMP)
-    			return decodeBiome(BiomeList.DEEP_FROZEN_OCEAN);
-    		else if (temp < COLD_TEMP)
-    			return decodeBiome(BiomeList.DEEP_COLD_OCEAN);
-    		else if (temp < WARM_TEMP)
-    			return decodeBiome(BiomeList.DEEP_OCEAN);
-    		else if (temp < HOT_TEMP)
-    			return decodeBiome(BiomeList.DEEP_LUKEWARM_OCEAN);
-    		else
-    			return decodeBiome(BiomeList.DEEP_WARM_OCEAN);
-    	}
-		if (temp < SNOW_TEMP)
-			return decodeBiome(BiomeList.FROZEN_OCEAN);
-		else if (temp < COLD_TEMP)
-			return decodeBiome(BiomeList.COLD_OCEAN);
-		else if (temp < WARM_TEMP)
-			return decodeBiome(BiomeList.OCEAN);
-		else if (temp < HOT_TEMP)
-			return decodeBiome(BiomeList.DEEP_LUKEWARM_OCEAN);
-		else
-			return decodeBiome(BiomeList.WARM_OCEAN);
+    public BiomeContainer getOcean(double temp, boolean deep) {
+    	return this.oceanSelector.pick(temp, deep ? 1.0 : 0.0, temp);
     }
     
 	public EvoBiomeSourceSettings getSettings() {
@@ -440,7 +447,7 @@ public class EvoBiomeSource extends BiomeSource
 		int j = x >> 2;
 		int k = z >> 2;
 		int l = radius >> 2;
-		int m = (heightDependent ? this.chunkGen.getHeight(i << 2, k << 2, Heightmap.Type.OCEAN_FLOOR_WG) : y) >> 2;
+		int m = (heightDependent ? this.chunkGen.getHeight(j << 2, k << 2, Heightmap.Type.MOTION_BLOCKING) : y) >> 2;
 		BlockPos blockPos = null;
 		int n = 0;
 		int o = bl ? 0 : l;

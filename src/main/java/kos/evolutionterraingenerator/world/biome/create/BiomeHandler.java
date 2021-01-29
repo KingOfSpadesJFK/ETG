@@ -22,6 +22,7 @@ import net.minecraft.world.gen.UniformIntDistribution;
 import net.minecraft.world.gen.carver.ConfiguredCarvers;
 import net.minecraft.world.gen.decorator.CountExtraDecoratorConfig;
 import net.minecraft.world.gen.decorator.Decorator;
+import net.minecraft.world.gen.decorator.RangeDecoratorConfig;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.gen.feature.ConfiguredFeatures;
 import net.minecraft.world.gen.feature.ConfiguredStructureFeatures;
@@ -60,11 +61,16 @@ public class BiomeHandler
 					ImmutableList.of(
 							OAK_BUSH.withChance(0.35F),
 							ConfiguredFeatures.DARK_OAK.withChance(0.1F),
-							ConfiguredFeatures.FANCY_OAK_BEES_0002.withChance(0.3F),
+							ConfiguredFeatures.FANCY_OAK_BEES_0002.withChance(0.45F),
 							ConfiguredFeatures.OAK_BEES_0002.withChance(0.15F)),
 					ConfiguredFeatures.FANCY_OAK_BEES_0002))
 			.decorate(ConfiguredFeatures.Decorators.SQUARE_HEIGHTMAP)
 			.decorate(Decorator.COUNT_EXTRA.configure(new CountExtraDecoratorConfig(10, 0.1F, 1)));
+	public static final ConfiguredFeature<?, ?> SPRING_LAVA_MORE = Feature.SPRING_FEATURE
+			.configure(ConfiguredFeatures.Configs.LAVA_SPRING_CONFIG)
+			.decorate(Decorator.RANGE_VERY_BIASED.configure(new RangeDecoratorConfig(8, 16, 256)))
+			.spreadHorizontally()
+			.repeat(40);
 	
 	private static void register(Identifier id, Biome b) {
 		Registry.register(BuiltinRegistries.BIOME, id, b);
@@ -86,6 +92,7 @@ public class BiomeHandler
 		//Features
 		register("oak_bush", OAK_BUSH);
 		register("rainforest_trees", RAINFOREST_TREES);
+		register("spring_lava_more", SPRING_LAVA_MORE);
 		
 		//Biomes
 		register(BiomeList.GRAVEL_BEACH, createBeach(0.0F, 0.025F, 0.8F, 0.4F, 4159204, 0, true));
@@ -97,7 +104,8 @@ public class BiomeHandler
 		register(BiomeList.SNOWY_GIANT_SPRUCE_TAIGA, DefaultBiomeCreator.createGiantTreeTaiga(0.45F, 0.3F, 0.0F, true));
 		
 		register(BiomeList.RAINFOREST, createRainforest(0.5F, 0.5F));
-		register(BiomeList.VOLCANO, createVolcano());
+		register(BiomeList.VOLCANO, createVolcano(true));
+		register(BiomeList.VOLCANIC_EDGE, createVolcano(false));
 	}
 	
 	public static Biome createBeach(float depth, float scale, float temperature, float downfall, int waterColor, int weather, boolean gravelly) 
@@ -143,17 +151,19 @@ public class BiomeHandler
 				.build();
 	}
 
-	public static Biome createVolcano() {
+	public static Biome createVolcano(boolean lava) {
 		SpawnSettings.Builder spawnBuilder = new SpawnSettings.Builder();
 		DefaultBiomeFeatures.addBatsAndMonsters(spawnBuilder);
 		GenerationSettings.Builder builder = (new GenerationSettings.Builder()).surfaceBuilder(ConfiguredSurfaceBuilders.BASALT_DELTAS)
 				.structureFeature(ConfiguredStructureFeatures.RUINED_PORTAL_NETHER)
-				.carver(GenerationStep.Carver.AIR, ConfiguredCarvers.CAVE)
-				.feature(GenerationStep.Feature.SURFACE_STRUCTURES, ConfiguredFeatures.DELTA)
-				.feature(GenerationStep.Feature.UNDERGROUND_DECORATION, ConfiguredFeatures.BLACKSTONE_BLOBS)
-				.feature(GenerationStep.Feature.UNDERGROUND_DECORATION, ConfiguredFeatures.SPRING_DELTA)
-				.feature(GenerationStep.Feature.UNDERGROUND_DECORATION, ConfiguredFeatures.PATCH_FIRE)
-				.feature(GenerationStep.Feature.UNDERGROUND_DECORATION, ConfiguredFeatures.SPRING_CLOSED_DOUBLE);
+				.carver(GenerationStep.Carver.AIR, ConfiguredCarvers.CAVE);
+		if (lava) {
+			builder.feature(GenerationStep.Feature.SURFACE_STRUCTURES, ConfiguredFeatures.DELTA);
+			builder.feature(GenerationStep.Feature.VEGETAL_DECORATION, SPRING_LAVA_MORE);
+		}
+		builder.feature(GenerationStep.Feature.UNDERGROUND_DECORATION, ConfiguredFeatures.BLACKSTONE_BLOBS);
+		builder.feature(GenerationStep.Feature.UNDERGROUND_DECORATION, ConfiguredFeatures.SPRING_DELTA);
+		builder.feature(GenerationStep.Feature.UNDERGROUND_DECORATION, ConfiguredFeatures.PATCH_FIRE);
 		builder.feature(GenerationStep.Feature.LAKES, ConfiguredFeatures.LAKE_LAVA);
 		builder.feature(GenerationStep.Feature.LAKES, ConfiguredFeatures.LAKE_LAVA);
 		builder.structureFeature(ConfiguredStructureFeatures.MINESHAFT);
@@ -172,6 +182,8 @@ public class BiomeHandler
 				.downfall(0.0F)
 				.effects((new BiomeEffects.Builder())
 						.waterColor(0x757575)
+						.grassColor(0x282828)
+						.foliageColor(0x565656)
 						.waterFogColor(0x373737)
 						.fogColor(0x5c4576)
 						.skyColor(DefaultBiomeCreator.getSkyColor(2.0F))

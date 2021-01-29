@@ -231,7 +231,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 	private void makeSurface(Biome biome, double temperature, double humidity, ChunkRandom sharedseedrandom, Chunk chunkIn, int x1, int y, int z1, int i, int j, double noise, ChunkRegion worldRegion) 
 	{
  		if (y <= 140 + Math.rint(40.0 * humidity * temperature + ((double)(sharedseedrandom.nextInt(61) - 30) * (0.125 + humidity * temperature * 0.875))) ) {
- 			if (y < this.getSeaLevel()) {
+ 			if (y < this.getSeaLevel() || this.biomeSource.generateLandBiomeContainer(x1, z1, false).usesDefaultSurfaceBuilder()) {
  				biome.buildSurface(sharedseedrandom, chunkIn, x1, z1, y, noise, this.settings.getDefaultBlock(), this.settings.getDefaultFluid(), this.getSeaLevel(), worldRegion.getSeed());
  				return;
  			}

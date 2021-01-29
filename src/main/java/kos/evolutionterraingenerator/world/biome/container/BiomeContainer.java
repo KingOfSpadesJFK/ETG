@@ -15,6 +15,7 @@ public class BiomeContainer
 	private double weirdness;
 	private double weirdnessRange;
 	private Category category;
+	private boolean useDefaultSurfaceBuilder;
 	
 	public BiomeContainer(Identifier mainBiome, double temperature, double humidity, double weirdness) {
 		this.mainBiome = mainBiome;
@@ -85,6 +86,15 @@ public class BiomeContainer
 
 	public BiomeContainer setCategory(Category category) {
 		this.category = category;
+		return this;
+	}
+
+	public boolean usesDefaultSurfaceBuilder() {
+		return useDefaultSurfaceBuilder;
+	}
+
+	public BiomeContainer useDefaultSurfaceBuilder(boolean useDefaultSurfaceBuilder) {
+		this.useDefaultSurfaceBuilder = useDefaultSurfaceBuilder;
 		return this;
 	}
 
