@@ -61,7 +61,7 @@ public class EvoBiomeSource extends BiomeSource
 	public static final double HOT_TEMP = 0.875;
 	
 	private double humidityScale = 1.0;
-	private double chanceScale = 5.0;
+	private double chanceScale = 3.0;
 	
 	private EvoBiomeSourceSettings providerSettings;
 	private final Registry<Biome> lookupRegistry;

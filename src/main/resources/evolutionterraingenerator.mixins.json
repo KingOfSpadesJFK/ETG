@@ -4,9 +4,9 @@
   "package": "kos.evolutionterraingenerator.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-  	"PimpleCream"
+  	"PimpleCream",
+  	"MixinGeneratorOptions"
   ],
-  "client": [],
   "injectors": {
     "defaultRequire": 1
   }

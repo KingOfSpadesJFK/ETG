@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import kos.evolutionterraingenerator.core.EvolutionTerrainGenerator;
 import kos.evolutionterraingenerator.util.noise.OctaveOpenSimplexSampler;
 import kos.evolutionterraingenerator.world.biome.BiomeList;
 import kos.evolutionterraingenerator.world.biome.EvoBiomeSource;
@@ -114,11 +113,10 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		this.interpolationNoise = new OctaveOpenSimplexSampler(random, 8);
 		this.terrainLayer = LayerBuilder.build(seed, LayerBuilder.TERRAIN_TYPE, 5, 4);
 		this.plateauSteps = LayerBuilder.build(seed, LayerBuilder.PLATEAU_STEPS, TerrainLayerSampler.PLATEAU_STEPPE_COUNT);
-		EvolutionTerrainGenerator.logger.debug("ETG Chunk Generator initialized!");
 	}
 
 	@Override
-	public int getWorldHeight() 
+	public int getMaxY() 
 	{
 		return this.maxBuildHeight;
 	}
@@ -216,8 +214,8 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 			  		abiome[k] = biomes;
 			  		k++;
 			  	}
-		 		double humidity = this.biomeSource.getHumidity(x1, z1);
-		 		double temperature = this.biomeSource.getTemperature(x1, z1);
+		 		double humidity = this.biomeSource.getHumidity(x, z);
+		 		double temperature = this.biomeSource.getTemperature(x, z);
 	 			makeSurface(biomes, temperature, humidity, sharedseedrandom, chunkIn, x1, y, z1, i, j, noise, worldRegion);
 			}
 		}
@@ -461,7 +459,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		int i = structureStart != null ? structureStart.getReferences() : 0;
 		StructureConfig structureConfig = this.structureSettings.getForType(configuredStructureFeature.feature);
 		if (structureConfig != null) {
-			StructureStart<?> structureStart2 = configuredStructureFeature.tryPlaceStart(dynamicRegistryManager, this, this.populationSource, structureManager, worldSeed, chunkPos, biome, i, structureConfig);
+			StructureStart<?> structureStart2 = configuredStructureFeature.tryPlaceStart(dynamicRegistryManager, this, this.biomeSource, structureManager, worldSeed, chunkPos, biome, i, structureConfig);
 			structureAccessor.setStructureStart(ChunkSectionPos.from(chunk.getPos(), 0), configuredStructureFeature.feature, structureStart2, chunk);
 		}
 	}
