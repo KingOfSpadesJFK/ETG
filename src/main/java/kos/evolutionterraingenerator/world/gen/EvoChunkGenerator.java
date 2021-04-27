@@ -114,7 +114,7 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		this.interpolationNoise = new OctaveOpenSimplexSampler(random, 8);
 		this.terrainLayer = LayerBuilder.build(seed, LayerBuilder.TERRAIN_TYPE, 5, 4);
 		this.plateauSteps = LayerBuilder.build(seed, LayerBuilder.PLATEAU_STEPS, TerrainLayerSampler.PLATEAU_STEPPE_COUNT);
-		EvolutionTerrainGenerator.logger.debug("ETG Chunk Generator initialized!");
+		EvolutionTerrainGenerator.logger.info("ETG Chunk Generator initialized!");
 	}
 
 	@Override
