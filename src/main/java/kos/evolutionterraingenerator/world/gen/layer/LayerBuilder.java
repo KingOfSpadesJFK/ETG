@@ -2,7 +2,6 @@ package kos.evolutionterraingenerator.world.gen.layer;
 
 import java.util.function.LongFunction;
 
-import net.minecraft.world.biome.layer.ContinentLayer;
 import net.minecraft.world.biome.layer.ScaleLayer;
 import net.minecraft.world.biome.layer.SmoothLayer;
 import net.minecraft.world.biome.layer.type.CrossSamplingLayer;
@@ -74,8 +73,7 @@ public enum LayerBuilder {
 	
 	private static <T extends LayerSampler, C extends LayerSampleContext<T>> LayerFactory<T> buildSwamp(LongFunction<C> contextProvider)
 	{
-		LayerFactory<T> swampLayer = ContinentLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1L));
-		swampLayer = PlateauLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(2L), swampLayer);
+		LayerFactory<T> swampLayer = (new SimpleLayer(3, 0, true)).create((LayerSampleContext<T>)contextProvider.apply(1L));
 		swampLayer = ScaleLayer.FUZZY.create((LayerSampleContext<T>)contextProvider.apply(2000L), swampLayer);
 		swampLayer = stack(2001L, ScaleLayer.NORMAL, swampLayer, 7, contextProvider);
 		return swampLayer;
@@ -83,7 +81,7 @@ public enum LayerBuilder {
 	
 	private static <T extends LayerSampler, C extends LayerSampleContext<T>> LayerFactory<T> build(int terrainSize, int riverSize, LongFunction<C> contextProvider)
 	{
-		LayerFactory<T> terrainLayer = ContinentLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1L));
+		LayerFactory<T> terrainLayer = (new SimpleLayer(1, 0, true)).create((LayerSampleContext<T>)contextProvider.apply(1L));
 		terrainLayer = PlateauLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(2L), terrainLayer);
 		terrainLayer = ScaleLayer.FUZZY.create((LayerSampleContext<T>)contextProvider.apply(2000L), terrainLayer);
 		terrainLayer = ScaleLayer.NORMAL.create((LayerSampleContext<T>)contextProvider.apply(2001L), terrainLayer);
