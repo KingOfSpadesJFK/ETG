@@ -266,7 +266,7 @@ public class EvoBiomeSource extends BiomeSource
 		return biomes;
     }
     
-    private Biome setBiomebyHeight(BiomeContainer biomeContainer, int x, int y, int z, double temperature, double humidity, double biomeChance, double[] landmass)
+    private Biome setBiomebyHeight(BiomeContainer biomeContainer, int x, int y, int z, double temperature, double humidity, double weirdness, double[] landmass)
     {
     	Biome biome = this.decodeBiome(biomeContainer.getID());
         int seaLevel = this.providerSettings.getSeaLevel();
@@ -274,14 +274,14 @@ public class EvoBiomeSource extends BiomeSource
 		boolean isSpecialIsland = landmass[0] < EvoBiomeSource.oceanThreshold && landmass[1] < EvoBiomeSource.oceanThreshold;
 		
     	if (landmass[2] == landmass[4] && isSpecialIsland) {
-    		biome = decodeBiome(this.islandSelector.pick(temperature, humidity, biomeChance).getID());
+    		biome = decodeBiome(this.islandSelector.pick(temperature, humidity, weirdness).getID());
     	}
     	if (landmass[3] == landmass[4] && isSpecialIsland)
 			biome = decodeBiome(BiomeList.MUSHROOM_FIELDS);
         
         if (isOcean) {
         	if (y < seaLevel - 5) {
-        		return this.decodeBiome(getOcean(temperature, y < 40).getID());
+        		return this.decodeBiome(getOcean(temperature, weirdness, y < 40).getID());
         	}
         	if (y < seaLevel + 3) {
     			return getBeach(x, z);
@@ -294,7 +294,7 @@ public class EvoBiomeSource extends BiomeSource
         
     	if (humidity > 0.675 && this.swampLayer.sample(x, z) == 1 && y <= seaLevel + 6)
     	{
-            Biome swamp = this.decodeBiome(this.swampSelector.pick(temperature, humidity, biomeChance).getID());
+            Biome swamp = this.decodeBiome(this.swampSelector.pick(temperature, humidity, weirdness).getID());
             if (swamp != null)
             	biome = swamp;
     	}
@@ -335,8 +335,8 @@ public class EvoBiomeSource extends BiomeSource
 		return decodeBiome(landmass[0] < landmass[1] ? bc.getSecondaryBeach() : bc.getPrimaryBeach());
 	}
     
-    public BiomeContainer getOcean(double temp, boolean deep) {
-    	return this.oceanSelector.pick(temp, deep ? 1.0 : 0.0, temp);
+    public BiomeContainer getOcean(double temp, double weirdness, boolean deep) {
+    	return this.oceanSelector.pick(temp, deep ? 1.0 : 0.0, weirdness);
     }
     
 	public EvoBiomeSourceSettings getSettings() {
