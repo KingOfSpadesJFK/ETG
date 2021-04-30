@@ -5,6 +5,7 @@ import java.util.function.LongFunction;
 import net.minecraft.world.biome.layer.ScaleLayer;
 import net.minecraft.world.biome.layer.SmoothLayer;
 import net.minecraft.world.biome.layer.type.CrossSamplingLayer;
+import net.minecraft.world.biome.layer.type.InitLayer;
 import net.minecraft.world.biome.layer.type.MergingLayer;
 import net.minecraft.world.biome.layer.type.ParentedLayer;
 import net.minecraft.world.biome.layer.util.CachingLayerContext;
@@ -81,7 +82,7 @@ public enum LayerBuilder {
 	
 	private static <T extends LayerSampler, C extends LayerSampleContext<T>> LayerFactory<T> build(int terrainSize, int riverSize, LongFunction<C> contextProvider)
 	{
-		LayerFactory<T> terrainLayer = (new SimpleLayer(1, 0, true)).create((LayerSampleContext<T>)contextProvider.apply(1L));
+		LayerFactory<T> terrainLayer = BaseTerrainLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(1L));
 		terrainLayer = PlateauLayer.INSTANCE.create((LayerSampleContext<T>)contextProvider.apply(2L), terrainLayer);
 		terrainLayer = ScaleLayer.FUZZY.create((LayerSampleContext<T>)contextProvider.apply(2000L), terrainLayer);
 		terrainLayer = ScaleLayer.NORMAL.create((LayerSampleContext<T>)contextProvider.apply(2001L), terrainLayer);
@@ -122,6 +123,16 @@ public enum LayerBuilder {
 			int j = context.nextInt(10);
 			return i == TerrainLayerSampler.MOUNTAINS_LAYER && j == 0 ? TerrainLayerSampler.PLATEAU_LAYER : i;
 		}
+	}
+	
+	public enum BaseTerrainLayer implements InitLayer {
+		INSTANCE;
+
+		@Override
+		public int sample(LayerRandomnessSource context, int x, int y) {
+			return context.nextInt(2) == 0 ? 0 : 1;
+		}
+		
 	}
 	
 	public enum GradLayer implements ParentedLayer, NorthWestCoordinateTransformer {
