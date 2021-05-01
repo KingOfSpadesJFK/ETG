@@ -482,14 +482,8 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 	
 	private double calculateNoiseDepth(int x, int z)
 	{
-		double temperature = this.biomeSource.getTemperature(x, z);
-		double humidity =  this.biomeSource.getTemperature(x, z);
+		double noiseDepth = 0.0;
 		int terrain = this.terrainLayer.sample(x, z);
-		double noiseDepth = this.settings.getNoiseDepth() 
-				+ ( (0.175 - humidity * temperature * 0.175) * this.settings.getNoiseDepthFactor());
-		if (terrain == TerrainLayerSampler.PLATEAU_LAYER)
-			noiseDepth += 0.9 * (double)(this.plateauSteps.sample(x, z) + 1);
-			
 		boolean isRiver = terrain == TerrainLayerSampler.RIVER_LAYER;
 		double[] landmass = this.biomeSource.getLandmass(x, z);
 		boolean isOcean = landmass[4] < EvoBiomeSource.oceanThreshold - EvoBiomeSource.beachThreshold / (double)EvoBiomeSource.oceanOctaves / EvoBiomeSource.oceanScale;
@@ -497,43 +491,48 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		
 		if (isBeach | isOcean) {
 			noiseDepth = MathHelper.clamp((landmass[4] - EvoBiomeSource.oceanThreshold + 0.025) * 6.0, -1.9, 0.0);
-		}
-     
-		if (isRiver) {
-			if (isBeach | isOcean) {
+			if (isRiver) {
 				if (noiseDepth > -0.5)
-					noiseDepth = -0.5;
-			} else {
-				noiseDepth = -1.0;
+					return -0.5;
 			}
+		} 
+		else if (isRiver) {
+			return -1.0;
 		}
-		
+		else {
+			double temperature = this.biomeSource.getTemperature(x, z);
+			double humidity =  this.biomeSource.getTemperature(x, z);
+			noiseDepth = this.settings.getNoiseDepth()
+					+ ( (terrain == TerrainLayerSampler.MOUNTAINS_LAYER ? 0.7 - (humidity * temperature * 0.3) 
+							: 0.25 - (humidity * temperature * 0.25))
+							* this.settings.getNoiseDepthFactor() );
+			if (terrain == TerrainLayerSampler.PLATEAU_LAYER)
+				noiseDepth += 0.9 * (double)(this.plateauSteps.sample(x, z) + 1);
+			if (terrain == TerrainLayerSampler.MOUNTAINS_LAYER)
+				noiseDepth += 0.6;
+		}
 		return noiseDepth;
 	}
 	
 	private double calculateNoiseScale(int x, int z)
 	{
 		int terrain = this.terrainLayer.sample(x, z);
-		double noiseScale = (this.settings.getNoiseScale() + (terrain == 1 ? this.settings.getNoiseScaleFactor() : 0.075D));
-		if (terrain == TerrainLayerSampler.PLATEAU_LAYER)
-			noiseScale = 0.0D;
-         
 		boolean isRiver = terrain == TerrainLayerSampler.RIVER_LAYER;
 		double[] landmass = this.biomeSource.getLandmass(x, z);
 		boolean isOcean = landmass[4] < EvoBiomeSource.oceanThreshold - EvoBiomeSource.beachThreshold / (double)EvoBiomeSource.oceanOctaves / EvoBiomeSource.oceanScale;
 		boolean isBeach = !isOcean && (landmass[4] < EvoBiomeSource.oceanThreshold) && this.biomeSource.canBeBeach(x, z);
 		
-		if (isBeach | isOcean)  {
-			noiseScale = 0.0;
+		if (isBeach | isOcean | isRiver)  {
 			if ((landmass[4] - EvoBiomeSource.oceanThreshold + 0.025) * 6.0 < -1.9)
-				noiseScale = 0.275;
+				return 0.275;
+			return 0.0;
 		}
-     
-		if (isRiver) {
-			noiseScale = 0.0;
+		else {
+			if (terrain == TerrainLayerSampler.PLATEAU_LAYER)
+				return 0.0D;
+			else
+				return (this.settings.getNoiseScale() + (terrain == TerrainLayerSampler.MOUNTAINS_LAYER ? this.settings.getNoiseScaleFactor() : 0.075D));
 		}
-		
-		return noiseScale;
 	}
 
 	@Override

@@ -68,7 +68,7 @@ public class EvoGenSettings extends ChunkGeneratorSettings
 	    		Blocks.STONE.getDefaultState(), 
 	    		Blocks.WATER.getDefaultState(),
 	    		-10, 0, 63, false, 
-	    		0.4, 
+	    		0.175, 
 	    		0.110, 
 	    		0.125,
 	    		1.015, 

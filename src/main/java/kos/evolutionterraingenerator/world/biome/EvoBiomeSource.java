@@ -116,7 +116,7 @@ public class EvoBiomeSource extends BiomeSource
 	}
 
 	public static final int oceanOctaves = 8;
-    public static final double biomeScale = 1.375;
+    public static final double biomeScale = 1.625;
     public static final double oceanScale = 0.0375;
     public static final double oceanThreshold = 0.5;
     public static final double beachThreshold = 0.01;
@@ -147,7 +147,7 @@ public class EvoBiomeSource extends BiomeSource
     	if (climateCache.containsKey(x, z)) {
     		return climateCache.getOrThrow(x, z).weirdness;
     	}
-    	return (weirdnessOctave.sample((double)x * 0.005 / chanceScale, (double)z * 0.005 / chanceScale) * 0.05 + 0.5) * 0.99;
+    	return (weirdnessOctave.sample((double)x * 0.005 / chanceScale / biomeScale, (double)z * 0.005 / chanceScale / biomeScale) * 0.05 + 0.5) * 0.99;
     }
     
     public double[] getLandmass(int x, int z)
@@ -292,7 +292,7 @@ public class EvoBiomeSource extends BiomeSource
         	return biome;
         }
         
-    	if (humidity > 0.675 && this.swampLayer.sample(x, z) == 1 && y <= seaLevel + 6)
+    	if (humidity > 0.675 && this.swampLayer.sample(x, z) == 1 && y <= seaLevel + 10)
     	{
             Biome swamp = this.decodeBiome(this.swampSelector.pick(temperature, humidity, weirdness).getID());
             if (swamp != null)
