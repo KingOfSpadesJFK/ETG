@@ -130,7 +130,9 @@ public enum LayerBuilder {
 
 		@Override
 		public int sample(LayerRandomnessSource context, int x, int y) {
-			return context.nextInt(2) == 0 ? 0 : 1;
+			if (x == 0 && y == 0)
+				return TerrainLayerSampler.PLAINS_LAYER;
+			return context.nextInt(3) == 0 ? TerrainLayerSampler.MOUNTAINS_LAYER : TerrainLayerSampler.PLAINS_LAYER;
 		}
 		
 	}

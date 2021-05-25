@@ -209,16 +209,16 @@ public final class EvoChunkGenerator extends NoiseChunkGenerator
 		 		int x1 = x + j;
 			  	int z1 = z + i;
 			  	int y = chunkIn.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR_WG, j, i) + 1;
-			  	Biome biomes = this.biomeSource.getBiomesByHeight(x1, y, z1);
+			  	Biome biome = this.biomeSource.getBiomesByHeight(x1, y, z1);
 			  	double noise = this.surfaceDepthNoise.sample((double)x1 * 0.0625D, (double)z1 * 0.0625D, 0.0625D, (double)i * 0.0625D) * 15.0D;
 			  	if (x1 % 4 == 0 && z1 % 4 == 0)
 			  	{
-			  		abiome[k] = biomes;
+			  		abiome[k] = biome;
 			  		k++;
 			  	}
 		 		double humidity = this.biomeSource.getHumidity(x1, z1);
 		 		double temperature = this.biomeSource.getTemperature(x1, z1);
-	 			makeSurface(biomes, temperature, humidity, sharedseedrandom, chunkIn, x1, y, z1, i, j, noise, worldRegion);
+	 			makeSurface(biome, temperature, humidity, sharedseedrandom, chunkIn, x1, y, z1, i, j, noise, worldRegion);
 			}
 		}
 		while (k < BiomeArray.DEFAULT_LENGTH)

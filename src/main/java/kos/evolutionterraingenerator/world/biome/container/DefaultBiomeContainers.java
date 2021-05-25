@@ -6,6 +6,7 @@ import java.util.List;
 import kos.evolutionterraingenerator.world.biome.BiomeList;
 import kos.evolutionterraingenerator.world.biome.container.BiomeContainer.Category;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.util.Identifier;
 
 public class DefaultBiomeContainers 
 {
@@ -34,7 +35,10 @@ public class DefaultBiomeContainers
 
 		//Warm Biomes
 		containers.add(new BiomeContainer(BiomeList.SAVANNA, 0.7, 0.125, 0.5));
-		containers.add(new BiomeContainer(BiomeList.BADLANDS, 0.8, 0.0, 0.25).setPrimaryBeach(BiomeList.BADLANDS));
+		containers.add(new HeightBasedBiomeContainer(BiomeList.BADLANDS, 0.7, 0.0, 0.25,
+				new Identifier[] {BiomeList.BADLANDS, BiomeList.WOODED_BADLANDS_PLATEAU},
+				new int[] {0, 110}
+		).setPrimaryBeach(BiomeList.BADLANDS));
 		containers.add(new BiomeContainer(BiomeList.PLAINS, 0.7, 0.375, 0.5));
 		containers.add(new BiomeContainer(BiomeList.SUNFLOWER_PLAINS, 0.7, 0.375, 0.1));
 		containers.add(new BiomeContainer(BiomeList.FOREST, 0.7, 0.625, 0.5));
